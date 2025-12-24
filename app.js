@@ -591,13 +591,23 @@
                 }
             });
 
-            // Delegated events
-            document.addEventListener('click', (e) => {
+            // Delegated events - use both click and touchend for mobile
+            const handleInteraction = (e) => {
+                // Prevent double-firing on touch devices
+                if (e.type === 'touchend') {
+                    e.preventDefault();
+                }
+                
                 // Player card click
                 const card = e.target.closest('.player-card');
-                if (card && !e.target.closest('.player-save-btn')) {
+                if (card && !e.target.closest('.player-save-btn') && !e.target.closest('.compare-checkbox')) {
                     const playerId = parseInt(card.dataset.playerId);
-                    this.showPlayerDetail(playerId);
+                    // Check if it's a locked card
+                    if (card.classList.contains('locked')) {
+                        this.showUpgrade();
+                    } else {
+                        this.showPlayerDetail(playerId);
+                    }
                 }
 
                 // Save button
@@ -614,7 +624,23 @@
                     const playerName = decodeURIComponent(shareBtn.dataset.player);
                     this.sharePlayer(playerName);
                 }
-            });
+                
+                // Upgrade card
+                const upgradeCard = e.target.closest('.upgrade-card');
+                if (upgradeCard) {
+                    this.showUpgrade();
+                }
+                
+                // Modal backdrop close
+                const backdrop = e.target.closest('.modal-backdrop');
+                if (backdrop) {
+                    const modal = backdrop.closest('.modal');
+                    if (modal) modal.remove();
+                }
+            };
+            
+            document.addEventListener('click', handleInteraction);
+            document.addEventListener('touchend', handleInteraction, { passive: false });
         },
 
         switchView(viewId) {
@@ -982,13 +1008,10 @@
         },
         
         showUpgrade() {
-            // PAYMENT OPTIONS - Set your PayPal.me username or Stripe links
-            // PayPal: https://paypal.me/MustafaAlpARI/9.99
-            // Stripe: https://buy.stripe.com/your_link
-            
-            const PAYPAL_USERNAME = 'YOUR_PAYPAL';  // Replace with your PayPal.me username
-            const PAYPAL_MONTHLY = `https://paypal.me/${MustafaAlpARI}/9.99`;
-            const PAYPAL_ANNUAL = `https://paypal.me/${MustafaAlpARI}/79`;
+            // PAYMENT OPTIONS - PayPal.me links
+            const PAYPAL_USERNAME = 'MustafaAlpARI';
+            const PAYPAL_MONTHLY = `https://paypal.me/${PAYPAL_USERNAME}/9.99`;
+            const PAYPAL_ANNUAL = `https://paypal.me/${PAYPAL_USERNAME}/79`;
             
             // Or use Stripe if you prefer
             const STRIPE_MONTHLY = 'https://buy.stripe.com/test_monthly';
@@ -1025,15 +1048,15 @@
                         </div>
                         
                         <div class="upgrade-pricing" style="display:flex;gap:1rem;margin-bottom:1.5rem;">
-                            <div onclick="window.open('${MONTHLY_LINK}', '_blank')" style="flex:1;background:#1c232d;border:2px solid #333;border-radius:10px;padding:1.5rem;cursor:pointer;transition:all 0.2s;">
+                            <a href="${MONTHLY_LINK}" target="_blank" rel="noopener" style="flex:1;background:#1c232d;border:2px solid #333;border-radius:10px;padding:1.5rem;cursor:pointer;transition:all 0.2s;text-decoration:none;display:block;touch-action:manipulation;">
                                 <div style="font-size:2rem;font-weight:700;color:#f1f5f9;">$9<span style="font-size:0.9rem;font-weight:400;color:#94a3b8;">/mo</span></div>
                                 <div style="color:#64748b;font-size:0.85rem;margin-top:0.25rem;">Monthly</div>
-                            </div>
-                            <div onclick="window.open('${ANNUAL_LINK}', '_blank')" style="flex:1;background:linear-gradient(135deg,rgba(251,191,36,0.1),transparent);border:2px solid #fbbf24;border-radius:10px;padding:1.5rem;cursor:pointer;position:relative;">
+                            </a>
+                            <a href="${ANNUAL_LINK}" target="_blank" rel="noopener" style="flex:1;background:linear-gradient(135deg,rgba(251,191,36,0.1),transparent);border:2px solid #fbbf24;border-radius:10px;padding:1.5rem;cursor:pointer;position:relative;text-decoration:none;display:block;touch-action:manipulation;">
                                 <div style="position:absolute;top:-10px;right:10px;background:#fbbf24;color:#000;font-size:0.7rem;padding:3px 8px;border-radius:10px;font-weight:700;">BEST VALUE</div>
                                 <div style="font-size:2rem;font-weight:700;color:#f1f5f9;">$72<span style="font-size:0.9rem;font-weight:400;color:#94a3b8;">/yr</span></div>
                                 <div style="color:#fbbf24;font-size:0.85rem;margin-top:0.25rem;">$6/mo - Save 33%</div>
-                            </div>
+                            </a>
                         </div>
                         
                         <p style="color:#64748b;font-size:0.8rem;">Cancel anytime. 7-day money-back guarantee.</p>

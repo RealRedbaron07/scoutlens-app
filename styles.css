@@ -211,6 +211,9 @@ body::before {
     border-radius: var(--radius-md);
     cursor: pointer;
     transition: all var(--transition-fast);
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    user-select: none;
 }
 
 .btn-primary {
@@ -346,6 +349,8 @@ body::before {
     padding: var(--space-lg);
     cursor: pointer;
     transition: all var(--transition-base);
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
 }
 
 .player-card:hover {
@@ -1506,11 +1511,46 @@ body::before {
 /* Mobile Responsive for Search */
 @media (max-width: 768px) {
     .search-filter-bar {
-        display: none;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: var(--bg-secondary);
+        padding: 1rem;
+        border-top: 1px solid var(--border-subtle);
+        z-index: 100;
+        margin: 0;
+        justify-content: center;
+    }
+    
+    .search-input {
+        width: 100%;
+        max-width: 300px;
     }
     
     .filter-panel {
         width: 100%;
+    }
+    
+    /* Bigger tap targets for mobile */
+    .btn, .nav-link, .player-save-btn {
+        min-height: 44px;
+        min-width: 44px;
+    }
+    
+    .player-card {
+        padding: 1.25rem;
+    }
+    
+    .modal-close {
+        width: 44px;
+        height: 44px;
+        font-size: 1.5rem;
+    }
+    
+    /* Fix main content to not overlap bottom bar */
+    .main {
+        padding-bottom: 80px;
     }
 }
 
