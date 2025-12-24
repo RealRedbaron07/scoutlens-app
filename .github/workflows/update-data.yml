@@ -2,7 +2,7 @@ name: Update Player Data
 
 on:
   schedule:
-    # Runs every day at 6 AM UTC (after European matches finish)
+    # Run daily at 6 AM UTC (updates after European matches)
     - cron: '0 6 * * *'
   workflow_dispatch: # Allow manual trigger
 
@@ -19,28 +19,26 @@ jobs:
         with:
           python-version: '3.11'
           
-      - name: Fetch latest player data
-        env:
-          FOOTBALL_API_KEY: ${{ secrets.FOOTBALL_API_KEY }}
+      - name: Fetch Transfermarkt data
         run: |
           cd data
-          python3 fetch_api_football.py
+          python3 fetch_transfermarkt.py
           
       - name: Check for changes
-        id: check
+        id: changes
         run: |
-          if git diff --quiet data/player_data.js; then
-            echo "changes=false" >> $GITHUB_OUTPUT
-          else
-            echo "changes=true" >> $GITHUB_OUTPUT
-          fi
+          git diff --quiet data/player_data.js || echo "changes=true" >> $GITHUB_OUTPUT
           
-      - name: Commit and push if changed
-        if: steps.check.outputs.changes == 'true'
+      - name: Commit and push changes
+        if: steps.changes.outputs.changes == 'true'
         run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
           git add data/player_data.js
-          git commit -m "📊 Auto-update player data $(date +'%Y-%m-%d')"
+          git commit -m "🔄 Auto-update: Fresh Transfermarkt values $(date +'%Y-%m-%d')"
           git push
-
+          
+      - name: Trigger Vercel deployment
+        if: steps.changes.outputs.changes == 'true'
+        run: |
+          echo "✅ Data updated - Vercel will auto-deploy from GitHub"
