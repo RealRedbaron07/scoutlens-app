@@ -85,8 +85,15 @@
     // ============================================
     const UI = {
         renderPlayerCard(player, index = null) {
+            // Check if this is a locked PRO player
+            if (player.locked) {
+                return this.renderLockedCard(player, index);
+            }
+            
             const isInWatchlist = state.watchlist.some(p => p.id === player.id);
             const undervalued = player.undervaluation_pct > 0;
+            const hasTransferFee = player.transfer_fee_paid_eur_m > 0;
+            const isFromTM = player.value_source === 'transfermarkt';
             
             return `
                 <div class="player-card ${undervalued ? 'undervalued' : ''}" data-player-id="${player.id}">
@@ -100,6 +107,7 @@
                             <div class="player-meta">
                                 <span class="player-team">${player.team}</span>
                                 <span class="player-league">${player.league}</span>
+                                ${isFromTM ? '<span class="tm-badge" title="Transfermarkt verified">TM</span>' : ''}
                             </div>
                         </div>
                         
@@ -113,17 +121,24 @@
                     
                     <div class="player-card-stats">
                         <div class="player-stat">
+                            <span class="stat-value">${Format.value(player.market_value_eur_m)}</span>
+                            <span class="stat-label">Market Value</span>
+                        </div>
+                        <div class="player-stat">
                             <span class="stat-value">${Format.value(player.fair_value_eur_m)}</span>
                             <span class="stat-label">Fair Value</span>
                         </div>
+                        ${hasTransferFee ? `
                         <div class="player-stat">
-                            <span class="stat-value">${Format.value(player.market_value_eur_m)}</span>
-                            <span class="stat-label">Market</span>
+                            <span class="stat-value">${Format.value(player.transfer_fee_paid_eur_m)}</span>
+                            <span class="stat-label">Paid</span>
                         </div>
+                        ` : `
                         <div class="player-stat">
                             <span class="stat-value">${player.xgi_per_90.toFixed(2)}</span>
                             <span class="stat-label">xGI/90</span>
                         </div>
+                        `}
                         <div class="player-stat">
                             <span class="stat-value">${player.goals}G ${player.assists}A</span>
                             <span class="stat-label">Output</span>
@@ -135,6 +150,47 @@
                             title="${isInWatchlist ? 'Remove from watchlist' : 'Save to watchlist'}">
                         ${isInWatchlist ? '★' : '☆'}
                     </button>
+                </div>
+            `;
+        },
+        
+        renderLockedCard(player, index = null) {
+            return `
+                <div class="player-card locked" onclick="App.showUpgrade()">
+                    ${index !== null ? `<div class="player-rank">${index + 1}</div>` : ''}
+                    
+                    <div class="player-card-main">
+                        <div class="player-avatar locked-avatar">🔒</div>
+                        
+                        <div class="player-info">
+                            <div class="player-name">${player.name}</div>
+                            <div class="player-meta">
+                                <span class="player-team">${player.team}</span>
+                                <span class="player-league">${player.league}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="player-value-box">
+                            <div class="pro-badge">PRO</div>
+                        </div>
+                    </div>
+                    
+                    <div class="locked-overlay">
+                        <span>Unlock with Pro →</span>
+                    </div>
+                </div>
+            `;
+        },
+        
+        renderUpgradeCard() {
+            return `
+                <div class="upgrade-card" onclick="App.showUpgrade()">
+                    <div class="upgrade-content">
+                        <div class="upgrade-icon">🔓</div>
+                        <h3>Unlock All Players</h3>
+                        <p>Get full access to 150+ undervalued players, transfer fee analysis, and weekly alerts</p>
+                        <button class="btn btn-primary">Upgrade to Pro - $9/mo</button>
+                    </div>
                 </div>
             `;
         },
@@ -477,8 +533,20 @@
             if (!container) return;
             
             const data = this.getData();
-            const players = data.undervalued || [];
-            container.innerHTML = players.map((p, i) => UI.renderPlayerCard(p, i)).join('');
+            // New structure: data.free.undervalued + data.pro.undervalued
+            const freePlayers = data.free?.undervalued || data.undervalued || [];
+            const proPlayers = data.pro?.undervalued || [];
+            
+            let html = freePlayers.map((p, i) => UI.renderPlayerCard(p, i)).join('');
+            
+            // Add upgrade prompt after free players
+            if (proPlayers.length > 0) {
+                html += UI.renderUpgradeCard();
+                html += `<div class="pro-section-header">🔒 ${proPlayers.length} more undervalued players with Pro</div>`;
+                html += proPlayers.slice(0, 5).map((p, i) => UI.renderPlayerCard(p, freePlayers.length + i)).join('');
+            }
+            
+            container.innerHTML = html;
         },
 
         renderPerformers() {
@@ -486,8 +554,17 @@
             if (!container) return;
             
             const data = this.getData();
-            const players = data.topPerformers || [];
-            container.innerHTML = players.map((p, i) => UI.renderPlayerCard(p, i)).join('');
+            const freePlayers = data.free?.topPerformers || data.topPerformers || [];
+            const proPlayers = data.pro?.topPerformers || [];
+            
+            let html = freePlayers.map((p, i) => UI.renderPlayerCard(p, i)).join('');
+            
+            if (proPlayers.length > 0) {
+                html += `<div class="pro-section-header">🔒 ${proPlayers.length} more top performers with Pro</div>`;
+                html += proPlayers.slice(0, 3).map((p, i) => UI.renderPlayerCard(p, freePlayers.length + i)).join('');
+            }
+            
+            container.innerHTML = html;
         },
 
         renderRising() {
@@ -495,8 +572,61 @@
             if (!container) return;
             
             const data = this.getData();
-            const players = data.risingStars || [];
-            container.innerHTML = players.map((p, i) => UI.renderPlayerCard(p, i)).join('');
+            const freePlayers = data.free?.risingStars || data.risingStars || [];
+            const proPlayers = data.pro?.risingStars || [];
+            
+            let html = freePlayers.map((p, i) => UI.renderPlayerCard(p, i)).join('');
+            
+            if (proPlayers.length > 0) {
+                html += `<div class="pro-section-header">🔒 ${proPlayers.length} more rising stars with Pro</div>`;
+                html += proPlayers.slice(0, 3).map((p, i) => UI.renderPlayerCard(p, freePlayers.length + i)).join('');
+            }
+            
+            container.innerHTML = html;
+        },
+        
+        showUpgrade() {
+            // Show upgrade modal
+            const modal = document.createElement('div');
+            modal.className = 'modal active';
+            modal.id = 'upgrade-modal';
+            modal.innerHTML = `
+                <div class="modal-backdrop" onclick="this.parentElement.remove()"></div>
+                <div class="modal-content upgrade-modal-content">
+                    <button class="modal-close" onclick="this.closest('.modal').remove()">×</button>
+                    <div class="upgrade-modal-body">
+                        <div class="upgrade-header">
+                            <span class="upgrade-emoji">🔭</span>
+                            <h2>ScoutLens Pro</h2>
+                            <p>Get the edge with complete player intelligence</p>
+                        </div>
+                        
+                        <div class="upgrade-features">
+                            <div class="feature">✅ 150+ undervalued players (not just top 5)</div>
+                            <div class="feature">✅ Transfer fee analysis & ROI tracking</div>
+                            <div class="feature">✅ All 5 major leagues</div>
+                            <div class="feature">✅ Export reports to CSV/PDF</div>
+                            <div class="feature">✅ Price alert notifications</div>
+                            <div class="feature">✅ Historical value trends</div>
+                        </div>
+                        
+                        <div class="upgrade-pricing">
+                            <div class="price-option" onclick="window.open('YOUR_STRIPE_MONTHLY_LINK', '_blank')">
+                                <div class="price-amount">$9<span>/month</span></div>
+                                <div class="price-label">Monthly</div>
+                            </div>
+                            <div class="price-option featured" onclick="window.open('YOUR_STRIPE_ANNUAL_LINK', '_blank')">
+                                <div class="price-badge">Save 33%</div>
+                                <div class="price-amount">$72<span>/year</span></div>
+                                <div class="price-label">Annual ($6/mo)</div>
+                            </div>
+                        </div>
+                        
+                        <p class="upgrade-note">Cancel anytime. 7-day money-back guarantee.</p>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
         },
 
         renderWatchlist() {
