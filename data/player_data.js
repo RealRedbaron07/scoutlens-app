@@ -1,9 +1,9 @@
-// Auto-generated player data - 2025-12-24 11:57
+// Auto-generated player data - 2025-12-24 12:33
 // Source: Football-Data.org - Current 2024-25 Season (FREE!)
 // Run: python3 fetch_footballdata.py --api-key YOUR_KEY
 
 const PLAYER_DATA = {
-    lastUpdated: "2025-12-24T11:57:44.128583",
+    lastUpdated: "2025-12-24T12:33:00.185747",
     dataSource: "football-data.org",
     season: "2024-25",
     updateFrequency: "daily",
