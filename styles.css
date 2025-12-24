@@ -181,6 +181,10 @@ body::before {
     cursor: pointer;
     border-radius: var(--radius-md);
     transition: all var(--transition-fast);
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    user-select: none;
+    -webkit-user-select: none;
 }
 
 .nav-link:hover {
@@ -2110,3 +2114,94 @@ body::before {
     font-size: 0.8rem;
 }
 ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+/* ============================================
+   MOBILE TOUCH FIXES
+   ============================================ */
+
+/* Ensure all clickable elements work on mobile */
+button,
+a,
+[role="button"],
+.btn,
+.nav-link,
+.player-card,
+.player-save-btn,
+.upgrade-card,
+.modal-close,
+.modal-backdrop,
+.filter-btn,
+.sort-btn,
+.compare-btn,
+.price-option,
+.landing-cta-btn,
+.landing-btn {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+/* Ensure minimum touch target size (44x44px per Apple guidelines) */
+@media (pointer: coarse) {
+    button,
+    .btn,
+    .nav-link,
+    .player-save-btn,
+    .modal-close,
+    .filter-btn,
+    .sort-btn {
+        min-height: 44px;
+        min-width: 44px;
+    }
+    
+    .nav-links {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scroll-snap-type: x mandatory;
+    }
+    
+    .nav-link {
+        scroll-snap-align: start;
+        flex-shrink: 0;
+    }
+}
+
+/* Fix iOS input zoom */
+@media screen and (max-width: 768px) {
+    input, select, textarea {
+        font-size: 16px !important;
+    }
+}
+
+/* Fix z-index stacking on mobile */
+.modal {
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+}
+
+/* Payment links specific mobile fix */
+.price-option,
+.upgrade-pricing a {
+    display: block;
+    text-decoration: none;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    cursor: pointer;
+}
+
+/* Active states for touch feedback */
+.btn:active,
+.nav-link:active,
+.player-card:active,
+.player-save-btn:active {
+    opacity: 0.8;
+    transform: scale(0.98);
+}
+
+/* Fix for iOS Safari not triggering click events */
+.player-card,
+.upgrade-card {
+    cursor: pointer;
+}

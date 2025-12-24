@@ -548,12 +548,19 @@
         },
 
         bindEvents() {
-            // Navigation
+            // Navigation - with mobile touch support
             document.querySelectorAll('.nav-link').forEach(link => {
-                link.addEventListener('click', (e) => {
+                const handleNav = (e) => {
+                    e.preventDefault();
                     const view = e.currentTarget.dataset.view;
                     this.switchView(view);
-                });
+                };
+                link.addEventListener('click', handleNav);
+                // Also add touchend for iOS
+                link.addEventListener('touchend', (e) => {
+                    e.preventDefault();
+                    handleNav(e);
+                }, { passive: false });
             });
 
             // Newsletter button
@@ -1022,15 +1029,19 @@
             const MONTHLY_LINK = PAYMENT_PROVIDER === 'paypal' ? PAYPAL_MONTHLY : STRIPE_MONTHLY;
             const ANNUAL_LINK = PAYMENT_PROVIDER === 'paypal' ? PAYPAL_ANNUAL : STRIPE_ANNUAL;
             
+            // Remove existing modal if any
+            const existingModal = document.getElementById('upgrade-modal');
+            if (existingModal) existingModal.remove();
+            
             // Show upgrade modal
             const modal = document.createElement('div');
             modal.className = 'modal active';
             modal.id = 'upgrade-modal';
             modal.style.cssText = 'position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;';
             modal.innerHTML = `
-                <div class="modal-backdrop" onclick="this.parentElement.remove()" style="position:absolute;inset:0;background:rgba(0,0,0,0.8);"></div>
+                <div class="modal-backdrop" style="position:absolute;inset:0;background:rgba(0,0,0,0.8);cursor:pointer;"></div>
                 <div class="modal-content upgrade-modal-content" style="position:relative;background:#151a21;border-radius:16px;max-width:480px;width:90%;max-height:90vh;overflow:auto;">
-                    <button class="modal-close" onclick="this.closest('.modal').remove()" style="position:absolute;top:15px;right:15px;background:none;border:none;color:#fff;font-size:1.5rem;cursor:pointer;">×</button>
+                    <button class="modal-close" type="button" style="position:absolute;top:15px;right:15px;background:none;border:none;color:#fff;font-size:1.5rem;cursor:pointer;padding:10px;min-width:44px;min-height:44px;">×</button>
                     <div class="upgrade-modal-body" style="padding:2rem;text-align:center;">
                         <div class="upgrade-header" style="margin-bottom:2rem;">
                             <span style="font-size:3rem;display:block;margin-bottom:1rem;">🔭</span>
@@ -1047,12 +1058,12 @@
                             <div style="padding:0.5rem 0;color:#f1f5f9;">✅ Historical value trends</div>
                         </div>
                         
-                        <div class="upgrade-pricing" style="display:flex;gap:1rem;margin-bottom:1.5rem;">
-                            <a href="${MONTHLY_LINK}" target="_blank" rel="noopener" style="flex:1;background:#1c232d;border:2px solid #333;border-radius:10px;padding:1.5rem;cursor:pointer;transition:all 0.2s;text-decoration:none;display:block;touch-action:manipulation;">
+                        <div class="upgrade-pricing" style="display:flex;gap:1rem;margin-bottom:1.5rem;flex-wrap:wrap;">
+                            <a href="${MONTHLY_LINK}" target="_blank" rel="noopener noreferrer" class="payment-link" style="flex:1;min-width:140px;background:#1c232d;border:2px solid #333;border-radius:10px;padding:1.5rem;cursor:pointer;transition:all 0.2s;text-decoration:none;display:block;">
                                 <div style="font-size:2rem;font-weight:700;color:#f1f5f9;">$9<span style="font-size:0.9rem;font-weight:400;color:#94a3b8;">/mo</span></div>
                                 <div style="color:#64748b;font-size:0.85rem;margin-top:0.25rem;">Monthly</div>
                             </a>
-                            <a href="${ANNUAL_LINK}" target="_blank" rel="noopener" style="flex:1;background:linear-gradient(135deg,rgba(251,191,36,0.1),transparent);border:2px solid #fbbf24;border-radius:10px;padding:1.5rem;cursor:pointer;position:relative;text-decoration:none;display:block;touch-action:manipulation;">
+                            <a href="${ANNUAL_LINK}" target="_blank" rel="noopener noreferrer" class="payment-link" style="flex:1;min-width:140px;background:linear-gradient(135deg,rgba(251,191,36,0.1),transparent);border:2px solid #fbbf24;border-radius:10px;padding:1.5rem;cursor:pointer;position:relative;text-decoration:none;display:block;">
                                 <div style="position:absolute;top:-10px;right:10px;background:#fbbf24;color:#000;font-size:0.7rem;padding:3px 8px;border-radius:10px;font-weight:700;">BEST VALUE</div>
                                 <div style="font-size:2rem;font-weight:700;color:#f1f5f9;">$72<span style="font-size:0.9rem;font-weight:400;color:#94a3b8;">/yr</span></div>
                                 <div style="color:#fbbf24;font-size:0.85rem;margin-top:0.25rem;">$6/mo - Save 33%</div>
@@ -1064,6 +1075,31 @@
                 </div>
             `;
             document.body.appendChild(modal);
+            
+            // Add event listeners for mobile compatibility (instead of inline onclick)
+            const backdrop = modal.querySelector('.modal-backdrop');
+            const closeBtn = modal.querySelector('.modal-close');
+            const paymentLinks = modal.querySelectorAll('.payment-link');
+            
+            const closeModal = () => modal.remove();
+            
+            backdrop.addEventListener('click', closeModal);
+            backdrop.addEventListener('touchend', (e) => { e.preventDefault(); closeModal(); });
+            
+            closeBtn.addEventListener('click', closeModal);
+            closeBtn.addEventListener('touchend', (e) => { e.preventDefault(); closeModal(); });
+            
+            // Ensure payment links work on mobile
+            paymentLinks.forEach(link => {
+                link.addEventListener('touchend', (e) => {
+                    // Don't prevent default - let the link work naturally
+                    // But add a small delay for visual feedback
+                    link.style.opacity = '0.8';
+                    setTimeout(() => {
+                        window.open(link.href, '_blank', 'noopener,noreferrer');
+                    }, 100);
+                });
+            });
         },
 
         renderWatchlist() {
