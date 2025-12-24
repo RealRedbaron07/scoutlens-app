@@ -265,7 +265,8 @@ export default async function handler(req, res) {
                 });
             }
             
-            await new Promise(r => setTimeout(r, 1200));
+            // Rate limit: football-data.org free tier = 10 req/min
+            await new Promise(r => setTimeout(r, 6500));
         }
         
         // === CATEGORIZE FOR FREE vs PRO ===
