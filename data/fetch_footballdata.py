@@ -44,6 +44,60 @@ LEAGUES = {**TIER1_LEAGUES, **TIER2_LEAGUES}
 # Position values
 POSITION_BASE = {'Forward': 25, 'Midfield': 20, 'Defence': 15, 'Goalkeeper': 8}
 
+# Known Transfermarkt values (€M) - December 2024
+TRANSFERMARKT_VALUES = {
+    # Premier League
+    'Erling Haaland': 180, 'Mohamed Salah': 80, 'Cole Palmer': 110,
+    'Bukayo Saka': 140, 'Phil Foden': 150, 'Alexander Isak': 100,
+    'Bruno Fernandes': 70, 'Son Heung-min': 60, 'Ollie Watkins': 65,
+    'Nicolas Jackson': 55, 'Chris Wood': 5, 'Bryan Mbeumo': 50,
+    'Matheus Cunha': 55, 'Morgan Rogers': 30, 'Antoine Semenyo': 28,
+    'Dominic Solanke': 55, 'Cody Gakpo': 65, 'Luis Diaz': 75,
+    'Darwin Nunez': 70, 'Jhon Duran': 40, 'Yoane Wissa': 32,
+    
+    # La Liga
+    'Robert Lewandowski': 15, 'Raphinha': 70, 'Lamine Yamal': 150,
+    'Vinicius Junior': 200, 'Kylian Mbappe': 180, 'Jude Bellingham': 180,
+    'Antoine Griezmann': 30, 'Alexander Sorloth': 30,
+    
+    # Bundesliga
+    'Harry Kane': 100, 'Jamal Musiala': 130, 'Florian Wirtz': 150,
+    'Michael Olise': 60, 'Omar Marmoush': 55, 'Loïs Openda': 65,
+    'Serge Gnabry': 50, 'Leroy Sane': 60,
+    
+    # Serie A
+    'Lautaro Martinez': 110, 'Marcus Thuram': 70, 'Dusan Vlahovic': 65,
+    'Rafael Leao': 80, 'Khvicha Kvaratskhelia': 85, 'Ademola Lookman': 55,
+    'Mateo Retegui': 35, 'Moise Kean': 40,
+    
+    # Ligue 1
+    'Bradley Barcola': 70, 'Ousmane Dembele': 60, 'Mason Greenwood': 40,
+    'Jonathan David': 55,
+    
+    # Championship (Hidden Gems)
+    'Rodrigo Muniz': 12, 'Sammie Szmodics': 10, 'Josh Sargent': 15,
+    'Carlton Morris': 6, 'Borja Sainz': 8,
+    
+    # Eredivisie
+    'Vangelis Pavlidis': 8, 'Malik Tillman': 18,
+    
+    # Portugal
+    'Viktor Gyokeres': 75, 'Pedro Goncalves': 35, 'Francisco Trincao': 20,
+    
+    # Brazil
+    'Estevao': 30, 'Yuri Alberto': 18, 'Luiz Henrique': 15,
+}
+
+def get_transfermarkt_value(name):
+    """Get known Transfermarkt value or return None"""
+    for tm_name, value in TRANSFERMARKT_VALUES.items():
+        if tm_name.lower() in name.lower() or name.lower() in tm_name.lower():
+            return value
+        # Try last name match
+        if name.split()[-1].lower() == tm_name.split()[-1].lower():
+            return value
+    return None
+
 def get_age_multiplier(age: int) -> float:
     if age <= 20: return 1.4
     if age <= 22: return 1.35
@@ -122,11 +176,16 @@ def process_scorer(scorer: dict, league_info: dict) -> dict:
     perf_ratio = min(max(xgi_per_90 / pos_avg, 0.5), 3.5) if pos_avg > 0 else 1.0
     fair_value = base_value * perf_ratio * get_age_multiplier(age) * league_info['multiplier']
     
-    # Market value estimate
-    contrib = goals + (assists * 0.7)
-    per_90 = contrib / minutes_per_90
-    market_value = 5 + (per_90 * 22 * league_info['multiplier'] * get_age_multiplier(age))
-    market_value = round(max(2.0, min(market_value, 180.0)), 1)
+    # Market value - use Transfermarkt if known, otherwise estimate
+    tm_value = get_transfermarkt_value(name)
+    if tm_value:
+        market_value = tm_value
+    else:
+        # Estimate based on output and league
+        contrib = goals + (assists * 0.7)
+        per_90 = contrib / minutes_per_90
+        market_value = 5 + (per_90 * 18 * league_info['multiplier'] * get_age_multiplier(age))
+        market_value = round(max(2.0, min(market_value, 100.0)), 1)
     
     underval_pct = ((fair_value - market_value) / market_value * 100) if market_value > 0 else 0
     
@@ -155,9 +214,12 @@ def generate_js(all_players: list, output_path: str):
     for i, p in enumerate(all_players):
         p['id'] = i + 1
     
+    # Define lower leagues for hidden gems
+    lower_leagues = ['Championship', 'Eredivisie', 'Primeira Liga', 'Serie A Brasil']
+    
     # Categorize
     undervalued = sorted(
-        [p for p in all_players if p['undervaluation_pct'] > 20],
+        [p for p in all_players if p['undervaluation_pct'] > 15],
         key=lambda x: x['undervaluation_pct'],
         reverse=True
     )[:20]
@@ -170,21 +232,33 @@ def generate_js(all_players: list, output_path: str):
         reverse=True
     )[:15]
     
+    # Hidden gems from lower leagues
+    hidden_gems = sorted(
+        [p for p in all_players if p['league'] in lower_leagues],
+        key=lambda x: x['xgi_per_90'],
+        reverse=True
+    )[:20]
+    
     js_content = f"""// Auto-generated player data - {datetime.now().strftime('%Y-%m-%d %H:%M')}
 // Source: Football-Data.org - Current 2024-25 Season (FREE!)
+// Leagues: PL, La Liga, Bundesliga, Serie A, Ligue 1, Championship, Eredivisie, Portugal, Brazil
 // Run: python3 fetch_footballdata.py --api-key YOUR_KEY
 
 const PLAYER_DATA = {{
     lastUpdated: "{datetime.now().isoformat()}",
-    dataSource: "football-data.org",
+    dataSource: "football-data.org + Transfermarkt values",
     season: "2024-25",
     updateFrequency: "daily",
+    totalPlayers: {len(all_players)},
+    leaguesCovered: 9,
     
     undervalued: {json.dumps(undervalued, indent=8)},
     
     topPerformers: {json.dumps(top_performers, indent=8)},
     
-    risingStars: {json.dumps(rising, indent=8)}
+    risingStars: {json.dumps(rising, indent=8)},
+    
+    hiddenGems: {json.dumps(hidden_gems, indent=8)}
 }};
 
 if (typeof module !== 'undefined') {{
@@ -199,6 +273,7 @@ if (typeof module !== 'undefined') {{
     print(f"   📊 {len(undervalued)} undervalued")
     print(f"   ⚡ {len(top_performers)} top performers")
     print(f"   🌟 {len(rising)} rising stars")
+    print(f"   💎 {len(hidden_gems)} hidden gems")
 
 def main():
     parser = argparse.ArgumentParser(description='Fetch from football-data.org')

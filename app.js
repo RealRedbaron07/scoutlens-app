@@ -535,6 +535,9 @@
                 case 'rising':
                     this.renderRising();
                     break;
+                case 'gems':
+                    this.renderGems();
+                    break;
                 case 'watchlist':
                     this.renderWatchlist();
                     break;
@@ -603,6 +606,70 @@
             if (proPlayers.length > 0) {
                 html += `<div class="pro-section-header">🔒 ${proPlayers.length} more rising stars with Pro</div>`;
                 html += proPlayers.slice(0, 3).map((p, i) => UI.renderLockedCard(p, freePlayers.length + i)).join('');
+                html += UI.renderUpgradeCard();
+            }
+            
+            container.innerHTML = html;
+        },
+        
+        renderGems() {
+            const container = document.getElementById('gems-list');
+            if (!container) return;
+            
+            const data = this.getData();
+            // Hidden gems = players from lower leagues (Championship, Eredivisie, Portugal, Brazil, etc.)
+            const lowerLeagues = ['Championship', 'Eredivisie', 'Primeira Liga', 'Serie A Brasil', 'Série A'];
+            
+            let allGems = [];
+            
+            // Get gems from API structure or static data
+            if (data.free?.hiddenGems) {
+                allGems = [...(data.free.hiddenGems || []), ...(data.pro?.hiddenGems || [])];
+            } else if (data.hiddenGems) {
+                allGems = data.hiddenGems;
+            } else {
+                // Filter from undervalued/performers for lower league players
+                const allPlayers = [
+                    ...(data.undervalued || []),
+                    ...(data.topPerformers || []),
+                    ...(data.risingStars || [])
+                ];
+                allGems = allPlayers.filter(p => 
+                    lowerLeagues.some(l => p.league?.includes(l)) || 
+                    p.tier === 2 ||
+                    p.is_hidden_gem
+                );
+            }
+            
+            // Remove duplicates
+            const seen = new Set();
+            allGems = allGems.filter(p => {
+                if (seen.has(p.name)) return false;
+                seen.add(p.name);
+                return true;
+            });
+            
+            const freePlayers = allGems.slice(0, 5);
+            const proPlayers = allGems.slice(5);
+            
+            let html = '';
+            
+            if (freePlayers.length === 0) {
+                html = `
+                    <div class="empty-state">
+                        <span class="empty-state-icon">💎</span>
+                        <h3>Hidden Gems Coming Soon</h3>
+                        <p>We're adding Championship, Eredivisie, Portuguese & Brazilian league data.</p>
+                    </div>
+                `;
+            } else {
+                html = freePlayers.map((p, i) => UI.renderPlayerCard(p, i)).join('');
+                
+                if (proPlayers.length > 0) {
+                    html += `<div class="pro-section-header">🔒 ${proPlayers.length} more hidden gems with Pro</div>`;
+                    html += proPlayers.slice(0, 3).map((p, i) => UI.renderLockedCard(p, freePlayers.length + i)).join('');
+                }
+                
                 html += UI.renderUpgradeCard();
             }
             
