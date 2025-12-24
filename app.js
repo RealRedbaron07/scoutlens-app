@@ -155,28 +155,32 @@
         },
         
         renderLockedCard(player, index = null) {
+            const name = player.name || 'Hidden Player';
+            const team = player.team || '???';
+            const league = player.league || '???';
+            
             return `
                 <div class="player-card locked" onclick="App.showUpgrade()">
                     ${index !== null ? `<div class="player-rank">${index + 1}</div>` : ''}
                     
                     <div class="player-card-main">
-                        <div class="player-avatar locked-avatar">🔒</div>
+                        <div class="player-avatar locked-avatar" style="width:48px;height:48px;min-width:48px;background:var(--bg-elevated);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.2rem;">🔒</div>
                         
                         <div class="player-info">
-                            <div class="player-name">${player.name}</div>
+                            <div class="player-name" style="filter: blur(3px);">${name}</div>
                             <div class="player-meta">
-                                <span class="player-team">${player.team}</span>
-                                <span class="player-league">${player.league}</span>
+                                <span class="player-team">${team}</span>
+                                <span class="player-league">${league}</span>
                             </div>
                         </div>
                         
                         <div class="player-value-box">
-                            <div class="pro-badge">PRO</div>
+                            <div class="pro-badge" style="background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#000;font-size:0.7rem;padding:4px 10px;border-radius:4px;font-weight:700;">PRO</div>
                         </div>
                     </div>
                     
-                    <div class="locked-overlay">
-                        <span>Unlock with Pro →</span>
+                    <div class="locked-overlay" style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(to top,rgba(0,0,0,0.9),transparent);padding:1rem;text-align:center;border-radius:0 0 10px 10px;">
+                        <span style="color:#00d4aa;font-weight:600;font-size:0.9rem;">🔓 Unlock with Pro →</span>
                     </div>
                 </div>
             `;
@@ -184,12 +188,12 @@
         
         renderUpgradeCard() {
             return `
-                <div class="upgrade-card" onclick="App.showUpgrade()">
+                <div class="upgrade-card" onclick="App.showUpgrade()" style="background:linear-gradient(135deg,rgba(251,191,36,0.15),rgba(0,212,170,0.1));border:2px dashed #fbbf24;border-radius:16px;padding:2rem;text-align:center;cursor:pointer;margin:1.5rem 0;transition:all 0.25s ease;">
                     <div class="upgrade-content">
-                        <div class="upgrade-icon">🔓</div>
-                        <h3>Unlock All Players</h3>
-                        <p>Get full access to 150+ undervalued players, transfer fee analysis, and weekly alerts</p>
-                        <button class="btn btn-primary">Upgrade to Pro - $9/mo</button>
+                        <div class="upgrade-icon" style="font-size:2.5rem;margin-bottom:1rem;">🔓</div>
+                        <h3 style="color:#fbbf24;font-size:1.3rem;margin-bottom:0.5rem;">Unlock All 150+ Players</h3>
+                        <p style="color:#94a3b8;margin-bottom:1.5rem;">Full access to undervalued players, transfer fees, export reports & alerts</p>
+                        <button class="btn btn-primary" style="background:#00d4aa;color:#000;padding:12px 24px;border:none;border-radius:8px;font-weight:600;font-size:1rem;cursor:pointer;">Upgrade to Pro - $9/mo</button>
                     </div>
                 </div>
             `;
@@ -542,17 +546,22 @@
             if (!container) return;
             
             const data = this.getData();
-            // New structure: data.free.undervalued + data.pro.undervalued
-            const freePlayers = data.free?.undervalued || data.undervalued || [];
-            const proPlayers = data.pro?.undervalued || [];
+            const allPlayers = data.free?.undervalued || data.undervalued || [];
+            
+            // FREE: Show only first 5
+            const freePlayers = allPlayers.slice(0, 5);
+            // PRO: Everything else is locked
+            const proPlayers = allPlayers.slice(5);
             
             let html = freePlayers.map((p, i) => UI.renderPlayerCard(p, i)).join('');
             
-            // Add upgrade prompt after free players
+            // ALWAYS show upgrade card after free players
+            html += UI.renderUpgradeCard();
+            
             if (proPlayers.length > 0) {
-                html += UI.renderUpgradeCard();
                 html += `<div class="pro-section-header">🔒 ${proPlayers.length} more undervalued players with Pro</div>`;
-                html += proPlayers.slice(0, 5).map((p, i) => UI.renderPlayerCard(p, freePlayers.length + i)).join('');
+                // Show locked previews
+                html += proPlayers.slice(0, 5).map((p, i) => UI.renderLockedCard(p, freePlayers.length + i)).join('');
             }
             
             container.innerHTML = html;
@@ -563,14 +572,17 @@
             if (!container) return;
             
             const data = this.getData();
-            const freePlayers = data.free?.topPerformers || data.topPerformers || [];
-            const proPlayers = data.pro?.topPerformers || [];
+            const allPlayers = data.free?.topPerformers || data.topPerformers || [];
+            
+            const freePlayers = allPlayers.slice(0, 5);
+            const proPlayers = allPlayers.slice(5);
             
             let html = freePlayers.map((p, i) => UI.renderPlayerCard(p, i)).join('');
             
             if (proPlayers.length > 0) {
                 html += `<div class="pro-section-header">🔒 ${proPlayers.length} more top performers with Pro</div>`;
-                html += proPlayers.slice(0, 3).map((p, i) => UI.renderPlayerCard(p, freePlayers.length + i)).join('');
+                html += proPlayers.slice(0, 3).map((p, i) => UI.renderLockedCard(p, freePlayers.length + i)).join('');
+                html += UI.renderUpgradeCard();
             }
             
             container.innerHTML = html;
@@ -581,57 +593,65 @@
             if (!container) return;
             
             const data = this.getData();
-            const freePlayers = data.free?.risingStars || data.risingStars || [];
-            const proPlayers = data.pro?.risingStars || [];
+            const allPlayers = data.free?.risingStars || data.risingStars || [];
+            
+            const freePlayers = allPlayers.slice(0, 5);
+            const proPlayers = allPlayers.slice(5);
             
             let html = freePlayers.map((p, i) => UI.renderPlayerCard(p, i)).join('');
             
             if (proPlayers.length > 0) {
                 html += `<div class="pro-section-header">🔒 ${proPlayers.length} more rising stars with Pro</div>`;
-                html += proPlayers.slice(0, 3).map((p, i) => UI.renderPlayerCard(p, freePlayers.length + i)).join('');
+                html += proPlayers.slice(0, 3).map((p, i) => UI.renderLockedCard(p, freePlayers.length + i)).join('');
+                html += UI.renderUpgradeCard();
             }
             
             container.innerHTML = html;
         },
         
         showUpgrade() {
+            // STRIPE PAYMENT LINKS - Replace these with your actual Stripe links
+            const STRIPE_MONTHLY = 'https://buy.stripe.com/test_monthly'; // Replace with real link
+            const STRIPE_ANNUAL = 'https://buy.stripe.com/test_annual';   // Replace with real link
+            
             // Show upgrade modal
             const modal = document.createElement('div');
             modal.className = 'modal active';
             modal.id = 'upgrade-modal';
+            modal.style.cssText = 'position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;';
             modal.innerHTML = `
-                <div class="modal-backdrop" onclick="this.parentElement.remove()"></div>
-                <div class="modal-content upgrade-modal-content">
-                    <button class="modal-close" onclick="this.closest('.modal').remove()">×</button>
-                    <div class="upgrade-modal-body">
-                        <div class="upgrade-header">
-                            <span class="upgrade-emoji">🔭</span>
-                            <h2>ScoutLens Pro</h2>
-                            <p>Get the edge with complete player intelligence</p>
+                <div class="modal-backdrop" onclick="this.parentElement.remove()" style="position:absolute;inset:0;background:rgba(0,0,0,0.8);"></div>
+                <div class="modal-content upgrade-modal-content" style="position:relative;background:#151a21;border-radius:16px;max-width:480px;width:90%;max-height:90vh;overflow:auto;">
+                    <button class="modal-close" onclick="this.closest('.modal').remove()" style="position:absolute;top:15px;right:15px;background:none;border:none;color:#fff;font-size:1.5rem;cursor:pointer;">×</button>
+                    <div class="upgrade-modal-body" style="padding:2rem;text-align:center;">
+                        <div class="upgrade-header" style="margin-bottom:2rem;">
+                            <span style="font-size:3rem;display:block;margin-bottom:1rem;">🔭</span>
+                            <h2 style="font-size:1.8rem;background:linear-gradient(135deg,#fbbf24,#00d4aa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:0.5rem;">ScoutLens Pro</h2>
+                            <p style="color:#94a3b8;">Get the edge with complete player intelligence</p>
                         </div>
                         
-                        <div class="upgrade-features">
-                            <div class="feature">✅ 150+ undervalued players (not just top 5)</div>
-                            <div class="feature">✅ Transfer fee analysis & ROI tracking</div>
-                            <div class="feature">✅ All 5 major leagues</div>
-                            <div class="feature">✅ Export reports to CSV/PDF</div>
-                            <div class="feature">✅ Price alert notifications</div>
-                            <div class="feature">✅ Historical value trends</div>
+                        <div class="upgrade-features" style="text-align:left;background:#1c232d;border-radius:10px;padding:1.5rem;margin-bottom:2rem;">
+                            <div style="padding:0.5rem 0;color:#f1f5f9;">✅ 150+ undervalued players (not just top 5)</div>
+                            <div style="padding:0.5rem 0;color:#f1f5f9;">✅ Transfer fee analysis & ROI tracking</div>
+                            <div style="padding:0.5rem 0;color:#f1f5f9;">✅ All 5 major leagues covered</div>
+                            <div style="padding:0.5rem 0;color:#f1f5f9;">✅ Export reports to CSV/PDF</div>
+                            <div style="padding:0.5rem 0;color:#f1f5f9;">✅ Price drop alert notifications</div>
+                            <div style="padding:0.5rem 0;color:#f1f5f9;">✅ Historical value trends</div>
                         </div>
                         
-                        <div class="upgrade-pricing">
-                            <div class="price-option" onclick="window.open('YOUR_STRIPE_MONTHLY_LINK', '_blank')">
-                                <div class="price-amount">$9<span>/month</span></div>
-                                <div class="price-label">Monthly</div>
+                        <div class="upgrade-pricing" style="display:flex;gap:1rem;margin-bottom:1.5rem;">
+                            <div onclick="window.open('${STRIPE_MONTHLY}', '_blank')" style="flex:1;background:#1c232d;border:2px solid #333;border-radius:10px;padding:1.5rem;cursor:pointer;transition:all 0.2s;">
+                                <div style="font-size:2rem;font-weight:700;color:#f1f5f9;">$9<span style="font-size:0.9rem;font-weight:400;color:#94a3b8;">/mo</span></div>
+                                <div style="color:#64748b;font-size:0.85rem;margin-top:0.25rem;">Monthly</div>
                             </div>
-                            <div class="price-option featured" onclick="window.open('YOUR_STRIPE_ANNUAL_LINK', '_blank')">
-                                <div class="price-badge">Save 33%</div>
-                                <div class="price-amount">$72<span>/year</span></div>
-                                <div class="price-label">Annual ($6/mo)</div>
+                            <div onclick="window.open('${STRIPE_ANNUAL}', '_blank')" style="flex:1;background:linear-gradient(135deg,rgba(251,191,36,0.1),transparent);border:2px solid #fbbf24;border-radius:10px;padding:1.5rem;cursor:pointer;position:relative;">
+                                <div style="position:absolute;top:-10px;right:10px;background:#fbbf24;color:#000;font-size:0.7rem;padding:3px 8px;border-radius:10px;font-weight:700;">BEST VALUE</div>
+                                <div style="font-size:2rem;font-weight:700;color:#f1f5f9;">$72<span style="font-size:0.9rem;font-weight:400;color:#94a3b8;">/yr</span></div>
+                                <div style="color:#fbbf24;font-size:0.85rem;margin-top:0.25rem;">$6/mo - Save 33%</div>
                             </div>
                         </div>
                         
-                        <p class="upgrade-note">Cancel anytime. 7-day money-back guarantee.</p>
+                        <p style="color:#64748b;font-size:0.8rem;">Cancel anytime. 7-day money-back guarantee.</p>
                     </div>
                 </div>
             `;
