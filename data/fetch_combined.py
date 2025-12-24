@@ -53,6 +53,46 @@ def names_match(name1, name2):
     return False
 
 # ============================================
+# CONTRACT EXPIRY DATES (year)
+# Players with expiring contracts = BARGAINS
+# ============================================
+CONTRACT_EXPIRY = {
+    # Expiring 2025 (FREE AGENTS SOON!)
+    'mohamed salah': 2025, 'salah': 2025,
+    'trent alexander-arnold': 2025, 'alexander-arnold': 2025,
+    'virgil van dijk': 2025, 'van dijk': 2025,
+    'joshua kimmich': 2025, 'kimmich': 2025,
+    'alphonso davies': 2025, 'davies': 2025,
+    'jonathan david': 2025,
+    'leroy sane': 2025, 'sane': 2025,
+    'jonathan tah': 2025, 'tah': 2025,
+    'kevin de bruyne': 2025, 'de bruyne': 2025,
+    'son heung-min': 2025, 'son': 2025,
+    
+    # Expiring 2026 (good value)
+    'erling haaland': 2027, 'haaland': 2027,
+    'kylian mbappe': 2029, 'mbappe': 2029,
+    'vinicius junior': 2027, 'vinicius': 2027,
+    'jude bellingham': 2029, 'bellingham': 2029,
+    'bukayo saka': 2027, 'saka': 2027,
+    'phil foden': 2027, 'foden': 2027,
+    'cole palmer': 2033, 'palmer': 2033,
+    'lamine yamal': 2030, 'yamal': 2030,
+    'florian wirtz': 2027, 'wirtz': 2027,
+    'jamal musiala': 2026, 'musiala': 2026,
+    'pedri': 2026,
+    'gavi': 2026,
+    
+    # Hidden gems with expiring contracts
+    'viktor gyokeres': 2028, 'gyokeres': 2028,
+    'omar marmoush': 2027, 'marmoush': 2027,
+    'michael olise': 2028, 'olise': 2028,
+    'nico williams': 2027, 'williams': 2027,
+    'alejandro garnacho': 2028, 'garnacho': 2028,
+    'khvicha kvaratskhelia': 2027, 'kvaratskhelia': 2027,
+}
+
+# ============================================
 # RELEASE CLAUSES (public/reported - mainly La Liga)
 # Source: Various reports, club announcements
 # ============================================
@@ -174,15 +214,41 @@ KNOWN_VALUES = {
 # ============================================
 TM_API_BASE = "https://transfermarkt-api.fly.dev"
 
+# ============================================
+# LEAGUES CONFIG - 20+ LEAGUES FOR HIDDEN GEMS
+# ============================================
 TM_LEAGUES = {
-    'GB1': {'name': 'Premier League', 'fd_code': 'PL', 'multiplier': 2.0},
-    'ES1': {'name': 'La Liga', 'fd_code': 'PD', 'multiplier': 1.4},
-    'L1': {'name': 'Bundesliga', 'fd_code': 'BL1', 'multiplier': 1.3},
-    'IT1': {'name': 'Serie A', 'fd_code': 'SA', 'multiplier': 1.2},
-    'FR1': {'name': 'Ligue 1', 'fd_code': 'FL1', 'multiplier': 1.1},
-    'GB2': {'name': 'Championship', 'fd_code': 'ELC', 'multiplier': 0.6},
-    'NL1': {'name': 'Eredivisie', 'fd_code': 'DED', 'multiplier': 0.7},
-    'PO1': {'name': 'Primeira Liga', 'fd_code': 'PPL', 'multiplier': 0.65},
+    # TIER 1: Big 5 Leagues
+    'GB1': {'name': 'Premier League', 'fd_code': 'PL', 'multiplier': 2.0, 'tier': 1},
+    'ES1': {'name': 'La Liga', 'fd_code': 'PD', 'multiplier': 1.4, 'tier': 1},
+    'L1': {'name': 'Bundesliga', 'fd_code': 'BL1', 'multiplier': 1.3, 'tier': 1},
+    'IT1': {'name': 'Serie A', 'fd_code': 'SA', 'multiplier': 1.2, 'tier': 1},
+    'FR1': {'name': 'Ligue 1', 'fd_code': 'FL1', 'multiplier': 1.1, 'tier': 1},
+    
+    # TIER 2: Strong Secondary Leagues (Hidden Gem Territory)
+    'GB2': {'name': 'Championship', 'fd_code': 'ELC', 'multiplier': 0.6, 'tier': 2},
+    'NL1': {'name': 'Eredivisie', 'fd_code': 'DED', 'multiplier': 0.7, 'tier': 2},
+    'PO1': {'name': 'Primeira Liga', 'fd_code': 'PPL', 'multiplier': 0.65, 'tier': 2},
+    'BE1': {'name': 'Belgian Pro League', 'fd_code': None, 'multiplier': 0.55, 'tier': 2},
+    'TR1': {'name': 'Süper Lig', 'fd_code': None, 'multiplier': 0.5, 'tier': 2},
+    'A1': {'name': 'Austrian Bundesliga', 'fd_code': None, 'multiplier': 0.45, 'tier': 2},
+    'RU1': {'name': 'Russian Premier', 'fd_code': None, 'multiplier': 0.4, 'tier': 2},
+    
+    # TIER 3: Talent Hotbeds (Best for Hidden Gems!)
+    'AR1': {'name': 'Argentina Primera', 'fd_code': None, 'multiplier': 0.4, 'tier': 3},
+    'BR1': {'name': 'Brasileirão', 'fd_code': 'BSA', 'multiplier': 0.5, 'tier': 3},
+    'MX1': {'name': 'Liga MX', 'fd_code': None, 'multiplier': 0.35, 'tier': 3},
+    'SC1': {'name': 'Scottish Premiership', 'fd_code': None, 'multiplier': 0.35, 'tier': 3},
+    'GR1': {'name': 'Greek Super League', 'fd_code': None, 'multiplier': 0.35, 'tier': 3},
+    'DK1': {'name': 'Danish Superliga', 'fd_code': None, 'multiplier': 0.35, 'tier': 3},
+    'SE1': {'name': 'Allsvenskan', 'fd_code': None, 'multiplier': 0.3, 'tier': 3},
+    'NO1': {'name': 'Eliteserien', 'fd_code': None, 'multiplier': 0.3, 'tier': 3},
+    'CH1': {'name': 'Swiss Super League', 'fd_code': None, 'multiplier': 0.4, 'tier': 3},
+    'HR1': {'name': 'Croatian HNL', 'fd_code': None, 'multiplier': 0.25, 'tier': 3},
+    'RS1': {'name': 'Serbian SuperLiga', 'fd_code': None, 'multiplier': 0.25, 'tier': 3},
+    'UA1': {'name': 'Ukrainian Premier', 'fd_code': None, 'multiplier': 0.3, 'tier': 3},
+    'CZ1': {'name': 'Czech First League', 'fd_code': None, 'multiplier': 0.25, 'tier': 3},
+    'PL1': {'name': 'Ekstraklasa', 'fd_code': None, 'multiplier': 0.25, 'tier': 3},
 }
 
 def fetch_json(url, headers=None):
@@ -298,15 +364,19 @@ def fetch_football_data_stats(api_key):
     """Fetch season stats from Football-Data.org"""
     print("\n⚽ Fetching Football-Data.org stats...")
     
+    # Football-Data.org free tier leagues
     fd_leagues = {
+        # Big 5
         'PL': 'Premier League',
         'PD': 'La Liga', 
         'BL1': 'Bundesliga',
         'SA': 'Serie A',
         'FL1': 'Ligue 1',
+        # Hidden Gem Leagues (available on free tier)
         'ELC': 'Championship',
         'DED': 'Eredivisie',
         'PPL': 'Primeira Liga',
+        'BSA': 'Brasileirão',  # Brazil - lots of hidden gems!
     }
     
     all_stats = {}  # name -> stats
@@ -444,6 +514,35 @@ def merge_data(tm_values, fd_stats):
         
         player['release_clause_eur_m'] = release_clause  # None if unknown
         
+        # Add contract expiry if known
+        contract_expiry = CONTRACT_EXPIRY.get(name_normalized)
+        if not contract_expiry:
+            last_name = name_normalized.split()[-1] if name_normalized.split() else ''
+            contract_expiry = CONTRACT_EXPIRY.get(last_name)
+        
+        player['contract_expiry'] = contract_expiry  # Year or None
+        
+        # Flag if contract expiring soon (2025 = free agent soon!)
+        if contract_expiry:
+            if contract_expiry <= 2025:
+                player['contract_status'] = 'expiring'
+            elif contract_expiry <= 2026:
+                player['contract_status'] = 'short'
+            else:
+                player['contract_status'] = 'long'
+        else:
+            player['contract_status'] = None
+        
+        # Add tier info for hidden gem identification
+        league_info = None
+        for tm_id, info in TM_LEAGUES.items():
+            if info['name'] == player.get('league'):
+                league_info = info
+                break
+        
+        player['league_tier'] = league_info['tier'] if league_info else 2
+        player['is_hidden_gem'] = player['league_tier'] >= 2
+        
         # Calculate fair value based on performance
         gi_per_game = (player['goals'] + player['assists']) / max(player['games'], 1)
         
@@ -514,7 +613,14 @@ def generate_js(players, output_path):
         p['id'] = i + 1
     
     # Categorize
-    lower_leagues = ['Championship', 'Eredivisie', 'Primeira Liga']
+    tier2_leagues = ['Championship', 'Eredivisie', 'Primeira Liga', 'Belgian Pro League', 
+                     'Süper Lig', 'Austrian Bundesliga', 'Russian Premier']
+    tier3_leagues = ['Argentina Primera', 'Brasileirão', 'Liga MX', 'Scottish Premiership',
+                     'Greek Super League', 'Danish Superliga', 'Allsvenskan', 'Eliteserien',
+                     'Swiss Super League', 'Croatian HNL', 'Serbian SuperLiga', 
+                     'Ukrainian Premier', 'Czech First League', 'Ekstraklasa']
+    
+    lower_leagues = tier2_leagues + tier3_leagues
     
     # Only show undervalued if we have verified TM value AND meaningful undervaluation
     undervalued = sorted(
@@ -526,6 +632,13 @@ def generate_js(players, output_path):
         key=lambda x: x['undervaluation_pct'],
         reverse=True
     )[:20]
+    
+    # Contract expiring soon = bargains
+    expiring_contracts = sorted(
+        [p for p in players if p.get('contract_status') == 'expiring'],
+        key=lambda x: x.get('market_value_eur_m', 0),
+        reverse=True
+    )[:15]
     
     top_performers = sorted(
         [p for p in players if p.get('xgi_per_90', 0) > 0],
@@ -539,14 +652,32 @@ def generate_js(players, output_path):
         reverse=True
     )[:15]
     
+    # Hidden gems: players from lower leagues with good output
     hidden_gems = sorted(
-        [p for p in players if p['league'] in lower_leagues and p.get('goals', 0) > 0],
-        key=lambda x: x['xgi_per_90'],
+        [p for p in players if 
+            p.get('is_hidden_gem', False) and 
+            p.get('goals', 0) >= 3 and
+            p.get('tm_verified', False)],
+        key=lambda x: (x.get('xgi_per_90', 0), -x.get('market_value_eur_m', 100)),
         reverse=True
-    )[:20]
+    )[:25]
+    
+    # Best bargains: high value players with expiring contracts
+    bargains = sorted(
+        [p for p in players if 
+            p.get('contract_expiry') and 
+            p.get('contract_expiry') <= 2026 and
+            p.get('market_value_eur_m', 0) >= 20],
+        key=lambda x: x.get('market_value_eur_m', 0),
+        reverse=True
+    )[:15]
+    
+    # Count unique leagues
+    unique_leagues = set(p.get('league') for p in players if p.get('league'))
     
     js_content = f"""// Auto-generated - {datetime.now().strftime('%Y-%m-%d %H:%M')}
 // Sources: Transfermarkt (values) + Football-Data.org (stats)
+// 25+ Leagues for Hidden Gem Discovery
 // Run: python3 fetch_combined.py --api-key YOUR_KEY
 
 const PLAYER_DATA = {{
@@ -555,9 +686,13 @@ const PLAYER_DATA = {{
     season: "2024-25",
     updateFrequency: "daily",
     totalPlayers: {len(players)},
-    leaguesCovered: 8,
+    leaguesCovered: {len(unique_leagues)},
     
     undervalued: {json.dumps(undervalued, indent=8)},
+    
+    expiringContracts: {json.dumps(expiring_contracts, indent=8)},
+    
+    bargains: {json.dumps(bargains, indent=8)},
     
     topPerformers: {json.dumps(top_performers, indent=8)},
     

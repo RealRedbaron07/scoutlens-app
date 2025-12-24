@@ -68,6 +68,10 @@
                     <span class="nav-link-icon">💎</span>
                     <span class="nav-link-text">Hidden Gems</span>
                 </button>
+                <button class="nav-link" data-view="bargains">
+                    <span class="nav-link-icon">⏰</span>
+                    <span class="nav-link-text">Bargains</span>
+                </button>
                 <button class="nav-link" data-view="watchlist">
                     <span class="nav-link-icon">★</span>
                     <span class="nav-link-text">Saved</span>
@@ -158,10 +162,22 @@
             <section id="view-gems" class="view">
                 <div class="section-intro">
                     <h2>💎 Hidden Gems</h2>
-                    <p>Overlooked talents from Championship, Eredivisie, Portugal, Brazil & more. Scout before the big clubs do.</p>
+                    <p>Overlooked talents from 25+ leagues - Championship, Eredivisie, Portugal, Brazil, Belgium, Turkey & more. Scout before the big clubs do.</p>
                 </div>
 
                 <div class="players-list" id="gems-list">
+                    <!-- Populated by JS -->
+                </div>
+            </section>
+
+            <!-- Bargains View (Expiring Contracts) -->
+            <section id="view-bargains" class="view">
+                <div class="section-intro">
+                    <h2>⏰ Contract Bargains</h2>
+                    <p>High-value players with expiring contracts (2025-2026). Free transfers or reduced fees incoming.</p>
+                </div>
+
+                <div class="players-list" id="bargains-list">
                     <!-- Populated by JS -->
                 </div>
             </section>

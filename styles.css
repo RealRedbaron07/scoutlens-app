@@ -1050,6 +1050,174 @@ body::before {
     opacity: 0.8;
 }
 
+/* Contract Expiry Badges */
+.contract-badge {
+    font-size: 0.6rem;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-weight: 700;
+    margin-left: 6px;
+}
+
+.contract-badge.expiring {
+    background: rgba(248, 113, 113, 0.2);
+    color: #f87171;
+    animation: pulse 2s infinite;
+}
+
+.contract-badge.short {
+    background: rgba(251, 191, 36, 0.15);
+    color: var(--accent-gold);
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+}
+
+/* Hidden Gem Badge */
+.gem-badge {
+    margin-left: 4px;
+    font-size: 0.9rem;
+}
+
+/* Compare Mode Styles */
+.compare-checkbox {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    accent-color: var(--accent-primary);
+    z-index: 5;
+}
+
+.player-card.selected-compare {
+    border: 2px solid var(--accent-primary);
+    box-shadow: 0 0 15px rgba(0, 212, 170, 0.3);
+}
+
+/* Compare Panel */
+.compare-panel {
+    position: fixed;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-lg);
+    padding: 1rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+}
+
+.compare-panel.hidden {
+    display: none;
+}
+
+.compare-count {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.compare-btn {
+    background: linear-gradient(135deg, var(--accent-primary), #00b894);
+    color: #000;
+    border: none;
+    padding: 0.6rem 1.2rem;
+    border-radius: var(--radius-sm);
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.compare-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Compare Modal */
+.compare-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.9);
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+}
+
+.compare-modal.hidden {
+    display: none;
+}
+
+.compare-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    max-width: 1200px;
+    width: 100%;
+}
+
+.compare-card {
+    background: var(--bg-card);
+    border-radius: var(--radius-md);
+    padding: 1.5rem;
+    border: 1px solid var(--border-subtle);
+}
+
+.compare-card h3 {
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+    color: var(--text-primary);
+}
+
+.compare-stat-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.compare-stat-row:last-child {
+    border-bottom: none;
+}
+
+.compare-stat-label {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+}
+
+.compare-stat-value {
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.compare-stat-value.best {
+    color: var(--accent-primary);
+}
+
+.compare-close-btn {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-default);
+    color: var(--text-primary);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 1.2rem;
+}
+
 /* Locked Player Card */
 .player-card.locked {
     position: relative;

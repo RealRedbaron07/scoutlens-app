@@ -12,7 +12,9 @@
     const state = {
         currentView: 'dashboard',
         watchlist: [],
-        emailSubmitted: false
+        emailSubmitted: false,
+        compareList: [],  // Players selected for comparison
+        compareMode: false
     };
 
     // ============================================
@@ -93,8 +95,11 @@
             const isInWatchlist = state.watchlist.some(p => p.id === player.id);
             const undervalued = player.undervaluation_pct > 0;
             const hasReleaseClause = player.release_clause_eur_m && player.release_clause_eur_m > 0;
+            const hasContractExpiry = player.contract_expiry;
+            const isExpiring = player.contract_status === 'expiring';
             const isVerified = player.valuation_confidence === 'verified' || player.tm_verified;
             const confidence = player.valuation_confidence || (player.tm_verified ? 'verified' : 'estimated');
+            const isHiddenGem = player.is_hidden_gem || player.league_tier >= 2;
             
             // Confidence badge
             const confidenceBadge = confidence === 'verified' ? 
@@ -103,19 +108,35 @@
                 '<span class="confidence-badge high" title="High confidence">TM</span>' :
                 '<span class="confidence-badge estimated" title="Estimated value">~</span>';
             
+            // Contract badge
+            const contractBadge = isExpiring ? 
+                '<span class="contract-badge expiring" title="Contract expiring 2025!">⏰ 2025</span>' :
+                hasContractExpiry && player.contract_expiry <= 2026 ?
+                `<span class="contract-badge short" title="Contract until ${player.contract_expiry}">${player.contract_expiry}</span>` : '';
+            
+            // Hidden gem badge
+            const gemBadge = isHiddenGem ? '<span class="gem-badge" title="Hidden Gem">💎</span>' : '';
+            
+            const isComparing = state.compareList.some(p => p.id === player.id);
+            
             return `
-                <div class="player-card ${undervalued ? 'undervalued' : ''}" data-player-id="${player.id}">
+                <div class="player-card ${undervalued ? 'undervalued' : ''} ${isComparing ? 'selected-compare' : ''}" data-player-id="${player.id}">
+                    <input type="checkbox" class="compare-checkbox" data-player-id="${player.id}" 
+                           ${isComparing ? 'checked' : ''} 
+                           onclick="event.stopPropagation(); App.toggleCompare(${player.id})" 
+                           title="Add to comparison">
                     ${index !== null ? `<div class="player-rank">${index + 1}</div>` : ''}
                     
                     <div class="player-card-main">
                         ${Avatar.render(player.name, player.position, 48)}
                         
                         <div class="player-info">
-                            <div class="player-name">${player.name}</div>
+                            <div class="player-name">${player.name} ${gemBadge}</div>
                             <div class="player-meta">
                                 <span class="player-team">${player.team}</span>
                                 <span class="player-league">${player.league}</span>
                                 ${confidenceBadge}
+                                ${contractBadge}
                             </div>
                         </div>
                         
@@ -546,6 +567,9 @@
                 case 'gems':
                     this.renderGems();
                     break;
+                case 'bargains':
+                    this.renderBargains();
+                    break;
                 case 'watchlist':
                     this.renderWatchlist();
                     break;
@@ -675,6 +699,70 @@
                 
                 if (proPlayers.length > 0) {
                     html += `<div class="pro-section-header">🔒 ${proPlayers.length} more hidden gems with Pro</div>`;
+                    html += proPlayers.slice(0, 3).map((p, i) => UI.renderLockedCard(p, freePlayers.length + i)).join('');
+                }
+                
+                html += UI.renderUpgradeCard();
+            }
+            
+            container.innerHTML = html;
+        },
+        
+        renderBargains() {
+            const container = document.getElementById('bargains-list');
+            if (!container) return;
+            
+            const data = this.getData();
+            
+            // Get players with expiring contracts
+            let allBargains = [];
+            
+            if (data.bargains) {
+                allBargains = data.bargains;
+            } else if (data.expiringContracts) {
+                allBargains = data.expiringContracts;
+            } else {
+                // Filter from all lists for players with contract_expiry
+                const allPlayers = [
+                    ...(data.undervalued || []),
+                    ...(data.topPerformers || []),
+                    ...(data.risingStars || []),
+                    ...(data.hiddenGems || [])
+                ];
+                allBargains = allPlayers.filter(p => 
+                    p.contract_expiry && p.contract_expiry <= 2026
+                );
+            }
+            
+            // Remove duplicates and sort by value
+            const seen = new Set();
+            allBargains = allBargains.filter(p => {
+                if (seen.has(p.name)) return false;
+                seen.add(p.name);
+                return true;
+            }).sort((a, b) => (b.market_value_eur_m || 0) - (a.market_value_eur_m || 0));
+            
+            const freePlayers = allBargains.slice(0, 5);
+            const proPlayers = allBargains.slice(5);
+            
+            let html = '';
+            
+            if (freePlayers.length === 0) {
+                html = `
+                    <div class="empty-state">
+                        <span class="empty-state-icon">⏰</span>
+                        <h3>Contract Data Coming Soon</h3>
+                        <p>We're adding contract expiry dates to identify free transfer bargains.</p>
+                    </div>
+                `;
+            } else {
+                html = `<div class="bargains-info" style="background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.2);border-radius:8px;padding:1rem;margin-bottom:1rem;">
+                    <strong style="color:#f87171;">⏰ Expiring 2025</strong> = Free agent soon! Clubs can negotiate pre-contracts now.
+                </div>`;
+                html += freePlayers.map((p, i) => UI.renderPlayerCard(p, i)).join('');
+                
+                if (proPlayers.length > 0) {
+                    html += `<div class="pro-section-header">🔒 ${proPlayers.length} more bargains with Pro</div>`;
                     html += proPlayers.slice(0, 3).map((p, i) => UI.renderLockedCard(p, freePlayers.length + i)).join('');
                 }
                 
@@ -843,6 +931,148 @@
 
         openModal(modalId) {
             document.getElementById(modalId)?.classList.add('active');
+        },
+        
+        // ============================================
+        // PLAYER COMPARISON
+        // ============================================
+        
+        toggleCompare(playerId) {
+            const player = this.findPlayer(playerId);
+            if (!player) return;
+            
+            const index = state.compareList.findIndex(p => p.id === playerId);
+            
+            if (index > -1) {
+                state.compareList.splice(index, 1);
+            } else if (state.compareList.length < 3) {
+                state.compareList.push(player);
+            } else {
+                UI.showNotification('⚠️ Max 3 players to compare');
+                return;
+            }
+            
+            this.updateComparePanel();
+            this.refreshCompareCheckboxes();
+        },
+        
+        findPlayer(playerId) {
+            const data = this.getData();
+            const allLists = [
+                ...(data.undervalued || []),
+                ...(data.topPerformers || []),
+                ...(data.risingStars || []),
+                ...(data.hiddenGems || []),
+                ...(data.bargains || []),
+                ...(data.expiringContracts || []),
+                ...state.watchlist
+            ];
+            return allLists.find(p => p.id === playerId);
+        },
+        
+        updateComparePanel() {
+            let panel = document.getElementById('compare-panel');
+            
+            if (!panel) {
+                panel = document.createElement('div');
+                panel.id = 'compare-panel';
+                panel.className = 'compare-panel hidden';
+                panel.innerHTML = `
+                    <span class="compare-count">0 selected</span>
+                    <button class="compare-btn" onclick="App.showComparison()" disabled>Compare</button>
+                    <button class="btn btn-ghost" onclick="App.clearCompare()">Clear</button>
+                `;
+                document.body.appendChild(panel);
+            }
+            
+            const count = state.compareList.length;
+            panel.querySelector('.compare-count').textContent = `${count} selected`;
+            panel.querySelector('.compare-btn').disabled = count < 2;
+            panel.classList.toggle('hidden', count === 0);
+        },
+        
+        refreshCompareCheckboxes() {
+            document.querySelectorAll('.compare-checkbox').forEach(cb => {
+                const playerId = parseInt(cb.dataset.playerId);
+                cb.checked = state.compareList.some(p => p.id === playerId);
+            });
+            
+            document.querySelectorAll('.player-card').forEach(card => {
+                const playerId = parseInt(card.dataset.playerId);
+                card.classList.toggle('selected-compare', state.compareList.some(p => p.id === playerId));
+            });
+        },
+        
+        clearCompare() {
+            state.compareList = [];
+            this.updateComparePanel();
+            this.refreshCompareCheckboxes();
+        },
+        
+        showComparison() {
+            if (state.compareList.length < 2) return;
+            
+            const modal = document.createElement('div');
+            modal.className = 'compare-modal';
+            modal.id = 'compare-modal';
+            
+            const stats = ['market_value_eur_m', 'fair_value_eur_m', 'goals', 'assists', 'xgi_per_90', 'age'];
+            const labels = ['Market Value', 'Fair Value', 'Goals', 'Assists', 'xGI/90', 'Age'];
+            
+            // Find best value for each stat
+            const bestValues = {};
+            stats.forEach((stat, i) => {
+                const values = state.compareList.map(p => p[stat] || 0);
+                if (stat === 'age' || stat === 'market_value_eur_m') {
+                    bestValues[stat] = Math.min(...values); // Lower is better
+                } else {
+                    bestValues[stat] = Math.max(...values); // Higher is better
+                }
+            });
+            
+            modal.innerHTML = `
+                <button class="compare-close-btn" onclick="App.closeComparison()">✕</button>
+                <div class="compare-grid">
+                    ${state.compareList.map(player => `
+                        <div class="compare-card">
+                            <h3>${player.name} ${player.is_hidden_gem ? '💎' : ''}</h3>
+                            <p style="color:var(--text-muted);font-size:0.85rem;margin-bottom:1rem;">${player.team} • ${player.league}</p>
+                            ${stats.map((stat, i) => {
+                                const value = player[stat] || 0;
+                                const isBest = value === bestValues[stat];
+                                let displayValue = value;
+                                if (stat.includes('value') || stat.includes('clause')) {
+                                    displayValue = '€' + value + 'M';
+                                }
+                                return `
+                                    <div class="compare-stat-row">
+                                        <span class="compare-stat-label">${labels[i]}</span>
+                                        <span class="compare-stat-value ${isBest ? 'best' : ''}">${displayValue}</span>
+                                    </div>
+                                `;
+                            }).join('')}
+                            ${player.contract_expiry ? `
+                                <div class="compare-stat-row">
+                                    <span class="compare-stat-label">Contract Until</span>
+                                    <span class="compare-stat-value ${player.contract_status === 'expiring' ? 'best' : ''}">${player.contract_expiry}</span>
+                                </div>
+                            ` : ''}
+                            ${player.release_clause_eur_m ? `
+                                <div class="compare-stat-row">
+                                    <span class="compare-stat-label">Release Clause</span>
+                                    <span class="compare-stat-value">€${player.release_clause_eur_m}M</span>
+                                </div>
+                            ` : ''}
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+        },
+        
+        closeComparison() {
+            document.getElementById('compare-modal')?.remove();
         }
     };
 
