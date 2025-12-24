@@ -170,24 +170,59 @@ def process_scorer(scorer: dict, league_info: dict) -> dict:
     
     # Calculate values
     pos_short = position[0] if position else 'F'
-    base_value = POSITION_BASE.get(position, 20)
-    pos_avg = {'F': 0.55, 'M': 0.35, 'D': 0.15, 'G': 0.02}.get(pos_short, 0.45)
     
-    perf_ratio = min(max(xgi_per_90 / pos_avg, 0.5), 3.5) if pos_avg > 0 else 1.0
-    fair_value = base_value * perf_ratio * get_age_multiplier(age) * league_info['multiplier']
-    
-    # Market value - use Transfermarkt if known, otherwise estimate
+    # Market value - use Transfermarkt if known
     tm_value = get_transfermarkt_value(name)
-    if tm_value:
-        market_value = tm_value
-    else:
-        # Estimate based on output and league
-        contrib = goals + (assists * 0.7)
-        per_90 = contrib / minutes_per_90
-        market_value = 5 + (per_90 * 18 * league_info['multiplier'] * get_age_multiplier(age))
-        market_value = round(max(2.0, min(market_value, 100.0)), 1)
+    market_value = tm_value if tm_value else None
     
+    # Fair value = What a buying club should pay based on output
+    # Uses Goals + Assists (actual output) more than xG for realism
+    
+    # Goal involvement per game (more sample-size aware)
+    gi_per_game = (goals + assists) / max(played_matches, 1)
+    
+    # Fair value = performance-based estimate (€M)
+    # Calibrated to match Transfermarkt for correctly valued players
+    
+    if pos_short == 'F':
+        # Haaland: 1.35 G+A/game → should be ~180M
+        # Salah: ~1.0 G+A/game → should be ~80M  
+        # Good striker: 0.6 G+A/game → should be ~40M
+        if gi_per_game >= 1.3:      fair_base = 100  # World class
+        elif gi_per_game >= 1.0:    fair_base = 70   # Elite
+        elif gi_per_game >= 0.8:    fair_base = 50   # Very good
+        elif gi_per_game >= 0.6:    fair_base = 35   # Good
+        elif gi_per_game >= 0.45:   fair_base = 22   # Solid
+        else:                        fair_base = 12
+    else:
+        if gi_per_game >= 0.8:      fair_base = 60
+        elif gi_per_game >= 0.6:    fair_base = 42
+        elif gi_per_game >= 0.4:    fair_base = 28
+        elif gi_per_game >= 0.25:   fair_base = 16
+        else:                        fair_base = 8
+    
+    # Apply multipliers
+    fair_value = fair_base * get_age_multiplier(age) * league_info['multiplier']
+    
+    # Sample size discount (less games = more uncertainty)
+    if played_matches < 10:
+        fair_value *= 0.7
+    elif played_matches < 15:
+        fair_value *= 0.85
+    
+    # Cap at realistic levels
+    fair_value = round(min(fair_value, 180), 1)
+    
+    # If no TM value, estimate conservatively
+    if market_value is None:
+        market_value = round(fair_value * 0.9, 1)
+    
+    # Undervaluation - positive means player performs above market value
     underval_pct = ((fair_value - market_value) / market_value * 100) if market_value > 0 else 0
+    
+    # Only show as undervalued if meaningful gap (>15%)
+    if abs(underval_pct) < 15:
+        underval_pct = 0
     
     return {
         'name': name,
