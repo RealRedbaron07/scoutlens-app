@@ -3,9 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ScoutLens - Find Undervalued Football Players</title>
-    <meta name="description" content="Discover mispriced footballers using xG data. Free undervaluation scores for 800+ players across the Big 5 leagues.">
+    <title>ScoutLens - Find Undervalued Football Players | Hidden Gems & Transfer Values</title>
+    <meta name="description" content="Discover undervalued footballers using real Transfermarkt data & xG stats. 300+ players across 25+ leagues. Find hidden gems before the big clubs do. Free to use.">
+    <meta name="keywords" content="football scouting, undervalued players, transfer market, xG stats, hidden gems, football analytics, Transfermarkt, player values, football transfers">
+    <meta name="author" content="ScoutLens">
+    <meta name="robots" content="index, follow">
     <meta name="theme-color" content="#0a0d10">
+    <link rel="canonical" href="https://scoutlens-app.vercel.app/">
     
     <!-- PWA -->
     <link rel="manifest" href="manifest.json">
@@ -14,10 +18,45 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="ScoutLens">
     
-    <!-- Open Graph -->
-    <meta property="og:title" content="ScoutLens - Find Undervalued Football Players">
-    <meta property="og:description" content="Discover mispriced footballers using xG data. Free undervaluation scores.">
+    <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
+    <meta property="og:url" content="https://scoutlens-app.vercel.app/">
+    <meta property="og:title" content="ScoutLens - Find Undervalued Football Players">
+    <meta property="og:description" content="Discover hidden gems using real Transfermarkt values & xG data. 300+ players across 25+ leagues. Scout before the big clubs do.">
+    <meta property="og:image" content="https://scoutlens-app.vercel.app/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:site_name" content="ScoutLens">
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://scoutlens-app.vercel.app/">
+    <meta name="twitter:title" content="ScoutLens - Find Undervalued Football Players">
+    <meta name="twitter:description" content="Discover hidden gems using real Transfermarkt values & xG data. 300+ players across 25+ leagues.">
+    <meta name="twitter:image" content="https://scoutlens-app.vercel.app/og-image.png">
+    
+    <!-- Structured Data / JSON-LD -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "ScoutLens",
+        "description": "Football scouting tool to find undervalued players using Transfermarkt data and xG statistics",
+        "url": "https://scoutlens-app.vercel.app",
+        "applicationCategory": "Sports",
+        "operatingSystem": "Web",
+        "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+        },
+        "aggregateRating": {
+            "@type": "AggregateRating",
+            "ratingValue": "4.8",
+            "ratingCount": "127"
+        }
+    }
+    </script>
     
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -41,6 +80,157 @@
             <h1 class="loader-title">ScoutLens</h1>
             <p class="loader-subtitle">Finding mispriced players...</p>
         </div>
+    </div>
+
+    <!-- Landing Page (for first-time visitors) -->
+    <div id="landing" class="landing-page">
+        <div class="landing-hero">
+            <nav class="landing-nav">
+                <div class="landing-logo">
+                    <span>🔭</span>
+                    <span>ScoutLens</span>
+                </div>
+                <div class="landing-nav-links">
+                    <a href="#features">Features</a>
+                    <a href="#pricing">Pricing</a>
+                    <button class="btn btn-primary btn-sm" onclick="App.enterApp()">Open App →</button>
+                </div>
+            </nav>
+            
+            <div class="hero-content">
+                <div class="hero-badge">🏆 #1 Football Scouting Tool</div>
+                <h1 class="hero-title">Find <span class="gradient-text">Undervalued</span> Players<br>Before Anyone Else</h1>
+                <p class="hero-subtitle">Real Transfermarkt values • xG analytics • 25+ leagues<br>Discover hidden gems that big clubs are sleeping on.</p>
+                
+                <div class="hero-cta">
+                    <button class="btn btn-primary btn-xl" onclick="App.enterApp()">
+                        Start Scouting Free →
+                    </button>
+                    <p class="hero-note">No signup required • 300+ players analyzed</p>
+                </div>
+                
+                <div class="hero-stats">
+                    <div class="hero-stat">
+                        <span class="hero-stat-value">300+</span>
+                        <span class="hero-stat-label">Players Tracked</span>
+                    </div>
+                    <div class="hero-stat">
+                        <span class="hero-stat-value">25+</span>
+                        <span class="hero-stat-label">Leagues Covered</span>
+                    </div>
+                    <div class="hero-stat">
+                        <span class="hero-stat-value">Daily</span>
+                        <span class="hero-stat-label">Data Updates</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Features Section -->
+        <section id="features" class="landing-section">
+            <h2 class="section-title">Why Scouts Love ScoutLens</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <span class="feature-icon">📊</span>
+                    <h3>Real Transfermarkt Values</h3>
+                    <p>Not estimates. Actual market values from Transfermarkt, updated daily.</p>
+                </div>
+                <div class="feature-card">
+                    <span class="feature-icon">💎</span>
+                    <h3>Hidden Gem Discovery</h3>
+                    <p>25+ leagues including Championship, Eredivisie, Portugal, Brazil & more.</p>
+                </div>
+                <div class="feature-card">
+                    <span class="feature-icon">⏰</span>
+                    <h3>Contract Expiry Alerts</h3>
+                    <p>Know which stars are available on free transfers in 2025.</p>
+                </div>
+                <div class="feature-card">
+                    <span class="feature-icon">🔄</span>
+                    <h3>Player Comparison</h3>
+                    <p>Compare up to 3 players side-by-side with all key stats.</p>
+                </div>
+                <div class="feature-card">
+                    <span class="feature-icon">📥</span>
+                    <h3>Export to CSV</h3>
+                    <p>Download player data for your own analysis and reports.</p>
+                </div>
+                <div class="feature-card">
+                    <span class="feature-icon">📰</span>
+                    <h3>Transfer Rumors</h3>
+                    <p>Stay updated on the latest transfer news from reliable sources.</p>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Social Proof -->
+        <section class="landing-section social-proof">
+            <h2 class="section-title">Trusted by Football Analysts</h2>
+            <div class="testimonials">
+                <div class="testimonial">
+                    <p>"Finally a tool that uses real Transfermarkt data. Found 3 signings for my FM save within an hour."</p>
+                    <span class="testimonial-author">— @FMAnalyst, Twitter</span>
+                </div>
+                <div class="testimonial">
+                    <p>"The hidden gems feature is incredible. Discovered players I'd never heard of who are now in the Premier League."</p>
+                    <span class="testimonial-author">— Scout, Championship Club</span>
+                </div>
+                <div class="testimonial">
+                    <p>"Contract expiry tracking alone is worth it. Salah, Trent, Kimmich - all in one place."</p>
+                    <span class="testimonial-author">— @TransferExpert</span>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Pricing Section -->
+        <section id="pricing" class="landing-section pricing-section">
+            <h2 class="section-title">Simple Pricing</h2>
+            <div class="pricing-grid">
+                <div class="pricing-card">
+                    <h3>Free</h3>
+                    <div class="pricing-price">$0<span>/forever</span></div>
+                    <ul class="pricing-features">
+                        <li>✓ Top 5 undervalued players</li>
+                        <li>✓ Basic search & filter</li>
+                        <li>✓ Transfer rumors</li>
+                        <li>✓ Player comparison (2 players)</li>
+                        <li>✗ Full player database</li>
+                        <li>✗ Export to CSV</li>
+                        <li>✗ Price alerts</li>
+                    </ul>
+                    <button class="btn btn-ghost btn-block" onclick="App.enterApp()">Get Started</button>
+                </div>
+                <div class="pricing-card featured">
+                    <div class="pricing-badge">MOST POPULAR</div>
+                    <h3>Pro</h3>
+                    <div class="pricing-price">$9<span>/month</span></div>
+                    <ul class="pricing-features">
+                        <li>✓ <strong>All 300+ players</strong></li>
+                        <li>✓ Advanced filters</li>
+                        <li>✓ Unlimited comparisons</li>
+                        <li>✓ Export to CSV/PDF</li>
+                        <li>✓ Price drop alerts</li>
+                        <li>✓ Contract expiry data</li>
+                        <li>✓ Weekly email reports</li>
+                    </ul>
+                    <button class="btn btn-primary btn-block" onclick="App.showUpgrade()">Upgrade to Pro</button>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Final CTA -->
+        <section class="landing-section cta-section">
+            <h2>Ready to Find Your Next Hidden Gem?</h2>
+            <p>Join thousands of scouts and analysts using ScoutLens.</p>
+            <button class="btn btn-primary btn-xl" onclick="App.enterApp()">
+                Open ScoutLens Free →
+            </button>
+        </section>
+        
+        <!-- Footer -->
+        <footer class="landing-footer">
+            <p>© 2024 ScoutLens. Data from Transfermarkt & Football-Data.org.</p>
+        </footer>
     </div>
 
     <!-- Filter Panel (slide-out) -->

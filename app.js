@@ -23,8 +23,18 @@
             maxValue: 200,
             sortBy: 'undervaluation'
         },
-        priceAlerts: []  // {playerId, targetPrice}
+        priceAlerts: [],  // {playerId, targetPrice}
+        isPro: false,     // Pro user status
+        proEmail: null    // Email for Pro access
     };
+    
+    // Load Pro status from localStorage
+    const savedProStatus = localStorage.getItem('scoutlens_pro');
+    if (savedProStatus) {
+        const proData = JSON.parse(savedProStatus);
+        state.isPro = proData.isPro;
+        state.proEmail = proData.email;
+    }
 
     // ============================================
     // AVATAR GENERATOR
@@ -340,6 +350,35 @@
     const App = {
         async init() {
             console.log('🔭 ScoutLens initializing...');
+            
+            // Check if user has visited before
+            const hasVisited = localStorage.getItem('scoutlens_visited');
+            if (!hasVisited) {
+                // Show landing page for first-time visitors
+                document.getElementById('landing').classList.remove('hidden');
+                document.getElementById('app').classList.add('hidden');
+                document.getElementById('loader').classList.add('hidden');
+                return;
+            }
+            
+            // Returning user - go straight to app
+            this.enterApp();
+        },
+        
+        enterApp() {
+            // Hide landing, show app
+            document.getElementById('landing')?.classList.add('hidden');
+            document.getElementById('app')?.classList.remove('hidden');
+            
+            // Mark as visited
+            localStorage.setItem('scoutlens_visited', 'true');
+            
+            // Continue initialization
+            this.initApp();
+        },
+        
+        async initApp() {
+            console.log('🔭 Loading ScoutLens app...');
             
             this.loadState();
             this.bindEvents();
@@ -907,12 +946,12 @@
         
         showUpgrade() {
             // PAYMENT OPTIONS - Set your PayPal.me username or Stripe links
-            // PayPal: https://paypal.me/YOUR_USERNAME/9.99
+            // PayPal: https://paypal.me/MustafaAlpARI/9.99
             // Stripe: https://buy.stripe.com/your_link
             
             const PAYPAL_USERNAME = 'YOUR_PAYPAL';  // Replace with your PayPal.me username
-            const PAYPAL_MONTHLY = `https://paypal.me/${PAYPAL_USERNAME}/9.99`;
-            const PAYPAL_ANNUAL = `https://paypal.me/${PAYPAL_USERNAME}/79`;
+            const PAYPAL_MONTHLY = `https://paypal.me/${MustafaAlpARI}/9.99`;
+            const PAYPAL_ANNUAL = `https://paypal.me/${MustafaAlpARI}/79`;
             
             // Or use Stripe if you prefer
             const STRIPE_MONTHLY = 'https://buy.stripe.com/test_monthly';
@@ -1471,6 +1510,84 @@
             
             // Log for later integration
             console.log('Email captured:', email);
+        },
+        
+        // ============================================
+        // PRO USER MANAGEMENT
+        // ============================================
+        
+        checkProAccess() {
+            return state.isPro;
+        },
+        
+        activatePro(email) {
+            state.isPro = true;
+            state.proEmail = email;
+            localStorage.setItem('scoutlens_pro', JSON.stringify({
+                isPro: true,
+                email: email,
+                activatedAt: new Date().toISOString()
+            }));
+            
+            UI.showNotification('🎉 Pro activated! Enjoy unlimited access.');
+            this.renderView(state.currentView);
+            this.updateProBadge();
+        },
+        
+        showProActivation() {
+            const modal = document.createElement('div');
+            modal.className = 'modal active';
+            modal.id = 'pro-activate-modal';
+            modal.innerHTML = `
+                <div class="modal-backdrop" onclick="this.parentElement.remove()"></div>
+                <div class="modal-content" style="max-width:400px;padding:2rem;text-align:center;">
+                    <button onclick="this.closest('.modal').remove()" style="position:absolute;top:10px;right:15px;background:none;border:none;color:#fff;font-size:1.5rem;cursor:pointer;">×</button>
+                    <h2 style="margin-bottom:1rem;">🔓 Activate Pro</h2>
+                    <p style="color:var(--text-secondary);margin-bottom:1.5rem;">Enter the email you used to purchase Pro access:</p>
+                    <form onsubmit="App.verifyProEmail(event)" style="display:flex;flex-direction:column;gap:1rem;">
+                        <input type="email" placeholder="your@email.com" required style="padding:0.8rem;border:1px solid var(--border-default);border-radius:8px;background:var(--bg-secondary);color:var(--text-primary);font-size:1rem;">
+                        <button type="submit" class="btn btn-primary" style="padding:0.8rem;">Activate Pro Access</button>
+                    </form>
+                    <p style="color:var(--text-muted);font-size:0.8rem;margin-top:1rem;">
+                        Don't have Pro? <a href="#" onclick="App.showUpgrade();this.closest('.modal').remove();" style="color:var(--accent-primary);">Upgrade now →</a>
+                    </p>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        },
+        
+        verifyProEmail(e) {
+            e.preventDefault();
+            const email = e.target.querySelector('input').value;
+            
+            // In production, verify against your payment records
+            // For now, we'll activate if they have an email stored
+            // You should replace this with actual verification
+            
+            this.activatePro(email);
+            e.target.closest('.modal').remove();
+        },
+        
+        updateProBadge() {
+            const badge = document.getElementById('pro-badge');
+            if (state.isPro && badge) {
+                badge.style.display = 'flex';
+            }
+        },
+        
+        renderProGate() {
+            if (state.isPro) return '';
+            
+            return `
+                <div class="pro-gate" style="background:linear-gradient(135deg,rgba(251,191,36,0.1),rgba(0,212,170,0.1));border:2px solid var(--accent-gold);border-radius:12px;padding:2rem;text-align:center;margin:1rem 0;">
+                    <h3 style="color:var(--accent-gold);margin-bottom:0.5rem;">🔒 Pro Content</h3>
+                    <p style="color:var(--text-secondary);margin-bottom:1rem;">Unlock all players, export data, and get price alerts</p>
+                    <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;">
+                        <button onclick="App.showUpgrade()" class="btn btn-primary">Upgrade to Pro</button>
+                        <button onclick="App.showProActivation()" class="btn btn-ghost">I already have Pro</button>
+                    </div>
+                </div>
+            `;
         }
     };
     

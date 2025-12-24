@@ -1,0 +1,10 @@
+# ScoutLens - Football Scouting Tool
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://scoutlens-app.vercel.app/sitemap.xml
+
+# Crawl-delay (be nice to search engines)
+Crawl-delay: 1
+
