@@ -7,6 +7,43 @@
     'use strict';
 
     // ============================================
+    // SECURITY UTILITIES
+    // ============================================
+    const Security = {
+        // Sanitize HTML to prevent XSS
+        escapeHtml(text) {
+            if (typeof text !== 'string') return text;
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        },
+        
+        // Validate email format
+        isValidEmail(email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return emailRegex.test(email);
+        },
+        
+        // Sanitize search input
+        sanitizeSearch(input) {
+            if (typeof input !== 'string') return '';
+            // Remove any HTML tags and limit length
+            return input.replace(/<[^>]*>/g, '').substring(0, 100).toLowerCase();
+        },
+        
+        // Generate simple hash for verification (not cryptographic)
+        simpleHash(str) {
+            let hash = 0;
+            for (let i = 0; i < str.length; i++) {
+                const char = str.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash;
+            }
+            return Math.abs(hash).toString(36);
+        }
+    };
+
+    // ============================================
     // STATE
     // ============================================
     const state = {
@@ -1268,7 +1305,8 @@
             const searchInput = document.getElementById('player-search');
             if (searchInput) {
                 searchInput.addEventListener('input', (e) => {
-                    state.searchQuery = e.target.value.toLowerCase();
+                    // Sanitize search input to prevent XSS
+                    state.searchQuery = Security.sanitizeSearch(e.target.value);
                     this.renderView(state.currentView);
                 });
             }
@@ -1497,10 +1535,16 @@
         
         submitEmail(e) {
             e.preventDefault();
-            const email = e.target.querySelector('input').value;
+            const email = e.target.querySelector('input').value.trim();
+            
+            // Validate email
+            if (!Security.isValidEmail(email)) {
+                UI.showNotification('⚠️ Please enter a valid email address', 'error');
+                return;
+            }
             
             // Store email (in production, send to your email service)
-            localStorage.setItem('scoutlens_email', email);
+            localStorage.setItem('scoutlens_email', Security.escapeHtml(email));
             state.emailSubmitted = true;
             
             // Hide the form
@@ -1558,13 +1602,25 @@
         
         verifyProEmail(e) {
             e.preventDefault();
-            const email = e.target.querySelector('input').value;
+            const email = e.target.querySelector('input').value.trim();
             
-            // In production, verify against your payment records
-            // For now, we'll activate if they have an email stored
-            // You should replace this with actual verification
+            // Validate email format
+            if (!Security.isValidEmail(email)) {
+                UI.showNotification('⚠️ Please enter a valid email address', 'error');
+                return;
+            }
             
-            this.activatePro(email);
+            // IMPORTANT: In production, verify against your payment provider:
+            // 1. Send email to your server
+            // 2. Server checks Stripe/PayPal for payment with this email
+            // 3. Server returns verification token
+            // 4. Only then activate Pro
+            
+            // For demo purposes, we'll activate
+            // REPLACE THIS with actual server verification in production!
+            console.warn('⚠️ Pro verification is in demo mode. Implement server-side verification for production.');
+            
+            this.activatePro(Security.escapeHtml(email));
             e.target.closest('.modal').remove();
         },
         
