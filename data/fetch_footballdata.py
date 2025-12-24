@@ -22,13 +22,24 @@ from datetime import datetime
 from pathlib import Path
 
 # League codes for football-data.org (free tier covers these)
-LEAGUES = {
-    'PL': {'name': 'Premier League', 'country': 'England', 'multiplier': 2.0},
-    'PD': {'name': 'La Liga', 'country': 'Spain', 'multiplier': 1.4},
-    'BL1': {'name': 'Bundesliga', 'country': 'Germany', 'multiplier': 1.3},
-    'SA': {'name': 'Serie A', 'country': 'Italy', 'multiplier': 1.2},
-    'FL1': {'name': 'Ligue 1', 'country': 'France', 'multiplier': 1.1},
+# BIG 5 LEAGUES
+TIER1_LEAGUES = {
+    'PL': {'name': 'Premier League', 'country': 'England', 'multiplier': 2.0, 'tier': 1},
+    'PD': {'name': 'La Liga', 'country': 'Spain', 'multiplier': 1.4, 'tier': 1},
+    'BL1': {'name': 'Bundesliga', 'country': 'Germany', 'multiplier': 1.3, 'tier': 1},
+    'SA': {'name': 'Serie A', 'country': 'Italy', 'multiplier': 1.2, 'tier': 1},
+    'FL1': {'name': 'Ligue 1', 'country': 'France', 'multiplier': 1.1, 'tier': 1},
 }
+
+# HIDDEN GEM LEAGUES
+TIER2_LEAGUES = {
+    'ELC': {'name': 'Championship', 'country': 'England', 'multiplier': 0.6, 'tier': 2},
+    'DED': {'name': 'Eredivisie', 'country': 'Netherlands', 'multiplier': 0.7, 'tier': 2},
+    'PPL': {'name': 'Primeira Liga', 'country': 'Portugal', 'multiplier': 0.65, 'tier': 2},
+    'BSA': {'name': 'Serie A Brasil', 'country': 'Brazil', 'multiplier': 0.5, 'tier': 2},
+}
+
+LEAGUES = {**TIER1_LEAGUES, **TIER2_LEAGUES}
 
 # Position values
 POSITION_BASE = {'Forward': 25, 'Midfield': 20, 'Defence': 15, 'Goalkeeper': 8}

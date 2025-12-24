@@ -1,13 +1,24 @@
 // ScoutLens API - Live Player Data with Accurate Transfermarkt Values
 // Fetches from football-data.org + comprehensive market values
 
-const LEAGUES = {
-    'PL': { name: 'Premier League', country: 'England', multiplier: 2.0 },
-    'PD': { name: 'La Liga', country: 'Spain', multiplier: 1.4 },
-    'BL1': { name: 'Bundesliga', country: 'Germany', multiplier: 1.3 },
-    'SA': { name: 'Serie A', country: 'Italy', multiplier: 1.2 },
-    'FL1': { name: 'Ligue 1', country: 'France', multiplier: 1.1 },
+// BIG 5 LEAGUES
+const TIER1_LEAGUES = {
+    'PL': { name: 'Premier League', country: 'England', multiplier: 2.0, tier: 1 },
+    'PD': { name: 'La Liga', country: 'Spain', multiplier: 1.4, tier: 1 },
+    'BL1': { name: 'Bundesliga', country: 'Germany', multiplier: 1.3, tier: 1 },
+    'SA': { name: 'Serie A', country: 'Italy', multiplier: 1.2, tier: 1 },
+    'FL1': { name: 'Ligue 1', country: 'France', multiplier: 1.1, tier: 1 },
 };
+
+// HIDDEN GEM LEAGUES (Lower divisions + smaller countries)
+const TIER2_LEAGUES = {
+    'ELC': { name: 'Championship', country: 'England', multiplier: 0.6, tier: 2 },
+    'DED': { name: 'Eredivisie', country: 'Netherlands', multiplier: 0.7, tier: 2 },
+    'PPL': { name: 'Primeira Liga', country: 'Portugal', multiplier: 0.65, tier: 2 },
+    'BSA': { name: 'Série A', country: 'Brazil', multiplier: 0.5, tier: 2 },
+};
+
+const ALL_LEAGUES = { ...TIER1_LEAGUES, ...TIER2_LEAGUES };
 
 // COMPREHENSIVE Transfermarkt Values (€M) - December 2024
 // Source: transfermarkt.com - These are ACTUAL market values
@@ -101,16 +112,41 @@ const MARKET_VALUES = {
     'Alexandre Lacazette': { value: 5, paid: 0, year: 2022 },
     'Randal Kolo Muani': { value: 45, paid: 95, year: 2023 },
     'Vitinha': { value: 75, paid: 40, year: 2022 },
+    
+    // === CHAMPIONSHIP (Hidden Gems) ===
+    'Rodrigo Muniz': { value: 12, paid: 8, year: 2023 },
+    'Sammie Szmodics': { value: 10, paid: 9, year: 2024 },
+    'Josh Sargent': { value: 15, paid: 10, year: 2021 },
+    'Carlton Morris': { value: 6, paid: 0.5, year: 2022 },
+    'Borja Sainz': { value: 8, paid: 1, year: 2023 },
+    
+    // === EREDIVISIE (Hidden Gems) ===
+    'Luuk de Jong': { value: 3, paid: 0, year: 2023 },
+    'Vangelis Pavlidis': { value: 8, paid: 2.5, year: 2023 },
+    'Malik Tillman': { value: 18, paid: 0, year: 2024 },
+    'Donyell Malen': { value: 50, paid: 30, year: 2021 },
+    
+    // === PRIMEIRA LIGA (Hidden Gems) ===
+    'Viktor Gyokeres': { value: 75, paid: 20, year: 2023, rumored: 100 },
+    'Goncalo Ramos': { value: 45, paid: 0, year: 2023 },
+    'Pedro Goncalves': { value: 35, paid: 0, year: 0 },
+    'Francisco Trincao': { value: 20, paid: 10, year: 2024 },
+    
+    // === BRAZIL (Hidden Gems) ===
+    'Estevao': { value: 30, paid: 0, year: 0, rumored: 45 },
+    'Endrick': { value: 50, paid: 47, year: 2024 },
+    'Yuri Alberto': { value: 18, paid: 12, year: 2022 },
+    'Luiz Henrique': { value: 15, paid: 0, year: 2022 },
 };
 
 function getAgeMultiplier(age) {
-    if (age <= 20) return 1.5;
-    if (age <= 23) return 1.25;
-    if (age <= 26) return 1.1;
-    if (age <= 28) return 1.0;
-    if (age <= 30) return 0.85;
-    if (age <= 32) return 0.65;
-    return 0.45;
+    if (age <= 21) return 1.3;
+    if (age <= 24) return 1.15;
+    if (age <= 27) return 1.0;
+    if (age <= 29) return 0.85;
+    if (age <= 31) return 0.65;
+    if (age <= 33) return 0.45;
+    return 0.3;
 }
 
 function calculateAge(dob) {
@@ -150,24 +186,54 @@ function findMarketValue(name) {
     return null;
 }
 
-function calculateFairValue(goals, assists, games, age, leagueMultiplier) {
+function calculateFairValue(goals, assists, games, age, leagueMultiplier, marketValue) {
+    // More realistic fair value calculation
+    // Based on goals + assists relative to market value
+    
     const goalsPerGame = goals / Math.max(games, 1);
     const assistsPerGame = assists / Math.max(games, 1);
     
-    // Performance score
-    const perfScore = goalsPerGame * 1.3 + assistsPerGame * 0.9;
+    // Output per game (goals worth more than assists)
+    const outputPerGame = goalsPerGame + (assistsPerGame * 0.7);
     
-    // Base value from performance (scaled to realistic market)
-    let fairValue = perfScore * 55 * leagueMultiplier;
+    // Compare to expected output for their market value bracket
+    // €50M+ players should produce ~0.7+ per game
+    // €20-50M players should produce ~0.4-0.7 per game
+    // €10-20M players should produce ~0.25-0.4 per game
+    // <€10M players should produce ~0.15-0.25 per game
     
-    // Age adjustment
+    let expectedOutput;
+    if (marketValue >= 50) expectedOutput = 0.65;
+    else if (marketValue >= 30) expectedOutput = 0.5;
+    else if (marketValue >= 15) expectedOutput = 0.35;
+    else if (marketValue >= 8) expectedOutput = 0.25;
+    else expectedOutput = 0.15;
+    
+    // Performance ratio: how much they're outperforming expectations
+    const performanceRatio = outputPerGame / expectedOutput;
+    
+    // Fair value = market value adjusted by performance
+    // If performing 2x expectations, fair value is ~1.5x market value (not 2x - diminishing returns)
+    let fairValue;
+    if (performanceRatio > 1) {
+        // Outperforming: increase value with diminishing returns
+        fairValue = marketValue * (1 + (performanceRatio - 1) * 0.5);
+    } else {
+        // Underperforming: decrease value
+        fairValue = marketValue * performanceRatio;
+    }
+    
+    // Age adjustment (young overperformers are worth more)
     fairValue *= getAgeMultiplier(age);
     
-    // Sample size bonus
-    if (games >= 15) fairValue *= 1.1;
-    if (games >= 25) fairValue *= 1.05;
+    // League tier adjustment for hidden gems
+    if (leagueMultiplier < 1.0) {
+        // Lower league players get a boost if they're performing well
+        fairValue *= (1 + (1 - leagueMultiplier) * 0.3);
+    }
     
-    return Math.round(Math.max(3, Math.min(fairValue, 220)) * 10) / 10;
+    // Cap at reasonable values
+    return Math.round(Math.max(1, Math.min(fairValue, marketValue * 2.5)) * 10) / 10;
 }
 
 function processScorer(scorer, leagueInfo) {
@@ -203,8 +269,8 @@ function processScorer(scorer, leagueInfo) {
     const xa = assists * 0.88;
     const xgiPer90 = (xg + xa) / (minutes / 90);
     
-    // Calculate fair value based on current performance
-    const fairValue = calculateFairValue(goals, assists, games, age, leagueInfo.multiplier);
+    // Calculate fair value based on current performance vs market value
+    const fairValue = calculateFairValue(goals, assists, games, age, leagueInfo.multiplier, marketValue);
     
     // Undervaluation
     const undervalPct = marketValue > 0 ? ((fairValue - marketValue) / marketValue) * 100 : 0;
@@ -213,6 +279,8 @@ function processScorer(scorer, leagueInfo) {
         name,
         team: (scorer.team || {}).name || 'Unknown',
         league: leagueInfo.name,
+        country: leagueInfo.country,
+        tier: leagueInfo.tier || 1,
         position,
         age,
         nationality: player.nationality || '',
@@ -224,6 +292,7 @@ function processScorer(scorer, leagueInfo) {
         undervaluation_pct: Math.round(undervalPct * 10) / 10,
         // Value insight
         value_source: tmData ? 'transfermarkt' : 'calculated',
+        is_hidden_gem: leagueInfo.tier === 2,
         // Performance
         xgi_per_90: Math.round(xgiPer90 * 100) / 100,
         goals,
@@ -249,7 +318,7 @@ export default async function handler(req, res) {
     try {
         const allPlayers = [];
         
-        for (const [code, info] of Object.entries(LEAGUES)) {
+        for (const [code, info] of Object.entries(ALL_LEAGUES)) {
             const response = await fetch(
                 `https://api.football-data.org/v4/competitions/${code}/scorers?limit=30`,
                 { headers: { 'X-Auth-Token': API_KEY } }
@@ -273,27 +342,34 @@ export default async function handler(req, res) {
         
         // FREE: Top 5 undervalued (teaser)
         const undervaluedAll = allPlayers
-            .filter(p => p.undervaluation_pct > 15 && p.value_source === 'transfermarkt')
+            .filter(p => p.undervaluation_pct > 10)
             .sort((a, b) => b.undervaluation_pct - a.undervaluation_pct);
         
         const undervaluedFree = undervaluedAll.slice(0, 5);
-        const undervaluedPro = undervaluedAll.slice(5, 25);
+        const undervaluedPro = undervaluedAll.slice(5, 30);
         
         // FREE: Top 5 performers
         const performersAll = [...allPlayers].sort((a, b) => b.xgi_per_90 - a.xgi_per_90);
         const performersFree = performersAll.slice(0, 5);
-        const performersPro = performersAll.slice(5, 20);
+        const performersPro = performersAll.slice(5, 25);
         
-        // FREE: Top 5 rising stars
+        // FREE: Top 5 rising stars (U23)
         const risingAll = allPlayers
             .filter(p => p.age <= 23)
             .sort((a, b) => b.xgi_per_90 - a.xgi_per_90);
         const risingFree = risingAll.slice(0, 5);
-        const risingPro = risingAll.slice(5, 15);
+        const risingPro = risingAll.slice(5, 20);
+        
+        // HIDDEN GEMS: Players from lower leagues with good output
+        const hiddenGemsAll = allPlayers
+            .filter(p => p.tier === 2 && p.xgi_per_90 > 0.4)
+            .sort((a, b) => b.undervaluation_pct - a.undervaluation_pct);
+        const hiddenGemsFree = hiddenGemsAll.slice(0, 3);
+        const hiddenGemsPro = hiddenGemsAll.slice(3, 15);
         
         // BARGAINS: Players where fair value > paid fee (good signings)
         const bargains = allPlayers
-            .filter(p => p.transfer_fee_paid_eur_m && p.fair_value_eur_m > p.transfer_fee_paid_eur_m * 1.3)
+            .filter(p => p.transfer_fee_paid_eur_m && p.fair_value_eur_m > p.transfer_fee_paid_eur_m * 1.2)
             .sort((a, b) => (b.fair_value_eur_m - b.transfer_fee_paid_eur_m) - (a.fair_value_eur_m - a.transfer_fee_paid_eur_m))
             .slice(0, 10);
         
@@ -309,6 +385,7 @@ export default async function handler(req, res) {
                 undervalued: undervaluedFree,
                 topPerformers: performersFree,
                 risingStars: risingFree,
+                hiddenGems: hiddenGemsFree,
             },
             
             // PRO TIER (shown as locked previews)
@@ -331,6 +408,13 @@ export default async function handler(req, res) {
                     league: p.league, 
                     locked: true 
                 })),
+                hiddenGems: hiddenGemsPro.map(p => ({ 
+                    name: p.name,
+                    team: p.team,
+                    league: p.league,
+                    country: p.country,
+                    locked: true 
+                })),
                 bargains: bargains.map(p => ({ 
                     name: p.name,
                     team: p.team,
@@ -343,7 +427,9 @@ export default async function handler(req, res) {
             stats: {
                 totalUndervalued: undervaluedAll.length,
                 totalRisingStars: risingAll.length,
-                leaguesCovered: Object.keys(LEAGUES).length
+                totalHiddenGems: hiddenGemsAll.length,
+                leaguesCovered: Object.keys(ALL_LEAGUES).length,
+                countriesCovered: [...new Set(Object.values(ALL_LEAGUES).map(l => l.country))].length
             }
         });
         
