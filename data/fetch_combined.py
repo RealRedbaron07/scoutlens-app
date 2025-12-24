@@ -53,6 +53,48 @@ def names_match(name1, name2):
     return False
 
 # ============================================
+# RELEASE CLAUSES (public/reported - mainly La Liga)
+# Source: Various reports, club announcements
+# ============================================
+RELEASE_CLAUSES = {
+    # La Liga (most have mandatory release clauses)
+    'lamine yamal': 1000, 'yamal': 1000,  # €1B
+    'pedri': 1000,
+    'gavi': 1000,
+    'vinicius junior': 1000, 'vinicius': 1000,
+    'jude bellingham': 1000, 'bellingham': 1000,
+    'kylian mbappe': 1000, 'mbappe': 1000,  # Reported
+    'rodrygo': 1000,
+    'aurelien tchouameni': 1000,
+    'eduardo camavinga': 1000, 'camavinga': 1000,
+    'fermin lopez': 500,
+    'pau cubarsi': 500, 'cubarsi': 500,
+    'nico williams': 58, 'williams': 58,  # Athletic Bilbao
+    'alexander sorloth': 38,
+    'julian alvarez': 100, 'alvarez': 100,  # Atlético
+    'antoine griezmann': 30, 'griezmann': 30,  # Low due to age clause
+    'alvaro morata': 15,
+    'samu omorodion': 80,
+    
+    # Premier League (some reported)
+    'erling haaland': 200, 'haaland': 200,  # Rumored future clause
+    'darwin nunez': None,  # No clause
+    'cole palmer': None,
+    
+    # Bundesliga
+    'florian wirtz': 150, 'wirtz': 150,  # Reported
+    'jamal musiala': None, 'musiala': None,
+    
+    # Serie A
+    'khvicha kvaratskhelia': 120, 'kvaratskhelia': 120,  # Reported
+    'rafael leao': 175, 'leao': 175,
+    'lautaro martinez': 110, 'lautaro': 110,
+    
+    # Portuguese League
+    'viktor gyokeres': 100, 'gyokeres': 100,  # Sporting
+}
+
+# ============================================
 # KNOWN VALUES FALLBACK (for players with matching issues)
 # ============================================
 KNOWN_VALUES = {
@@ -363,6 +405,8 @@ def merge_data(tm_values, fd_stats):
         if tm_data:
             player['market_value_eur_m'] = tm_data['market_value_eur_m']
             player['tm_verified'] = True
+            player['valuation_confidence'] = 'verified'  # Direct TM match
+            player['valuation_source'] = 'Transfermarkt'
             matched += 1
         else:
             # Check known values fallback (try multiple name variations)
@@ -377,6 +421,8 @@ def merge_data(tm_values, fd_stats):
             if known_value:
                 player['market_value_eur_m'] = known_value
                 player['tm_verified'] = True
+                player['valuation_confidence'] = 'high'
+                player['valuation_source'] = 'Transfermarkt (manual)'
                 matched += 1
             else:
                 unmatched_names.append(original_name)
@@ -384,7 +430,19 @@ def merge_data(tm_values, fd_stats):
                 gi_per_game = (player['goals'] + player['assists']) / max(player['games'], 1)
                 base = 8 + (gi_per_game * 25)
                 player['market_value_eur_m'] = round(min(base * get_age_multiplier(player['age']), 60), 1)
-                player['tm_verified'] = False  # Mark as estimated
+                player['tm_verified'] = False
+                player['valuation_confidence'] = 'estimated'
+                player['valuation_source'] = 'Performance estimate'
+        
+        # Add release clause if known
+        name_normalized = normalize_name(original_name)
+        release_clause = RELEASE_CLAUSES.get(name_normalized)
+        if not release_clause:
+            # Try last name
+            last_name = name_normalized.split()[-1] if name_normalized.split() else ''
+            release_clause = RELEASE_CLAUSES.get(last_name)
+        
+        player['release_clause_eur_m'] = release_clause  # None if unknown
         
         # Calculate fair value based on performance
         gi_per_game = (player['goals'] + player['assists']) / max(player['games'], 1)

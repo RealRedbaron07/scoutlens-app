@@ -1,9 +1,9 @@
-// Auto-generated - 2025-12-24 15:29
+// Auto-generated - 2025-12-24 15:36
 // Sources: Transfermarkt (values) + Football-Data.org (stats)
 // Run: python3 fetch_combined.py --api-key YOUR_KEY
 
 const PLAYER_DATA = {
-    lastUpdated: "2025-12-24T15:29:10.034662",
+    lastUpdated: "2025-12-24T15:36:54.035139",
     dataSource: "Transfermarkt + Football-Data.org",
     season: "2024-25",
     updateFrequency: "daily",
@@ -27,6 +27,9 @@ const PLAYER_DATA = {
                 "games": 16,
                 "market_value_eur_m": 15.0,
                 "tm_verified": true,
+                "valuation_confidence": "verified",
+                "valuation_source": "Transfermarkt",
+                "release_clause_eur_m": null,
                 "fair_value_eur_m": 44.3,
                 "undervaluation_pct": 195.3,
                 "id": 123
@@ -47,6 +50,9 @@ const PLAYER_DATA = {
                 "games": 16,
                 "market_value_eur_m": 28,
                 "tm_verified": true,
+                "valuation_confidence": "high",
+                "valuation_source": "Transfermarkt (manual)",
+                "release_clause_eur_m": null,
                 "fair_value_eur_m": 80.5,
                 "undervaluation_pct": 187.5,
                 "id": 4
@@ -67,6 +73,9 @@ const PLAYER_DATA = {
                 "games": 22,
                 "market_value_eur_m": 6.0,
                 "tm_verified": true,
+                "valuation_confidence": "verified",
+                "valuation_source": "Transfermarkt",
+                "release_clause_eur_m": null,
                 "fair_value_eur_m": 17.2,
                 "undervaluation_pct": 186.7,
                 "id": 164
@@ -87,6 +96,9 @@ const PLAYER_DATA = {
                 "games": 16,
                 "market_value_eur_m": 10.0,
                 "tm_verified": true,
+                "valuation_confidence": "verified",
+                "valuation_source": "Transfermarkt",
+                "release_clause_eur_m": null,
                 "fair_value_eur_m": 27.8,
                 "undervaluation_pct": 178.0,
                 "id": 129
@@ -107,6 +119,9 @@ const PLAYER_DATA = {
                 "games": 17,
                 "market_value_eur_m": 10,
                 "tm_verified": true,
+                "valuation_confidence": "high",
+                "valuation_source": "Transfermarkt (manual)",
+                "release_clause_eur_m": null,
                 "fair_value_eur_m": 27.6,
                 "undervaluation_pct": 176.0,
                 "id": 28
@@ -127,6 +142,9 @@ const PLAYER_DATA = {
                 "games": 12,
                 "market_value_eur_m": 4.0,
                 "tm_verified": true,
+                "valuation_confidence": "verified",
+                "valuation_source": "Transfermarkt",
+                "release_clause_eur_m": null,
                 "fair_value_eur_m": 10.9,
                 "undervaluation_pct": 172.5,
                 "id": 234
@@ -147,6 +165,9 @@ const PLAYER_DATA = {
                 "games": 7,
                 "market_value_eur_m": 28.0,
                 "tm_verified": true,
+                "valuation_confidence": "verified",
+                "valuation_source": "Transfermarkt",
+                "release_clause_eur_m": null,
                 "fair_value_eur_m": 74.2,
                 "undervaluation_pct": 165.0,
                 "id": 146
@@ -167,6 +188,9 @@ const PLAYER_DATA = {
                 "games": 15,
                 "market_value_eur_m": 12.0,
                 "tm_verified": true,
+                "valuation_confidence": "verified",
+                "valuation_source": "Transfermarkt",
+                "release_clause_eur_m": null,
                 "fair_value_eur_m": 31.5,
                 "undervaluation_pct": 162.5,
                 "id": 140
@@ -187,6 +211,9 @@ const PLAYER_DATA = {
                 "games": 16,
                 "market_value_eur_m": 4.0,
                 "tm_verified": true,
+                "valuation_confidence": "verified",
+                "valuation_source": "Transfermarkt",
+                "release_clause_eur_m": null,
                 "fair_value_eur_m": 9.6,
                 "undervaluation_pct": 140.0,
                 "id": 10
@@ -207,6 +234,9 @@ const PLAYER_DATA = {
                 "games": 22,
                 "market_value_eur_m": 9.0,
                 "tm_verified": true,
+                "valuation_confidence": "verified",
+                "valuation_source": "Transfermarkt",
+                "release_clause_eur_m": null,
                 "fair_value_eur_m": 21.0,
                 "undervaluation_pct": 133.3,
                 "id": 151
@@ -227,6 +257,9 @@ const PLAYER_DATA = {
                 "games": 15,
                 "market_value_eur_m": 9.0,
                 "tm_verified": true,
+                "valuation_confidence": "verified",
+                "valuation_source": "Transfermarkt",
+                "release_clause_eur_m": null,
                 "fair_value_eur_m": 19.6,
                 "undervaluation_pct": 117.8,
                 "id": 34
@@ -247,6 +280,9 @@ const PLAYER_DATA = {
                 "games": 22,
                 "market_value_eur_m": 8.0,
                 "tm_verified": true,
+                "valuation_confidence": "verified",
+                "valuation_source": "Transfermarkt",
+                "release_clause_eur_m": null,
                 "fair_value_eur_m": 17.2,
                 "undervaluation_pct": 115.0,
                 "id": 172
@@ -267,6 +303,9 @@ const PLAYER_DATA = {
                 "games": 10,
                 "market_value_eur_m": 35.0,
                 "tm_verified": true,
+                "valuation_confidence": "verified",
+                "valuation_source": "Transfermarkt",
+                "release_clause_eur_m": null,
                 "fair_value_eur_m": 74.8,
                 "undervaluation_pct": 113.7,
                 "id": 63
@@ -287,6 +326,9 @@ const PLAYER_DATA = {
                 "games": 16,
                 "market_value_eur_m": 8,
                 "tm_verified": true,
+                "valuation_confidence": "high",
+                "valuation_source": "Transfermarkt (manual)",
+                "release_clause_eur_m": null,
                 "fair_value_eur_m": 16.8,
                 "undervaluation_pct": 110.0,
                 "id": 152
@@ -307,6 +349,9 @@ const PLAYER_DATA = {
                 "games": 11,
                 "market_value_eur_m": 22.0,
                 "tm_verified": true,
+                "valuation_confidence": "verified",
+                "valuation_source": "Transfermarkt",
+                "release_clause_eur_m": null,
                 "fair_value_eur_m": 45.5,
                 "undervaluation_pct": 106.8,
                 "id": 184
@@ -327,6 +372,9 @@ const PLAYER_DATA = {
                 "games": 15,
                 "market_value_eur_m": 1.5,
                 "tm_verified": true,
+                "valuation_confidence": "verified",
+                "valuation_source": "Transfermarkt",
+                "release_clause_eur_m": null,
                 "fair_value_eur_m": 3.1,
                 "undervaluation_pct": 106.7,
                 "id": 239
@@ -347,6 +395,9 @@ const PLAYER_DATA = {
                 "games": 17,
                 "market_value_eur_m": 12.0,
                 "tm_verified": true,
+                "valuation_confidence": "verified",
+                "valuation_source": "Transfermarkt",
+                "release_clause_eur_m": null,
                 "fair_value_eur_m": 24.1,
                 "undervaluation_pct": 100.8,
                 "id": 153
@@ -367,6 +418,9 @@ const PLAYER_DATA = {
                 "games": 14,
                 "market_value_eur_m": 12,
                 "tm_verified": true,
+                "valuation_confidence": "high",
+                "valuation_source": "Transfermarkt (manual)",
+                "release_clause_eur_m": null,
                 "fair_value_eur_m": 24.0,
                 "undervaluation_pct": 100.0,
                 "id": 25
@@ -387,6 +441,9 @@ const PLAYER_DATA = {
                 "games": 17,
                 "market_value_eur_m": 2.5,
                 "tm_verified": true,
+                "valuation_confidence": "verified",
+                "valuation_source": "Transfermarkt",
+                "release_clause_eur_m": null,
                 "fair_value_eur_m": 5.0,
                 "undervaluation_pct": 100.0,
                 "id": 209
@@ -407,6 +464,9 @@ const PLAYER_DATA = {
                 "games": 11,
                 "market_value_eur_m": 30.0,
                 "tm_verified": true,
+                "valuation_confidence": "verified",
+                "valuation_source": "Transfermarkt",
+                "release_clause_eur_m": null,
                 "fair_value_eur_m": 59.1,
                 "undervaluation_pct": 97.0,
                 "id": 83
@@ -430,6 +490,9 @@ const PLAYER_DATA = {
                 "games": 17,
                 "market_value_eur_m": 200.0,
                 "tm_verified": true,
+                "valuation_confidence": "verified",
+                "valuation_source": "Transfermarkt",
+                "release_clause_eur_m": 200,
                 "fair_value_eur_m": 200,
                 "undervaluation_pct": 0.0,
                 "id": 1
@@ -450,6 +513,9 @@ const PLAYER_DATA = {
                 "games": 15,
                 "market_value_eur_m": 65.0,
                 "tm_verified": true,
+                "valuation_confidence": "verified",
+                "valuation_source": "Transfermarkt",
+                "release_clause_eur_m": null,
                 "fair_value_eur_m": 78.0,
                 "undervaluation_pct": 20.0,
                 "id": 61
@@ -470,6 +536,9 @@ const PLAYER_DATA = {
                 "games": 17,
                 "market_value_eur_m": 200.0,
                 "tm_verified": true,
+                "valuation_confidence": "verified",
+                "valuation_source": "Transfermarkt",
+                "release_clause_eur_m": 1000,
                 "fair_value_eur_m": 98.0,
                 "undervaluation_pct": -51.0,
                 "id": 31
@@ -490,6 +559,9 @@ const PLAYER_DATA = {
                 "games": 17,
                 "market_value_eur_m": 15.0,
                 "tm_verified": true,
+                "valuation_confidence": "verified",
+                "valuation_source": "Transfermarkt",
+                "release_clause_eur_m": null,
                 "fair_value_eur_m": 49.0,
                 "undervaluation_pct": 226.7,
                 "id": 181
@@ -510,6 +582,9 @@ const PLAYER_DATA = {
                 "games": 15,
                 "market_value_eur_m": 35.0,
                 "tm_verified": true,
+                "valuation_confidence": "verified",
+                "valuation_source": "Transfermarkt",
+                "release_clause_eur_m": null,
                 "fair_value_eur_m": 45.5,
                 "undervaluation_pct": 30.0,
                 "id": 211
@@ -530,6 +605,9 @@ const PLAYER_DATA = {
                 "games": 15,
                 "market_value_eur_m": 130.0,
                 "tm_verified": true,
+                "valuation_confidence": "verified",
+                "valuation_source": "Transfermarkt",
+                "release_clause_eur_m": null,
                 "fair_value_eur_m": 118.3,
                 "undervaluation_pct": -9.0,
                 "id": 65
@@ -550,6 +628,9 @@ const PLAYER_DATA = {
                 "games": 13,
                 "market_value_eur_m": 30.0,
                 "tm_verified": true,
+                "valuation_confidence": "verified",
+                "valuation_source": "Transfermarkt",
+                "release_clause_eur_m": null,
                 "fair_value_eur_m": 45.5,
                 "undervaluation_pct": 51.7,
                 "id": 217
@@ -570,6 +651,9 @@ const PLAYER_DATA = {
                 "games": 14,
                 "market_value_eur_m": 200.0,
                 "tm_verified": true,
+                "valuation_confidence": "verified",
+                "valuation_source": "Transfermarkt",
+                "release_clause_eur_m": 1000,
                 "fair_value_eur_m": 137.2,
                 "undervaluation_pct": -31.4,
                 "id": 36
@@ -590,6 +674,9 @@ const PLAYER_DATA = {
                 "games": 16,
                 "market_value_eur_m": 27.0,
                 "tm_verified": true,
+                "valuation_confidence": "verified",
+                "valuation_source": "Transfermarkt",
+                "release_clause_eur_m": null,
                 "fair_value_eur_m": 35.0,
                 "undervaluation_pct": 29.6,
                 "id": 186
@@ -610,6 +697,9 @@ const PLAYER_DATA = {
                 "games": 14,
                 "market_value_eur_m": 25.0,
                 "tm_verified": false,
+                "valuation_confidence": "estimated",
+                "valuation_source": "Performance estimate",
+                "release_clause_eur_m": null,
                 "fair_value_eur_m": 24.0,
                 "undervaluation_pct": -4.0,
                 "id": 155
@@ -630,6 +720,9 @@ const PLAYER_DATA = {
                 "games": 15,
                 "market_value_eur_m": 8.0,
                 "tm_verified": true,
+                "valuation_confidence": "verified",
+                "valuation_source": "Transfermarkt",
+                "release_clause_eur_m": null,
                 "fair_value_eur_m": 37.4,
                 "undervaluation_pct": 367.5,
                 "id": 213
@@ -650,6 +743,9 @@ const PLAYER_DATA = {
                 "games": 10,
                 "market_value_eur_m": 60.0,
                 "tm_verified": true,
+                "valuation_confidence": "verified",
+                "valuation_source": "Transfermarkt",
+                "release_clause_eur_m": null,
                 "fair_value_eur_m": 60.0,
                 "undervaluation_pct": 0.0,
                 "id": 92
@@ -670,6 +766,9 @@ const PLAYER_DATA = {
                 "games": 16,
                 "market_value_eur_m": 50.0,
                 "tm_verified": true,
+                "valuation_confidence": "verified",
+                "valuation_source": "Transfermarkt",
+                "release_clause_eur_m": null,
                 "fair_value_eur_m": 71.5,
                 "undervaluation_pct": 43.0,
                 "id": 121
@@ -690,6 +789,9 @@ const PLAYER_DATA = {
                 "games": 11,
                 "market_value_eur_m": 22.0,
                 "tm_verified": true,
+                "valuation_confidence": "verified",
+                "valuation_source": "Transfermarkt",
+                "release_clause_eur_m": null,
                 "fair_value_eur_m": 45.5,
                 "undervaluation_pct": 106.8,
                 "id": 184
@@ -710,6 +812,9 @@ const PLAYER_DATA = {
                 "games": 14,
                 "market_value_eur_m": 70.0,
                 "tm_verified": true,
+                "valuation_confidence": "verified",
+                "valuation_source": "Transfermarkt",
+                "release_clause_eur_m": null,
                 "fair_value_eur_m": 65.0,
                 "undervaluation_pct": -7.1,
                 "id": 62
@@ -733,6 +838,9 @@ const PLAYER_DATA = {
                 "games": 14,
                 "market_value_eur_m": 200.0,
                 "tm_verified": true,
+                "valuation_confidence": "verified",
+                "valuation_source": "Transfermarkt",
+                "release_clause_eur_m": 1000,
                 "fair_value_eur_m": 137.2,
                 "undervaluation_pct": -31.4,
                 "id": 36
@@ -753,6 +861,9 @@ const PLAYER_DATA = {
                 "games": 11,
                 "market_value_eur_m": 22.0,
                 "tm_verified": true,
+                "valuation_confidence": "verified",
+                "valuation_source": "Transfermarkt",
+                "release_clause_eur_m": null,
                 "fair_value_eur_m": 45.5,
                 "undervaluation_pct": 106.8,
                 "id": 184
@@ -773,6 +884,9 @@ const PLAYER_DATA = {
                 "games": 7,
                 "market_value_eur_m": 28.0,
                 "tm_verified": true,
+                "valuation_confidence": "verified",
+                "valuation_source": "Transfermarkt",
+                "release_clause_eur_m": null,
                 "fair_value_eur_m": 74.2,
                 "undervaluation_pct": 165.0,
                 "id": 146
@@ -793,6 +907,9 @@ const PLAYER_DATA = {
                 "games": 15,
                 "market_value_eur_m": 15.0,
                 "tm_verified": true,
+                "valuation_confidence": "verified",
+                "valuation_source": "Transfermarkt",
+                "release_clause_eur_m": null,
                 "fair_value_eur_m": 49.0,
                 "undervaluation_pct": 226.7,
                 "id": 190
@@ -813,6 +930,9 @@ const PLAYER_DATA = {
                 "games": 12,
                 "market_value_eur_m": 5.0,
                 "tm_verified": true,
+                "valuation_confidence": "verified",
+                "valuation_source": "Transfermarkt",
+                "release_clause_eur_m": null,
                 "fair_value_eur_m": 30.7,
                 "undervaluation_pct": 514.0,
                 "id": 214
@@ -833,6 +953,9 @@ const PLAYER_DATA = {
                 "games": 15,
                 "market_value_eur_m": 33.3,
                 "tm_verified": false,
+                "valuation_confidence": "estimated",
+                "valuation_source": "Performance estimate",
+                "release_clause_eur_m": null,
                 "fair_value_eur_m": 66.1,
                 "undervaluation_pct": 98.5,
                 "id": 39
@@ -853,6 +976,9 @@ const PLAYER_DATA = {
                 "games": 12,
                 "market_value_eur_m": 45.0,
                 "tm_verified": true,
+                "valuation_confidence": "verified",
+                "valuation_source": "Transfermarkt",
+                "release_clause_eur_m": null,
                 "fair_value_eur_m": 63.7,
                 "undervaluation_pct": 41.6,
                 "id": 73
@@ -873,6 +999,9 @@ const PLAYER_DATA = {
                 "games": 15,
                 "market_value_eur_m": 65.0,
                 "tm_verified": true,
+                "valuation_confidence": "verified",
+                "valuation_source": "Transfermarkt",
+                "release_clause_eur_m": null,
                 "fair_value_eur_m": 56.7,
                 "undervaluation_pct": -12.8,
                 "id": 97
@@ -893,6 +1022,9 @@ const PLAYER_DATA = {
                 "games": 17,
                 "market_value_eur_m": 70.0,
                 "tm_verified": true,
+                "valuation_confidence": "verified",
+                "valuation_source": "Transfermarkt",
+                "release_clause_eur_m": null,
                 "fair_value_eur_m": 91.0,
                 "undervaluation_pct": 30.0,
                 "id": 11
@@ -913,6 +1045,9 @@ const PLAYER_DATA = {
                 "games": 11,
                 "market_value_eur_m": 30.0,
                 "tm_verified": true,
+                "valuation_confidence": "verified",
+                "valuation_source": "Transfermarkt",
+                "release_clause_eur_m": null,
                 "fair_value_eur_m": 59.1,
                 "undervaluation_pct": 97.0,
                 "id": 83
@@ -933,6 +1068,9 @@ const PLAYER_DATA = {
                 "games": 10,
                 "market_value_eur_m": 110.0,
                 "tm_verified": true,
+                "valuation_confidence": "verified",
+                "valuation_source": "Transfermarkt",
+                "release_clause_eur_m": null,
                 "fair_value_eur_m": 52.0,
                 "undervaluation_pct": -52.7,
                 "id": 135
@@ -953,6 +1091,9 @@ const PLAYER_DATA = {
                 "games": 15,
                 "market_value_eur_m": 75.0,
                 "tm_verified": true,
+                "valuation_confidence": "verified",
+                "valuation_source": "Transfermarkt",
+                "release_clause_eur_m": null,
                 "fair_value_eur_m": 58.8,
                 "undervaluation_pct": -21.6,
                 "id": 99
@@ -973,6 +1114,9 @@ const PLAYER_DATA = {
                 "games": 14,
                 "market_value_eur_m": 45.0,
                 "tm_verified": true,
+                "valuation_confidence": "verified",
+                "valuation_source": "Transfermarkt",
+                "release_clause_eur_m": null,
                 "fair_value_eur_m": 40.0,
                 "undervaluation_pct": -11.1,
                 "id": 72
@@ -993,6 +1137,9 @@ const PLAYER_DATA = {
                 "games": 19,
                 "market_value_eur_m": 29.2,
                 "tm_verified": false,
+                "valuation_confidence": "estimated",
+                "valuation_source": "Performance estimate",
+                "release_clause_eur_m": null,
                 "fair_value_eur_m": 17.2,
                 "undervaluation_pct": -41.1,
                 "id": 154
@@ -1013,6 +1160,9 @@ const PLAYER_DATA = {
                 "games": 16,
                 "market_value_eur_m": 85.0,
                 "tm_verified": true,
+                "valuation_confidence": "verified",
+                "valuation_source": "Transfermarkt",
+                "release_clause_eur_m": null,
                 "fair_value_eur_m": 57.2,
                 "undervaluation_pct": -32.7,
                 "id": 3
@@ -1036,6 +1186,9 @@ const PLAYER_DATA = {
                 "games": 17,
                 "market_value_eur_m": 15.0,
                 "tm_verified": true,
+                "valuation_confidence": "verified",
+                "valuation_source": "Transfermarkt",
+                "release_clause_eur_m": null,
                 "fair_value_eur_m": 49.0,
                 "undervaluation_pct": 226.7,
                 "id": 181
@@ -1056,6 +1209,9 @@ const PLAYER_DATA = {
                 "games": 15,
                 "market_value_eur_m": 35.0,
                 "tm_verified": true,
+                "valuation_confidence": "verified",
+                "valuation_source": "Transfermarkt",
+                "release_clause_eur_m": null,
                 "fair_value_eur_m": 45.5,
                 "undervaluation_pct": 30.0,
                 "id": 211
@@ -1076,6 +1232,9 @@ const PLAYER_DATA = {
                 "games": 13,
                 "market_value_eur_m": 30.0,
                 "tm_verified": true,
+                "valuation_confidence": "verified",
+                "valuation_source": "Transfermarkt",
+                "release_clause_eur_m": null,
                 "fair_value_eur_m": 45.5,
                 "undervaluation_pct": 51.7,
                 "id": 217
@@ -1096,6 +1255,9 @@ const PLAYER_DATA = {
                 "games": 16,
                 "market_value_eur_m": 27.0,
                 "tm_verified": true,
+                "valuation_confidence": "verified",
+                "valuation_source": "Transfermarkt",
+                "release_clause_eur_m": null,
                 "fair_value_eur_m": 35.0,
                 "undervaluation_pct": 29.6,
                 "id": 186
@@ -1116,6 +1278,9 @@ const PLAYER_DATA = {
                 "games": 14,
                 "market_value_eur_m": 25.0,
                 "tm_verified": false,
+                "valuation_confidence": "estimated",
+                "valuation_source": "Performance estimate",
+                "release_clause_eur_m": null,
                 "fair_value_eur_m": 24.0,
                 "undervaluation_pct": -4.0,
                 "id": 155
@@ -1136,6 +1301,9 @@ const PLAYER_DATA = {
                 "games": 15,
                 "market_value_eur_m": 8.0,
                 "tm_verified": true,
+                "valuation_confidence": "verified",
+                "valuation_source": "Transfermarkt",
+                "release_clause_eur_m": null,
                 "fair_value_eur_m": 37.4,
                 "undervaluation_pct": 367.5,
                 "id": 213
@@ -1156,6 +1324,9 @@ const PLAYER_DATA = {
                 "games": 11,
                 "market_value_eur_m": 22.0,
                 "tm_verified": true,
+                "valuation_confidence": "verified",
+                "valuation_source": "Transfermarkt",
+                "release_clause_eur_m": null,
                 "fair_value_eur_m": 45.5,
                 "undervaluation_pct": 106.8,
                 "id": 184
@@ -1176,6 +1347,9 @@ const PLAYER_DATA = {
                 "games": 15,
                 "market_value_eur_m": 15.0,
                 "tm_verified": true,
+                "valuation_confidence": "verified",
+                "valuation_source": "Transfermarkt",
+                "release_clause_eur_m": null,
                 "fair_value_eur_m": 49.0,
                 "undervaluation_pct": 226.7,
                 "id": 190
@@ -1196,6 +1370,9 @@ const PLAYER_DATA = {
                 "games": 15,
                 "market_value_eur_m": 22.0,
                 "tm_verified": true,
+                "valuation_confidence": "verified",
+                "valuation_source": "Transfermarkt",
+                "release_clause_eur_m": null,
                 "fair_value_eur_m": 32.5,
                 "undervaluation_pct": 47.7,
                 "id": 212
@@ -1216,6 +1393,9 @@ const PLAYER_DATA = {
                 "games": 14,
                 "market_value_eur_m": 27.6,
                 "tm_verified": false,
+                "valuation_confidence": "estimated",
+                "valuation_source": "Performance estimate",
+                "release_clause_eur_m": null,
                 "fair_value_eur_m": 24.5,
                 "undervaluation_pct": -11.2,
                 "id": 183
@@ -1236,6 +1416,9 @@ const PLAYER_DATA = {
                 "games": 17,
                 "market_value_eur_m": 12.0,
                 "tm_verified": true,
+                "valuation_confidence": "verified",
+                "valuation_source": "Transfermarkt",
+                "release_clause_eur_m": null,
                 "fair_value_eur_m": 24.1,
                 "undervaluation_pct": 100.8,
                 "id": 153
@@ -1256,6 +1439,9 @@ const PLAYER_DATA = {
                 "games": 17,
                 "market_value_eur_m": 10.8,
                 "tm_verified": false,
+                "valuation_confidence": "estimated",
+                "valuation_source": "Performance estimate",
+                "release_clause_eur_m": null,
                 "fair_value_eur_m": 9.8,
                 "undervaluation_pct": -9.3,
                 "id": 193
@@ -1276,6 +1462,9 @@ const PLAYER_DATA = {
                 "games": 12,
                 "market_value_eur_m": 5.0,
                 "tm_verified": true,
+                "valuation_confidence": "verified",
+                "valuation_source": "Transfermarkt",
+                "release_clause_eur_m": null,
                 "fair_value_eur_m": 30.7,
                 "undervaluation_pct": 514.0,
                 "id": 214
@@ -1296,6 +1485,9 @@ const PLAYER_DATA = {
                 "games": 17,
                 "market_value_eur_m": 15.0,
                 "tm_verified": true,
+                "valuation_confidence": "verified",
+                "valuation_source": "Transfermarkt",
+                "release_clause_eur_m": null,
                 "fair_value_eur_m": 24.5,
                 "undervaluation_pct": 63.3,
                 "id": 182
@@ -1316,6 +1508,9 @@ const PLAYER_DATA = {
                 "games": 17,
                 "market_value_eur_m": 29.5,
                 "tm_verified": false,
+                "valuation_confidence": "estimated",
+                "valuation_source": "Performance estimate",
+                "release_clause_eur_m": null,
                 "fair_value_eur_m": 28.2,
                 "undervaluation_pct": -4.4,
                 "id": 187
@@ -1336,6 +1531,9 @@ const PLAYER_DATA = {
                 "games": 14,
                 "market_value_eur_m": 29.7,
                 "tm_verified": false,
+                "valuation_confidence": "estimated",
+                "valuation_source": "Performance estimate",
+                "release_clause_eur_m": 80,
                 "fair_value_eur_m": 26.2,
                 "undervaluation_pct": -11.8,
                 "id": 215
@@ -1356,6 +1554,9 @@ const PLAYER_DATA = {
                 "games": 22,
                 "market_value_eur_m": 9.0,
                 "tm_verified": true,
+                "valuation_confidence": "verified",
+                "valuation_source": "Transfermarkt",
+                "release_clause_eur_m": null,
                 "fair_value_eur_m": 21.0,
                 "undervaluation_pct": 133.3,
                 "id": 151
@@ -1376,6 +1577,9 @@ const PLAYER_DATA = {
                 "games": 16,
                 "market_value_eur_m": 32.0,
                 "tm_verified": true,
+                "valuation_confidence": "verified",
+                "valuation_source": "Transfermarkt",
+                "release_clause_eur_m": null,
                 "fair_value_eur_m": 31.8,
                 "undervaluation_pct": -0.6,
                 "id": 185
@@ -1396,6 +1600,9 @@ const PLAYER_DATA = {
                 "games": 15,
                 "market_value_eur_m": 35.0,
                 "tm_verified": true,
+                "valuation_confidence": "verified",
+                "valuation_source": "Transfermarkt",
+                "release_clause_eur_m": null,
                 "fair_value_eur_m": 26.2,
                 "undervaluation_pct": -25.1,
                 "id": 226
@@ -1416,6 +1623,9 @@ const PLAYER_DATA = {
                 "games": 14,
                 "market_value_eur_m": 19.3,
                 "tm_verified": false,
+                "valuation_confidence": "estimated",
+                "valuation_source": "Performance estimate",
+                "release_clause_eur_m": null,
                 "fair_value_eur_m": 18.2,
                 "undervaluation_pct": -5.7,
                 "id": 218

@@ -92,8 +92,16 @@
             
             const isInWatchlist = state.watchlist.some(p => p.id === player.id);
             const undervalued = player.undervaluation_pct > 0;
-            const hasTransferFee = player.transfer_fee_paid_eur_m > 0;
-            const isFromTM = player.value_source === 'transfermarkt';
+            const hasReleaseClause = player.release_clause_eur_m && player.release_clause_eur_m > 0;
+            const isVerified = player.valuation_confidence === 'verified' || player.tm_verified;
+            const confidence = player.valuation_confidence || (player.tm_verified ? 'verified' : 'estimated');
+            
+            // Confidence badge
+            const confidenceBadge = confidence === 'verified' ? 
+                '<span class="confidence-badge verified" title="Transfermarkt verified">✓ TM</span>' :
+                confidence === 'high' ? 
+                '<span class="confidence-badge high" title="High confidence">TM</span>' :
+                '<span class="confidence-badge estimated" title="Estimated value">~</span>';
             
             return `
                 <div class="player-card ${undervalued ? 'undervalued' : ''}" data-player-id="${player.id}">
@@ -107,7 +115,7 @@
                             <div class="player-meta">
                                 <span class="player-team">${player.team}</span>
                                 <span class="player-league">${player.league}</span>
-                                ${isFromTM ? '<span class="tm-badge" title="Transfermarkt verified">TM</span>' : ''}
+                                ${confidenceBadge}
                             </div>
                         </div>
                         
@@ -128,19 +136,19 @@
                             <span class="stat-value">${Format.value(player.fair_value_eur_m)}</span>
                             <span class="stat-label">Fair Value</span>
                         </div>
-                        ${hasTransferFee ? `
-                        <div class="player-stat">
-                            <span class="stat-value">${Format.value(player.transfer_fee_paid_eur_m)}</span>
-                            <span class="stat-label">Paid</span>
+                        ${hasReleaseClause ? `
+                        <div class="player-stat release-clause">
+                            <span class="stat-value">${Format.value(player.release_clause_eur_m)}</span>
+                            <span class="stat-label">Release Clause</span>
                         </div>
                         ` : `
                         <div class="player-stat">
-                            <span class="stat-value">${player.xgi_per_90.toFixed(2)}</span>
+                            <span class="stat-value">${(player.xgi_per_90 || 0).toFixed(2)}</span>
                             <span class="stat-label">xGI/90</span>
                         </div>
                         `}
                         <div class="player-stat">
-                            <span class="stat-value">${player.goals}G ${player.assists}A</span>
+                            <span class="stat-value">${player.goals || 0}G ${player.assists || 0}A</span>
                             <span class="stat-label">Output</span>
                         </div>
                     </div>

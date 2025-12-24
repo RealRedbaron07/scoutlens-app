@@ -1013,6 +1013,43 @@ body::before {
     margin-left: 6px;
 }
 
+/* Valuation Confidence Badges */
+.confidence-badge {
+    font-size: 0.6rem;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-weight: 700;
+    margin-left: 6px;
+}
+
+.confidence-badge.verified {
+    background: linear-gradient(135deg, #00a1ff, #0066cc);
+    color: white;
+}
+
+.confidence-badge.high {
+    background: rgba(0, 161, 255, 0.2);
+    color: #00a1ff;
+    border: 1px solid rgba(0, 161, 255, 0.3);
+}
+
+.confidence-badge.estimated {
+    background: rgba(148, 163, 184, 0.15);
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+/* Release Clause Styling */
+.player-stat.release-clause .stat-value {
+    color: var(--accent-gold);
+    font-weight: 700;
+}
+
+.player-stat.release-clause .stat-label {
+    color: var(--accent-gold);
+    opacity: 0.8;
+}
+
 /* Locked Player Card */
 .player-card.locked {
     position: relative;
