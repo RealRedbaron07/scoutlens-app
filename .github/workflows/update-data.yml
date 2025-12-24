@@ -19,10 +19,12 @@ jobs:
         with:
           python-version: '3.11'
           
-      - name: Fetch Transfermarkt data
+      - name: Fetch combined data (TM values + FD stats)
+        env:
+          FOOTBALL_DATA_KEY: ${{ secrets.FOOTBALL_DATA_KEY }}
         run: |
           cd data
-          python3 fetch_transfermarkt.py
+          python3 fetch_combined.py --api-key $FOOTBALL_DATA_KEY
           
       - name: Check for changes
         id: changes
