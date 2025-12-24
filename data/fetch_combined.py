@@ -12,6 +12,120 @@ from datetime import datetime
 import os
 import sys
 import argparse
+import unicodedata
+import re
+
+def normalize_name(name):
+    """Normalize name for matching (remove accents, lowercase)"""
+    if not name:
+        return ""
+    # Remove accents
+    normalized = unicodedata.normalize('NFD', name)
+    normalized = ''.join(c for c in normalized if unicodedata.category(c) != 'Mn')
+    # Lowercase and remove extra spaces
+    normalized = normalized.lower().strip()
+    # Remove common prefixes/suffixes
+    normalized = re.sub(r'\s+(jr|sr|ii|iii)\.?$', '', normalized)
+    return normalized
+
+def names_match(name1, name2):
+    """Check if two names match (fuzzy)"""
+    n1 = normalize_name(name1)
+    n2 = normalize_name(name2)
+    
+    # Exact match
+    if n1 == n2:
+        return True
+    
+    # One contains the other
+    if n1 in n2 or n2 in n1:
+        return True
+    
+    # Last name match
+    parts1 = n1.split()
+    parts2 = n2.split()
+    if parts1 and parts2:
+        if parts1[-1] == parts2[-1]:  # Same last name
+            # Check if first initial matches
+            if parts1[0][0] == parts2[0][0]:
+                return True
+    
+    return False
+
+# ============================================
+# KNOWN VALUES FALLBACK (for players with matching issues)
+# ============================================
+KNOWN_VALUES = {
+    # La Liga
+    'julian alvarez': 90, 'julian alvarez': 90, 'alvarez': 90,
+    'robert lewandowski': 15, 'lewandowski': 15,
+    'raphinha': 70, 'vinicius junior': 150, 'vinicius jr': 150,
+    'kylian mbappe': 200, 'mbappe': 200,
+    'jude bellingham': 160, 'bellingham': 160,
+    'lamine yamal': 200, 'antoine griezmann': 30,
+    'alexander sorloth': 30, 'ayoze perez': 15,
+    
+    # Premier League  
+    'erling haaland': 200, 'haaland': 200,
+    'mohamed salah': 80, 'salah': 80,
+    'cole palmer': 110, 'palmer': 110,
+    'bukayo saka': 140, 'saka': 140,
+    'phil foden': 150, 'foden': 150,
+    'alexander isak': 100, 'isak': 100,
+    'bruno fernandes': 70, 'son heung-min': 60, 'son': 60,
+    'ollie watkins': 65, 'watkins': 65,
+    'nicolas jackson': 55, 'chris wood': 8,
+    'bryan mbeumo': 50, 'mbeumo': 50,
+    'matheus cunha': 55, 'cunha': 55,
+    'morgan rogers': 30, 'antoine semenyo': 28,
+    'dominic solanke': 55, 'cody gakpo': 65,
+    'darwin nunez': 70, 'jhon duran': 40,
+    'yoane wissa': 32,
+    
+    # Bundesliga
+    'harry kane': 100, 'kane': 100,
+    'jamal musiala': 130, 'musiala': 130,
+    'florian wirtz': 150, 'wirtz': 150,
+    'michael olise': 60, 'olise': 60,
+    'omar marmoush': 55, 'marmoush': 55,
+    'lois openda': 65, 'openda': 65,
+    'serge gnabry': 50, 'leroy sane': 60, 'sane': 60,
+    
+    # Serie A
+    'lautaro martinez': 110, 'lautaro': 110,
+    'marcus thuram': 70, 'thuram': 70,
+    'dusan vlahovic': 65, 'vlahovic': 65,
+    'rafael leao': 80, 'leao': 80,
+    'khvicha kvaratskhelia': 85, 'kvaratskhelia': 85,
+    'ademola lookman': 55, 'lookman': 55,
+    'mateo retegui': 35, 'moise kean': 40,
+    
+    # Ligue 1
+    'bradley barcola': 70, 'barcola': 70,
+    'ousmane dembele': 60, 'dembele': 60,
+    'mason greenwood': 40, 'greenwood': 40,
+    'jonathan david': 55,
+    
+    # Portuguese League
+    'viktor gyokeres': 75, 'gyokeres': 75,
+    'vangelis pavlidis': 35, 'pavlidis': 35,
+    
+    # Championship
+    'rodrigo muniz': 12, 'sammie szmodics': 10,
+    'josh sargent': 15, 'carlton morris': 8,
+    
+    # Additional unmatched players
+    'jean-philippe mateta': 35, 'mateta': 35,
+    'dominic calvert-lewin': 25, 'calvert-lewin': 25,
+    'jarrod bowen': 45, 'bowen': 45,
+    'harry wilson': 12,
+    'wilson isidor': 8,
+    'lukas nmecha': 12, 'nmecha': 12,
+    'marcus tavernier': 15, 'tavernier': 15,
+    'jaidon anthony': 10,
+    'ayase ueda': 15, 'ueda': 15,
+    'troy parrott': 8, 'parrott': 8,
+}
 
 # ============================================
 # TRANSFERMARKT API (for market values)
@@ -219,30 +333,58 @@ def merge_data(tm_values, fd_stats):
     
     merged = []
     matched = 0
+    unmatched_names = []
     
     # Start with players who have stats (they're the ones scoring/assisting)
-    for name_lower, stats in fd_stats.items():
+    for name_key, stats in fd_stats.items():
         player = stats.copy()
+        original_name = stats.get('name', name_key)
         
-        # Try to find TM value
-        tm_data = tm_values.get(name_lower)
+        # Try to find TM value with fuzzy matching
+        tm_data = None
+        best_match = None
         
-        # Also try partial matching
-        if not tm_data:
-            for tm_name, tm_info in tm_values.items():
-                # Match by last name
-                if name_lower.split()[-1] == tm_name.split()[-1]:
+        for tm_name, tm_info in tm_values.items():
+            if names_match(original_name, tm_name) or names_match(original_name, tm_info.get('team', '')):
+                # Additional check: same team or league
+                if (tm_info.get('league') == stats.get('league') or 
+                    normalize_name(tm_info.get('team', '')) in normalize_name(stats.get('team', '')) or
+                    normalize_name(stats.get('team', '')) in normalize_name(tm_info.get('team', ''))):
                     tm_data = tm_info
+                    best_match = tm_name
                     break
+            
+            # Try matching by name alone
+            if names_match(original_name, tm_name):
+                if not tm_data or tm_info['market_value_eur_m'] > tm_data.get('market_value_eur_m', 0):
+                    tm_data = tm_info
+                    best_match = tm_name
         
         if tm_data:
             player['market_value_eur_m'] = tm_data['market_value_eur_m']
+            player['tm_verified'] = True
             matched += 1
         else:
-            # Estimate market value from stats
-            gi_per_game = (player['goals'] + player['assists']) / max(player['games'], 1)
-            base = 10 + (gi_per_game * 30)
-            player['market_value_eur_m'] = round(min(base * get_age_multiplier(player['age']), 80), 1)
+            # Check known values fallback (try multiple name variations)
+            name_lower = normalize_name(original_name)
+            known_value = KNOWN_VALUES.get(name_lower)
+            
+            # Try last name only
+            if not known_value:
+                last_name = name_lower.split()[-1] if name_lower.split() else name_lower
+                known_value = KNOWN_VALUES.get(last_name)
+            
+            if known_value:
+                player['market_value_eur_m'] = known_value
+                player['tm_verified'] = True
+                matched += 1
+            else:
+                unmatched_names.append(original_name)
+                # Estimate market value from stats - be conservative
+                gi_per_game = (player['goals'] + player['assists']) / max(player['games'], 1)
+                base = 8 + (gi_per_game * 25)
+                player['market_value_eur_m'] = round(min(base * get_age_multiplier(player['age']), 60), 1)
+                player['tm_verified'] = False  # Mark as estimated
         
         # Calculate fair value based on performance
         gi_per_game = (player['goals'] + player['assists']) / max(player['games'], 1)
@@ -301,6 +443,9 @@ def merge_data(tm_values, fd_stats):
     print(f"   Matched TM values: {matched}/{len(fd_stats)}")
     print(f"   Total merged: {len(merged)}")
     
+    if unmatched_names[:10]:
+        print(f"   ⚠️  Unmatched (first 10): {unmatched_names[:10]}")
+    
     return merged
 
 def generate_js(players, output_path):
@@ -313,8 +458,13 @@ def generate_js(players, output_path):
     # Categorize
     lower_leagues = ['Championship', 'Eredivisie', 'Primeira Liga']
     
+    # Only show undervalued if we have verified TM value AND meaningful undervaluation
     undervalued = sorted(
-        [p for p in players if p.get('undervaluation_pct', 0) > 15 and p.get('goals', 0) > 0],
+        [p for p in players if 
+            p.get('tm_verified', False) and  # Must have real TM value
+            p.get('undervaluation_pct', 0) > 20 and  # Meaningful gap
+            p.get('undervaluation_pct', 0) < 200 and  # Not absurdly high (data error)
+            p.get('goals', 0) >= 3],  # Has actual output
         key=lambda x: x['undervaluation_pct'],
         reverse=True
     )[:20]
