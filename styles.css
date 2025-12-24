@@ -947,42 +947,113 @@ body::before {
 }
 
 /* ============================================
-   RESPONSIVE
+   RESPONSIVE - UNIFIED DESIGN
    ============================================ */
 @media (max-width: 768px) {
+    /* Navigation - Unified layout */
     .nav {
         flex-wrap: wrap;
-        gap: var(--space-md);
+        gap: var(--space-sm);
         padding: var(--space-md);
     }
     
-    .nav-links {
-        order: 3;
+    .nav-brand {
         width: 100%;
-        justify-content: space-around;
+        margin-bottom: var(--space-xs);
     }
     
-    .nav-link { padding: var(--space-sm); }
-    .nav-link-text { display: none; }
-    .nav-link-icon { font-size: 1.3rem; }
+    .nav-links {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scroll-snap-type: x mandatory;
+        gap: var(--space-xs);
+        padding-bottom: var(--space-xs);
+    }
     
-    .nav-actions { display: none; }
+    .nav-link {
+        padding: var(--space-xs) var(--space-sm);
+        white-space: nowrap;
+        scroll-snap-align: start;
+        flex-shrink: 0;
+    }
     
-    .hero { padding: var(--space-xl) var(--space-md); }
-    .hero-stats { gap: var(--space-lg); }
-    .hero-stat-value { font-size: 1.5rem; }
+    .nav-link-text {
+        display: inline;
+        font-size: 0.85rem;
+    }
     
-    .main { padding: var(--space-md); }
+    .nav-link-icon {
+        font-size: 1rem;
+        margin-right: 4px;
+    }
     
-    .player-card { padding: var(--space-md); }
-    .player-card-main { margin-left: 0; }
-    .player-rank { display: none; }
+    .nav-actions {
+        display: flex;
+        gap: var(--space-xs);
+        width: 100%;
+        margin-top: var(--space-xs);
+    }
+    
+    /* Search bar in nav - unified */
+    .search-filter-bar {
+        flex: 1;
+        margin: 0;
+        min-width: 0;
+    }
+    
+    .search-input {
+        width: 100%;
+        min-width: 150px;
+    }
+    
+    .search-input:focus {
+        width: 100%;
+    }
+    
+    /* Hero - Keep same layout, just adjust spacing */
+    .hero {
+        padding: var(--space-xl) var(--space-md);
+    }
+    
+    .hero-stats {
+        gap: var(--space-lg);
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    
+    .hero-stat-value {
+        font-size: 1.5rem;
+    }
+    
+    /* Main content */
+    .main {
+        padding: var(--space-md);
+    }
+    
+    /* Player cards - Keep rank visible, adjust layout */
+    .player-card {
+        padding: var(--space-md);
+    }
+    
+    .player-card-main {
+        margin-left: 40px; /* Keep space for rank */
+    }
+    
+    .player-rank {
+        display: flex; /* Keep visible */
+        width: 32px;
+        height: 32px;
+        font-size: 0.75rem;
+    }
     
     .player-card-stats {
         grid-template-columns: repeat(2, 1fr);
-        margin-left: 0;
+        margin-left: 40px; /* Align with card content */
+        gap: var(--space-sm);
     }
     
+    /* CTA and forms */
     .cta-card {
         flex-direction: column;
         text-align: center;
@@ -993,12 +1064,52 @@ body::before {
         width: 100%;
     }
     
-    .cta-input { min-width: 0; width: 100%; }
+    .cta-input {
+        min-width: 0;
+        width: 100%;
+    }
     
+    /* Footer */
     .footer-content {
         flex-direction: column;
         gap: var(--space-md);
         text-align: center;
+    }
+    
+    /* Additional Mobile Unified Styles */
+    .filter-panel {
+        width: 100%;
+        max-width: 100%;
+    }
+    
+    /* Bigger tap targets for mobile */
+    .btn, .nav-link, .player-save-btn {
+        min-height: 44px;
+        min-width: 44px;
+    }
+    
+    .player-card {
+        padding: var(--space-md);
+    }
+    
+    .modal-close {
+        width: 44px;
+        height: 44px;
+        font-size: 1.5rem;
+    }
+    
+    /* Ensure main content spacing */
+    .main {
+        padding-bottom: var(--space-md);
+    }
+    
+    /* Keep compare panel visible */
+    .compare-panel {
+        position: fixed;
+        bottom: var(--space-md);
+        left: var(--space-md);
+        right: var(--space-md);
+        max-width: calc(100% - 2rem);
     }
 }
 
@@ -1512,52 +1623,6 @@ body::before {
     margin-top: 0.5rem;
 }
 
-/* Mobile Responsive for Search */
-@media (max-width: 768px) {
-    .search-filter-bar {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        background: var(--bg-secondary);
-        padding: 1rem;
-        border-top: 1px solid var(--border-subtle);
-        z-index: 100;
-        margin: 0;
-        justify-content: center;
-    }
-    
-    .search-input {
-        width: 100%;
-        max-width: 300px;
-    }
-    
-    .filter-panel {
-        width: 100%;
-    }
-    
-    /* Bigger tap targets for mobile */
-    .btn, .nav-link, .player-save-btn {
-        min-height: 44px;
-        min-width: 44px;
-    }
-    
-    .player-card {
-        padding: 1.25rem;
-    }
-    
-    .modal-close {
-        width: 44px;
-        height: 44px;
-        font-size: 1.5rem;
-    }
-    
-    /* Fix main content to not overlap bottom bar */
-    .main {
-        padding-bottom: 80px;
-    }
-}
-
 /* ============================================
    LANDING PAGE
    ============================================ */
@@ -1890,23 +1955,40 @@ body::before {
     border-top: 1px solid var(--border-subtle);
 }
 
-/* Mobile Responsive Landing */
+/* Mobile Responsive Landing - Unified */
 @media (max-width: 768px) {
     .landing-nav {
         padding: 1rem;
+        flex-wrap: wrap;
     }
     
     .landing-nav-links {
-        display: none;
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--space-sm);
+        margin-top: var(--space-sm);
+        width: 100%;
+        justify-content: center;
     }
     
-    .hero-stats {
-        flex-direction: column;
-        gap: 1.5rem;
+    .landing-nav-links a {
+        font-size: 0.9rem;
+        padding: var(--space-xs) var(--space-sm);
+    }
+    
+    .landing-hero .hero-stats {
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: var(--space-lg);
+        justify-content: center;
     }
     
     .pricing-card.featured {
         transform: scale(1);
+    }
+    
+    .features-grid {
+        grid-template-columns: 1fr;
     }
 }
 

@@ -613,7 +613,7 @@
                     if (card.classList.contains('locked')) {
                         this.showUpgrade();
                     } else {
-                        this.showPlayerDetail(playerId);
+                    this.showPlayerDetail(playerId);
                     }
                 }
 
