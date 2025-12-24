@@ -97,18 +97,32 @@ STRIPE_ANNUAL_LINK: 'https://buy.stripe.com/your-actual-annual-link'
 
 ---
 
-## 🔌 Real Player Data (Optional)
+## 🔌 Real-Time Player Data
 
-The app works with demo data out of the box. For real player data:
+The app comes with sample data. To get **live, accurate data**:
 
+### Option 1: API-Football (Recommended)
 1. Sign up at [api-football.com](https://www.api-football.com/) (free tier: 100 requests/day)
-2. Get your API key
-3. In `app.js`, update:
+2. Get your API key from the dashboard
+3. Run the fetcher:
 
-```javascript
-API_KEY: 'your-api-key-here',
-DEMO_MODE: false,
+```bash
+cd data
+python3 fetch_api_football.py --api-key YOUR_KEY
 ```
+
+### Option 2: Automatic Daily Updates (GitHub Actions)
+1. Push this repo to GitHub
+2. Go to Settings → Secrets → Actions
+3. Add secret: `FOOTBALL_API_KEY` = your API key
+4. The workflow will update data daily at 6 AM UTC
+
+### Option 3: Manual Updates with Understat (May Break)
+```bash
+cd data
+python3 scraper.py --output js
+```
+⚠️ Note: Understat frequently changes their site structure, so this may fail.
 
 ---
 

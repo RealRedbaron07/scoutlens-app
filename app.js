@@ -237,13 +237,20 @@
     // ============================================
     // APP
     // ============================================
+    let liveData = null; // Store live data when fetched
+    
     const App = {
-        init() {
+        async init() {
             console.log('🔭 ScoutLens initializing...');
             
             this.loadState();
             this.bindEvents();
+            
+            // Try to fetch LIVE data from API
+            await this.fetchLiveData();
+            
             this.renderView('dashboard');
+            this.showDataFreshness();
             
             // Register service worker
             if ('serviceWorker' in navigator) {
@@ -257,6 +264,89 @@
             }, 1200);
             
             console.log('✅ ScoutLens ready');
+        },
+        
+        async fetchLiveData() {
+            // Try to fetch live data from API
+            try {
+                const response = await fetch('/api/players');
+                if (response.ok) {
+                    liveData = await response.json();
+                    console.log('📡 Live data loaded!', liveData.lastUpdated);
+                }
+            } catch (e) {
+                console.log('📦 Using static data (API not available)');
+            }
+        },
+        
+        getData() {
+            // Return live data if available, otherwise static
+            return liveData || PLAYER_DATA;
+        },
+
+        showDataFreshness() {
+            // Show when data was last updated
+            const data = this.getData();
+            if (data.lastUpdated) {
+                const lastUpdate = new Date(data.lastUpdated);
+                const now = new Date();
+                const daysDiff = Math.floor((now - lastUpdate) / (1000 * 60 * 60 * 24));
+                
+                let freshnessText = '';
+                let freshnessClass = '';
+                
+                // Check if using live data
+                const isLive = data.updateFrequency === 'live';
+                
+                if (isLive) {
+                    freshnessText = '🟢 Live data';
+                    freshnessClass = 'fresh';
+                } else if (daysDiff === 0) {
+                    freshnessText = 'Updated today';
+                    freshnessClass = 'fresh';
+                } else if (daysDiff <= 3) {
+                    freshnessText = `Updated ${daysDiff} day${daysDiff > 1 ? 's' : ''} ago`;
+                    freshnessClass = 'fresh';
+                } else if (daysDiff <= 7) {
+                    freshnessText = `Updated ${daysDiff} days ago`;
+                    freshnessClass = 'stale';
+                } else {
+                    freshnessText = `⚠️ Data ${daysDiff} days old - may be outdated`;
+                    freshnessClass = 'old';
+                }
+                
+                // Add freshness indicator to hero
+                const heroStats = document.querySelector('.hero-stats');
+                if (heroStats && !document.querySelector('.data-freshness')) {
+                    const badge = document.createElement('div');
+                    badge.className = `data-freshness ${freshnessClass}`;
+                    badge.innerHTML = `<span class="freshness-dot"></span>${freshnessText}`;
+                    badge.style.cssText = `
+                        display: inline-flex;
+                        align-items: center;
+                        gap: 6px;
+                        padding: 6px 12px;
+                        background: ${freshnessClass === 'old' ? 'rgba(248, 113, 113, 0.15)' : 'rgba(0, 212, 170, 0.1)'};
+                        border-radius: 20px;
+                        font-size: 0.75rem;
+                        color: ${freshnessClass === 'old' ? '#f87171' : 'var(--accent-primary)'};
+                        margin-top: 1rem;
+                    `;
+                    
+                    const dot = badge.querySelector('.freshness-dot');
+                    if (dot) {
+                        dot.style.cssText = `
+                            width: 6px;
+                            height: 6px;
+                            border-radius: 50%;
+                            background: currentColor;
+                            ${freshnessClass !== 'old' ? 'animation: pulse 2s infinite;' : ''}
+                        `;
+                    }
+                    
+                    heroStats.parentNode.insertBefore(badge, heroStats.nextSibling);
+                }
+            }
         },
 
         loadState() {
@@ -386,7 +476,8 @@
             const container = document.getElementById('undervalued-list');
             if (!container) return;
             
-            const players = PLAYER_DATA.undervalued || [];
+            const data = this.getData();
+            const players = data.undervalued || [];
             container.innerHTML = players.map((p, i) => UI.renderPlayerCard(p, i)).join('');
         },
 
@@ -394,7 +485,8 @@
             const container = document.getElementById('performers-list');
             if (!container) return;
             
-            const players = PLAYER_DATA.topPerformers || [];
+            const data = this.getData();
+            const players = data.topPerformers || [];
             container.innerHTML = players.map((p, i) => UI.renderPlayerCard(p, i)).join('');
         },
 
@@ -402,7 +494,8 @@
             const container = document.getElementById('rising-list');
             if (!container) return;
             
-            const players = PLAYER_DATA.risingStars || [];
+            const data = this.getData();
+            const players = data.risingStars || [];
             container.innerHTML = players.map((p, i) => UI.renderPlayerCard(p, i)).join('');
         },
 
@@ -426,10 +519,11 @@
 
         showPlayerDetail(playerId) {
             // Find player in all lists
+            const data = this.getData();
             const allPlayers = [
-                ...(PLAYER_DATA.undervalued || []),
-                ...(PLAYER_DATA.topPerformers || []),
-                ...(PLAYER_DATA.risingStars || []),
+                ...(data.undervalued || []),
+                ...(data.topPerformers || []),
+                ...(data.risingStars || []),
                 ...state.watchlist
             ];
             
@@ -443,10 +537,11 @@
 
         toggleWatchlist(playerId) {
             // Find player
+            const data = this.getData();
             const allPlayers = [
-                ...(PLAYER_DATA.undervalued || []),
-                ...(PLAYER_DATA.topPerformers || []),
-                ...(PLAYER_DATA.risingStars || [])
+                ...(data.undervalued || []),
+                ...(data.topPerformers || []),
+                ...(data.risingStars || [])
             ];
             
             const player = allPlayers.find(p => p.id === playerId);

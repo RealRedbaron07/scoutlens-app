@@ -125,18 +125,39 @@ class UnderstatScraper:
             print(f"  ⚠️ Error fetching {league_key}: {e}")
             return []
         
-        # Extract JSON data from the page
-        pattern = r"var\s+playersData\s*=\s*JSON\.parse\('(.+?)'\)"
-        match = re.search(pattern, html)
+        # Try multiple patterns - Understat changes their format occasionally
+        patterns = [
+            r"var\s+playersData\s*=\s*JSON\.parse\('(.+?)'\)",
+            r"playersData\s*=\s*JSON\.parse\('(.+?)'\)",
+            r"var playersData\s*=\s*JSON\.parse\('(.+?)'\)",
+            r"'playersData'\s*:\s*JSON\.parse\('(.+?)'\)",
+        ]
         
-        if not match:
-            print(f"  ⚠️ Could not parse player data for {league_key}")
+        json_str = None
+        for pattern in patterns:
+            match = re.search(pattern, html, re.DOTALL)
+            if match:
+                json_str = match.group(1)
+                break
+        
+        if not json_str:
+            # Debug: save a snippet to see what we're dealing with
+            if 'playersData' in html:
+                idx = html.find('playersData')
+                snippet = html[max(0, idx-50):idx+200]
+                print(f"  ⚠️ Found 'playersData' but couldn't parse. Snippet:")
+                print(f"      {snippet[:150]}...")
+            else:
+                print(f"  ⚠️ 'playersData' not found in page for {league_key}")
             return []
         
-        # Decode the escaped JSON
-        json_str = match.group(1)
-        json_str = json_str.encode().decode('unicode_escape')
-        players = json.loads(json_str)
+        try:
+            # Decode the escaped JSON
+            json_str = json_str.encode().decode('unicode_escape')
+            players = json.loads(json_str)
+        except (json.JSONDecodeError, UnicodeDecodeError) as e:
+            print(f"  ⚠️ JSON decode error for {league_key}: {e}")
+            return []
         
         # Add league info to each player
         for p in players:
