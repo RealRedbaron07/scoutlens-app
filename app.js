@@ -14,7 +14,16 @@
         watchlist: [],
         emailSubmitted: false,
         compareList: [],  // Players selected for comparison
-        compareMode: false
+        compareMode: false,
+        searchQuery: '',
+        filters: {
+            league: '',
+            position: '',
+            maxAge: 40,
+            maxValue: 200,
+            sortBy: 'undervaluation'
+        },
+        priceAlerts: []  // {playerId, targetPrice}
     };
 
     // ============================================
@@ -570,6 +579,9 @@
                 case 'bargains':
                     this.renderBargains();
                     break;
+                case 'rumors':
+                    this.renderRumors();
+                    break;
                 case 'watchlist':
                     this.renderWatchlist();
                     break;
@@ -772,10 +784,144 @@
             container.innerHTML = html;
         },
         
+        renderRumors() {
+            const container = document.getElementById('rumors-list');
+            if (!container) return;
+            
+            // Transfer rumors data (in production, fetch from API)
+            const rumors = [
+                {
+                    player: 'Mohamed Salah',
+                    from: 'Liverpool',
+                    to: 'Saudi Pro League / PSG',
+                    fee: 'Free (contract expires 2025)',
+                    status: 'hot',
+                    source: 'Fabrizio Romano',
+                    date: '2024-12-20'
+                },
+                {
+                    player: 'Trent Alexander-Arnold',
+                    from: 'Liverpool', 
+                    to: 'Real Madrid',
+                    fee: 'Free (contract expires 2025)',
+                    status: 'hot',
+                    source: 'Multiple Sources',
+                    date: '2024-12-19'
+                },
+                {
+                    player: 'Joshua Kimmich',
+                    from: 'Bayern Munich',
+                    to: 'Barcelona / Man City',
+                    fee: 'Free (contract expires 2025)',
+                    status: 'hot',
+                    source: 'Sky Germany',
+                    date: '2024-12-18'
+                },
+                {
+                    player: 'Alphonso Davies',
+                    from: 'Bayern Munich',
+                    to: 'Real Madrid',
+                    fee: 'Free (contract expires 2025)',
+                    status: 'warm',
+                    source: 'Marca',
+                    date: '2024-12-17'
+                },
+                {
+                    player: 'Viktor Gyökeres',
+                    from: 'Sporting CP',
+                    to: 'Arsenal / Man United / Chelsea',
+                    fee: '€100M release clause',
+                    status: 'hot',
+                    source: 'Record Portugal',
+                    date: '2024-12-16'
+                },
+                {
+                    player: 'Florian Wirtz',
+                    from: 'Bayer Leverkusen',
+                    to: 'Real Madrid / Bayern',
+                    fee: '€150M+',
+                    status: 'warm',
+                    source: 'Kicker',
+                    date: '2024-12-15'
+                },
+                {
+                    player: 'Omar Marmoush',
+                    from: 'Eintracht Frankfurt',
+                    to: 'Liverpool / Arsenal',
+                    fee: '€40-50M',
+                    status: 'warm',
+                    source: 'Bild',
+                    date: '2024-12-14'
+                },
+                {
+                    player: 'Nico Williams',
+                    from: 'Athletic Bilbao',
+                    to: 'Barcelona / Chelsea',
+                    fee: '€58M release clause',
+                    status: 'warm',
+                    source: 'Sport',
+                    date: '2024-12-13'
+                }
+            ];
+            
+            let html = `
+                <div class="email-capture" style="margin-bottom: 2rem;">
+                    <h3>🔔 Get Transfer Alerts</h3>
+                    <p>Be first to know when big transfers happen. Daily updates in your inbox.</p>
+                    <form class="email-form" onsubmit="App.submitEmail(event)">
+                        <input type="email" placeholder="your@email.com" required>
+                        <button type="submit">Subscribe Free</button>
+                    </form>
+                </div>
+            `;
+            
+            html += rumors.map(r => `
+                <div class="rumor-card">
+                    <div class="rumor-header">
+                        <div>
+                            <div class="rumor-player">${r.player}</div>
+                            <div class="rumor-details">${r.from} → ${r.to}</div>
+                        </div>
+                        <span class="rumor-badge ${r.status}">${r.status === 'hot' ? '🔥 HOT' : '⚡ WARM'}</span>
+                    </div>
+                    <div class="rumor-details" style="margin-top: 0.5rem;">
+                        <strong>Fee:</strong> ${r.fee}
+                    </div>
+                    <div class="rumor-source">
+                        📰 ${r.source} • ${new Date(r.date).toLocaleDateString()}
+                    </div>
+                </div>
+            `).join('');
+            
+            html += `
+                <div style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                    <p>Want more rumors and exclusive transfer intel?</p>
+                    <button class="btn btn-primary" onclick="App.showUpgrade()">
+                        Upgrade to Pro →
+                    </button>
+                </div>
+            `;
+            
+            container.innerHTML = html;
+        },
+        
         showUpgrade() {
-            // STRIPE PAYMENT LINKS - Replace these with your actual Stripe links
-            const STRIPE_MONTHLY = 'https://buy.stripe.com/test_monthly'; // Replace with real link
-            const STRIPE_ANNUAL = 'https://buy.stripe.com/test_annual';   // Replace with real link
+            // PAYMENT OPTIONS - Set your PayPal.me username or Stripe links
+            // PayPal: https://paypal.me/YOUR_USERNAME/9.99
+            // Stripe: https://buy.stripe.com/your_link
+            
+            const PAYPAL_USERNAME = 'YOUR_PAYPAL';  // Replace with your PayPal.me username
+            const PAYPAL_MONTHLY = `https://paypal.me/${PAYPAL_USERNAME}/9.99`;
+            const PAYPAL_ANNUAL = `https://paypal.me/${PAYPAL_USERNAME}/79`;
+            
+            // Or use Stripe if you prefer
+            const STRIPE_MONTHLY = 'https://buy.stripe.com/test_monthly';
+            const STRIPE_ANNUAL = 'https://buy.stripe.com/test_annual';
+            
+            // Choose payment provider (change to 'stripe' if using Stripe)
+            const PAYMENT_PROVIDER = 'paypal';
+            const MONTHLY_LINK = PAYMENT_PROVIDER === 'paypal' ? PAYPAL_MONTHLY : STRIPE_MONTHLY;
+            const ANNUAL_LINK = PAYMENT_PROVIDER === 'paypal' ? PAYPAL_ANNUAL : STRIPE_ANNUAL;
             
             // Show upgrade modal
             const modal = document.createElement('div');
@@ -803,11 +949,11 @@
                         </div>
                         
                         <div class="upgrade-pricing" style="display:flex;gap:1rem;margin-bottom:1.5rem;">
-                            <div onclick="window.open('${STRIPE_MONTHLY}', '_blank')" style="flex:1;background:#1c232d;border:2px solid #333;border-radius:10px;padding:1.5rem;cursor:pointer;transition:all 0.2s;">
+                            <div onclick="window.open('${MONTHLY_LINK}', '_blank')" style="flex:1;background:#1c232d;border:2px solid #333;border-radius:10px;padding:1.5rem;cursor:pointer;transition:all 0.2s;">
                                 <div style="font-size:2rem;font-weight:700;color:#f1f5f9;">$9<span style="font-size:0.9rem;font-weight:400;color:#94a3b8;">/mo</span></div>
                                 <div style="color:#64748b;font-size:0.85rem;margin-top:0.25rem;">Monthly</div>
                             </div>
-                            <div onclick="window.open('${STRIPE_ANNUAL}', '_blank')" style="flex:1;background:linear-gradient(135deg,rgba(251,191,36,0.1),transparent);border:2px solid #fbbf24;border-radius:10px;padding:1.5rem;cursor:pointer;position:relative;">
+                            <div onclick="window.open('${ANNUAL_LINK}', '_blank')" style="flex:1;background:linear-gradient(135deg,rgba(251,191,36,0.1),transparent);border:2px solid #fbbf24;border-radius:10px;padding:1.5rem;cursor:pointer;position:relative;">
                                 <div style="position:absolute;top:-10px;right:10px;background:#fbbf24;color:#000;font-size:0.7rem;padding:3px 8px;border-radius:10px;font-weight:700;">BEST VALUE</div>
                                 <div style="font-size:2rem;font-weight:700;color:#f1f5f9;">$72<span style="font-size:0.9rem;font-weight:400;color:#94a3b8;">/yr</span></div>
                                 <div style="color:#fbbf24;font-size:0.85rem;margin-top:0.25rem;">$6/mo - Save 33%</div>
@@ -1073,8 +1219,266 @@
         
         closeComparison() {
             document.getElementById('compare-modal')?.remove();
+        },
+        
+        // ============================================
+        // SEARCH & FILTER
+        // ============================================
+        
+        initSearch() {
+            const searchInput = document.getElementById('player-search');
+            if (searchInput) {
+                searchInput.addEventListener('input', (e) => {
+                    state.searchQuery = e.target.value.toLowerCase();
+                    this.renderView(state.currentView);
+                });
+            }
+            
+            // Filter range displays
+            const ageRange = document.getElementById('filter-age');
+            const valueRange = document.getElementById('filter-value');
+            
+            if (ageRange) {
+                ageRange.addEventListener('input', (e) => {
+                    document.getElementById('age-value').textContent = e.target.value;
+                });
+            }
+            
+            if (valueRange) {
+                valueRange.addEventListener('input', (e) => {
+                    document.getElementById('value-display').textContent = `€${e.target.value}M`;
+                });
+            }
+        },
+        
+        toggleFilters() {
+            const panel = document.getElementById('filter-panel');
+            const btn = document.getElementById('filter-toggle');
+            panel?.classList.toggle('hidden');
+            btn?.classList.toggle('active');
+        },
+        
+        applyFilters() {
+            state.filters = {
+                league: document.getElementById('filter-league')?.value || '',
+                position: document.getElementById('filter-position')?.value || '',
+                maxAge: parseInt(document.getElementById('filter-age')?.value) || 40,
+                maxValue: parseInt(document.getElementById('filter-value')?.value) || 200,
+                sortBy: document.getElementById('sort-by')?.value || 'undervaluation'
+            };
+            
+            this.toggleFilters();
+            this.renderView(state.currentView);
+            UI.showNotification('✅ Filters applied');
+        },
+        
+        resetFilters() {
+            state.filters = {
+                league: '',
+                position: '',
+                maxAge: 40,
+                maxValue: 200,
+                sortBy: 'undervaluation'
+            };
+            state.searchQuery = '';
+            
+            // Reset UI
+            document.getElementById('filter-league').value = '';
+            document.getElementById('filter-position').value = '';
+            document.getElementById('filter-age').value = 40;
+            document.getElementById('filter-value').value = 200;
+            document.getElementById('sort-by').value = 'undervaluation';
+            document.getElementById('player-search').value = '';
+            document.getElementById('age-value').textContent = '40';
+            document.getElementById('value-display').textContent = '€200M';
+            
+            this.toggleFilters();
+            this.renderView(state.currentView);
+            UI.showNotification('🔄 Filters reset');
+        },
+        
+        filterAndSortPlayers(players) {
+            let filtered = [...players];
+            
+            // Search filter
+            if (state.searchQuery) {
+                filtered = filtered.filter(p => 
+                    p.name?.toLowerCase().includes(state.searchQuery) ||
+                    p.team?.toLowerCase().includes(state.searchQuery) ||
+                    p.league?.toLowerCase().includes(state.searchQuery)
+                );
+            }
+            
+            // League filter
+            if (state.filters.league) {
+                filtered = filtered.filter(p => p.league === state.filters.league);
+            }
+            
+            // Position filter
+            if (state.filters.position) {
+                filtered = filtered.filter(p => p.position === state.filters.position);
+            }
+            
+            // Age filter
+            filtered = filtered.filter(p => (p.age || 25) <= state.filters.maxAge);
+            
+            // Value filter
+            filtered = filtered.filter(p => (p.market_value_eur_m || 0) <= state.filters.maxValue);
+            
+            // Sort
+            const sortBy = state.filters.sortBy;
+            filtered.sort((a, b) => {
+                switch (sortBy) {
+                    case 'undervaluation':
+                        return (b.undervaluation_pct || 0) - (a.undervaluation_pct || 0);
+                    case 'market_value':
+                        return (b.market_value_eur_m || 0) - (a.market_value_eur_m || 0);
+                    case 'xgi':
+                        return (b.xgi_per_90 || 0) - (a.xgi_per_90 || 0);
+                    case 'goals':
+                        return (b.goals || 0) - (a.goals || 0);
+                    case 'age_asc':
+                        return (a.age || 99) - (b.age || 99);
+                    case 'age_desc':
+                        return (b.age || 0) - (a.age || 0);
+                    default:
+                        return 0;
+                }
+            });
+            
+            return filtered;
+        },
+        
+        // ============================================
+        // EXPORT TO CSV
+        // ============================================
+        
+        exportToCSV() {
+            const data = this.getData();
+            let allPlayers = [
+                ...(data.undervalued || []),
+                ...(data.topPerformers || []),
+                ...(data.risingStars || []),
+                ...(data.hiddenGems || []),
+                ...state.watchlist
+            ];
+            
+            // Remove duplicates
+            const seen = new Set();
+            allPlayers = allPlayers.filter(p => {
+                if (seen.has(p.id)) return false;
+                seen.add(p.id);
+                return true;
+            });
+            
+            // Apply current filters
+            allPlayers = this.filterAndSortPlayers(allPlayers);
+            
+            // Create CSV
+            const headers = ['Name', 'Team', 'League', 'Position', 'Age', 'Market Value (€M)', 'Fair Value (€M)', 'Undervaluation %', 'Goals', 'Assists', 'xGI/90', 'Contract Expiry'];
+            const rows = allPlayers.map(p => [
+                p.name,
+                p.team,
+                p.league,
+                p.position,
+                p.age,
+                p.market_value_eur_m,
+                p.fair_value_eur_m,
+                p.undervaluation_pct,
+                p.goals,
+                p.assists,
+                p.xgi_per_90,
+                p.contract_expiry || 'N/A'
+            ]);
+            
+            const csv = [headers, ...rows].map(row => row.join(',')).join('\n');
+            
+            // Download
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `scoutlens-players-${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            UI.showNotification('📥 CSV downloaded!');
+        },
+        
+        // ============================================
+        // PRICE ALERTS
+        // ============================================
+        
+        setPriceAlert(playerId) {
+            const player = this.findPlayer(playerId);
+            if (!player) return;
+            
+            const currentValue = player.market_value_eur_m || 0;
+            const targetPrice = prompt(`Set alert when ${player.name}'s value drops below (€M):`, Math.floor(currentValue * 0.8));
+            
+            if (targetPrice && !isNaN(parseFloat(targetPrice))) {
+                state.priceAlerts.push({
+                    playerId,
+                    playerName: player.name,
+                    targetPrice: parseFloat(targetPrice),
+                    currentValue,
+                    createdAt: new Date().toISOString()
+                });
+                
+                localStorage.setItem('scoutlens_alerts', JSON.stringify(state.priceAlerts));
+                UI.showNotification(`🔔 Alert set: ${player.name} < €${targetPrice}M`);
+            }
+        },
+        
+        loadPriceAlerts() {
+            const saved = localStorage.getItem('scoutlens_alerts');
+            if (saved) {
+                state.priceAlerts = JSON.parse(saved);
+            }
+        },
+        
+        // ============================================
+        // EMAIL CAPTURE
+        // ============================================
+        
+        showEmailCapture() {
+            if (state.emailSubmitted) return '';
+            
+            return `
+                <div class="email-capture">
+                    <h3>📬 Weekly Hidden Gems Report</h3>
+                    <p>Get the top 10 undervalued players delivered to your inbox every Monday.</p>
+                    <form class="email-form" onsubmit="App.submitEmail(event)">
+                        <input type="email" placeholder="your@email.com" required>
+                        <button type="submit">Subscribe Free</button>
+                    </form>
+                </div>
+            `;
+        },
+        
+        submitEmail(e) {
+            e.preventDefault();
+            const email = e.target.querySelector('input').value;
+            
+            // Store email (in production, send to your email service)
+            localStorage.setItem('scoutlens_email', email);
+            state.emailSubmitted = true;
+            
+            // Hide the form
+            document.querySelector('.email-capture')?.remove();
+            
+            UI.showNotification('✅ Subscribed! Check your inbox Monday.');
+            
+            // Log for later integration
+            console.log('Email captured:', email);
         }
     };
+    
+    // Initialize search on load
+    document.addEventListener('DOMContentLoaded', () => {
+        App.initSearch();
+        App.loadPriceAlerts();
+    });
 
     // Initialize on DOM ready
     document.addEventListener('DOMContentLoaded', () => App.init());

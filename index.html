@@ -43,6 +43,80 @@
         </div>
     </div>
 
+    <!-- Filter Panel (slide-out) -->
+    <div id="filter-panel" class="filter-panel hidden">
+        <div class="filter-header">
+            <h3>Filters & Sort</h3>
+            <button class="filter-close-btn" onclick="App.toggleFilters()">×</button>
+        </div>
+        
+        <div class="filter-section">
+            <label class="filter-label">Sort By</label>
+            <select id="sort-by" class="filter-select">
+                <option value="undervaluation">Undervaluation %</option>
+                <option value="market_value">Market Value</option>
+                <option value="xgi">xGI per 90</option>
+                <option value="goals">Goals</option>
+                <option value="age_asc">Age (Youngest)</option>
+                <option value="age_desc">Age (Oldest)</option>
+            </select>
+        </div>
+        
+        <div class="filter-section">
+            <label class="filter-label">League</label>
+            <select id="filter-league" class="filter-select">
+                <option value="">All Leagues</option>
+                <option value="Premier League">Premier League</option>
+                <option value="La Liga">La Liga</option>
+                <option value="Bundesliga">Bundesliga</option>
+                <option value="Serie A">Serie A</option>
+                <option value="Ligue 1">Ligue 1</option>
+                <option value="Championship">Championship</option>
+                <option value="Eredivisie">Eredivisie</option>
+                <option value="Primeira Liga">Primeira Liga</option>
+                <option value="Brasileirão">Brasileirão</option>
+            </select>
+        </div>
+        
+        <div class="filter-section">
+            <label class="filter-label">Position</label>
+            <select id="filter-position" class="filter-select">
+                <option value="">All Positions</option>
+                <option value="F">Forward</option>
+                <option value="M">Midfielder</option>
+                <option value="D">Defender</option>
+                <option value="G">Goalkeeper</option>
+            </select>
+        </div>
+        
+        <div class="filter-section">
+            <label class="filter-label">Max Age</label>
+            <input type="range" id="filter-age" min="16" max="40" value="40" class="filter-range">
+            <span id="age-value">40</span>
+        </div>
+        
+        <div class="filter-section">
+            <label class="filter-label">Max Value (€M)</label>
+            <input type="range" id="filter-value" min="1" max="200" value="200" class="filter-range">
+            <span id="value-display">€200M</span>
+        </div>
+        
+        <div class="filter-actions">
+            <button class="btn btn-primary" onclick="App.applyFilters()">Apply Filters</button>
+            <button class="btn btn-ghost" onclick="App.resetFilters()">Reset</button>
+        </div>
+        
+        <div class="filter-section" style="border-top: 2px solid var(--border-default); margin-top: 1rem; padding-top: 1.5rem;">
+            <label class="filter-label">Pro Features</label>
+            <button class="export-btn" onclick="App.exportToCSV()" style="width: 100%; margin-bottom: 0.75rem;">
+                📥 Export to CSV
+            </button>
+            <button class="btn btn-ghost" onclick="App.showUpgrade()" style="width: 100%;">
+                🔔 Set Price Alerts
+            </button>
+        </div>
+    </div>
+
     <!-- Main App -->
     <div id="app" class="app hidden">
         <!-- Navigation -->
@@ -72,9 +146,23 @@
                     <span class="nav-link-icon">⏰</span>
                     <span class="nav-link-text">Bargains</span>
                 </button>
+                <button class="nav-link" data-view="rumors">
+                    <span class="nav-link-icon">📰</span>
+                    <span class="nav-link-text">Rumors</span>
+                </button>
                 <button class="nav-link" data-view="watchlist">
                     <span class="nav-link-icon">★</span>
                     <span class="nav-link-text">Saved</span>
+                </button>
+            </div>
+            <!-- Search & Filter -->
+            <div class="search-filter-bar">
+                <div class="search-box">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="player-search" placeholder="Search players..." class="search-input">
+                </div>
+                <button class="filter-toggle-btn" id="filter-toggle" title="Filters">
+                    <span>⚙️</span>
                 </button>
             </div>
             <div class="nav-actions">
@@ -178,6 +266,18 @@
                 </div>
 
                 <div class="players-list" id="bargains-list">
+                    <!-- Populated by JS -->
+                </div>
+            </section>
+
+            <!-- Transfer Rumors View -->
+            <section id="view-rumors" class="view">
+                <div class="section-intro">
+                    <h2>📰 Transfer Rumors</h2>
+                    <p>Latest transfer news and rumors from reliable sources. Updated daily.</p>
+                </div>
+
+                <div class="rumors-list" id="rumors-list">
                     <!-- Populated by JS -->
                 </div>
             </section>

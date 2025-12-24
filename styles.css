@@ -1218,6 +1218,302 @@ body::before {
     font-size: 1.2rem;
 }
 
+/* ============================================
+   SEARCH & FILTER
+   ============================================ */
+
+.search-filter-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-left: auto;
+    margin-right: 1rem;
+}
+
+.search-box {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.search-icon {
+    position: absolute;
+    left: 12px;
+    font-size: 0.9rem;
+    opacity: 0.6;
+}
+
+.search-input {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 0.6rem 1rem 0.6rem 2.5rem;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    width: 200px;
+    transition: all var(--transition-fast);
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 3px rgba(0, 212, 170, 0.1);
+    width: 280px;
+}
+
+.search-input::placeholder {
+    color: var(--text-muted);
+}
+
+.filter-toggle-btn {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+    padding: 0.6rem 0.8rem;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: all var(--transition-fast);
+}
+
+.filter-toggle-btn:hover {
+    background: var(--bg-card);
+    border-color: var(--accent-primary);
+}
+
+.filter-toggle-btn.active {
+    background: var(--accent-primary);
+    color: #000;
+}
+
+/* Filter Panel */
+.filter-panel {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 320px;
+    height: 100vh;
+    background: var(--bg-secondary);
+    border-left: 1px solid var(--border-default);
+    z-index: 1000;
+    overflow-y: auto;
+    transform: translateX(0);
+    transition: transform var(--transition-base);
+    box-shadow: -10px 0 30px rgba(0, 0, 0, 0.3);
+}
+
+.filter-panel.hidden {
+    transform: translateX(100%);
+}
+
+.filter-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--border-subtle);
+    background: var(--bg-card);
+}
+
+.filter-header h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.filter-close-btn {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0.5rem;
+    line-height: 1;
+}
+
+.filter-section {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.filter-label {
+    display: block;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+.filter-select {
+    width: 100%;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+    padding: 0.7rem;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
+.filter-select:focus {
+    outline: none;
+    border-color: var(--accent-primary);
+}
+
+.filter-range {
+    width: 100%;
+    margin-top: 0.5rem;
+    accent-color: var(--accent-primary);
+}
+
+.filter-actions {
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+/* Export Button */
+.export-btn {
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    color: white;
+    border: none;
+    padding: 0.8rem 1.5rem;
+    border-radius: var(--radius-sm);
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    justify-content: center;
+}
+
+.export-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(59, 130, 246, 0.4);
+}
+
+/* Price Alert Badge */
+.alert-badge {
+    background: rgba(239, 68, 68, 0.15);
+    color: #ef4444;
+    font-size: 0.65rem;
+    padding: 2px 6px;
+    border-radius: 3px;
+    margin-left: 6px;
+    cursor: pointer;
+}
+
+.alert-badge:hover {
+    background: rgba(239, 68, 68, 0.25);
+}
+
+/* Email Capture Modal */
+.email-capture {
+    background: linear-gradient(135deg, var(--bg-card), var(--bg-elevated));
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-lg);
+    padding: 2rem;
+    text-align: center;
+    margin: 2rem 0;
+}
+
+.email-capture h3 {
+    font-size: 1.3rem;
+    margin-bottom: 0.5rem;
+}
+
+.email-capture p {
+    color: var(--text-secondary);
+    margin-bottom: 1.5rem;
+}
+
+.email-form {
+    display: flex;
+    gap: 0.5rem;
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.email-form input {
+    flex: 1;
+    padding: 0.8rem 1rem;
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-sm);
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    font-size: 1rem;
+}
+
+.email-form button {
+    background: var(--accent-primary);
+    color: #000;
+    border: none;
+    padding: 0.8rem 1.5rem;
+    border-radius: var(--radius-sm);
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+/* Rumor Tracker */
+.rumor-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+}
+
+.rumor-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 0.5rem;
+}
+
+.rumor-player {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.rumor-badge {
+    font-size: 0.7rem;
+    padding: 3px 8px;
+    border-radius: 10px;
+    font-weight: 600;
+}
+
+.rumor-badge.hot {
+    background: rgba(248, 113, 113, 0.2);
+    color: #f87171;
+}
+
+.rumor-badge.warm {
+    background: rgba(251, 191, 36, 0.2);
+    color: #fbbf24;
+}
+
+.rumor-details {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.rumor-source {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-top: 0.5rem;
+}
+
+/* Mobile Responsive for Search */
+@media (max-width: 768px) {
+    .search-filter-bar {
+        display: none;
+    }
+    
+    .filter-panel {
+        width: 100%;
+    }
+}
+
 /* Locked Player Card */
 .player-card.locked {
     position: relative;
