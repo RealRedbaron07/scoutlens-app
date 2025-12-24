@@ -1,0 +1,16 @@
+# Data files (regenerate with scraper.py)
+data/players_*.csv
+data/players_*.json
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# Logs
+*.log
+npm-debug.log*
