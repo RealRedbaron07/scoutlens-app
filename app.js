@@ -302,9 +302,7 @@
             this.loadState();
             this.bindEvents();
             
-            // Try to fetch LIVE data from API
-            await this.fetchLiveData();
-            
+            // Render immediately with static data
             this.renderView('dashboard');
             this.showDataFreshness();
             
@@ -319,19 +317,30 @@
                 document.getElementById('app').classList.remove('hidden');
             }, 1200);
             
+            // Try to fetch LIVE data in background (non-blocking)
+            this.fetchLiveData();
+            
             console.log('✅ ScoutLens ready');
         },
         
         async fetchLiveData() {
-            // Try to fetch live data from API
+            // Try to fetch live data from API (non-blocking)
             try {
-                const response = await fetch('/api/players');
+                const controller = new AbortController();
+                const timeout = setTimeout(() => controller.abort(), 15000); // 15s timeout
+                
+                const response = await fetch('/api/players', { signal: controller.signal });
+                clearTimeout(timeout);
+                
                 if (response.ok) {
                     liveData = await response.json();
                     console.log('📡 Live data loaded!', liveData.lastUpdated);
+                    // Re-render with live data
+                    this.renderView(state.currentView);
+                    this.showDataFreshness();
                 }
             } catch (e) {
-                console.log('📦 Using static data (API not available)');
+                console.log('📦 Using static data:', e.message || 'API timeout');
             }
         },
         
