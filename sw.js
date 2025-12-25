@@ -1,5 +1,5 @@
-// ScoutLens Service Worker
-const CACHE_NAME = 'scoutlens-v1';
+// ScoutLens Service Worker - Updated for UI fixes
+const CACHE_NAME = 'scoutlens-v2';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
@@ -50,7 +50,7 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   // Skip non-GET requests
   if (event.request.method !== 'GET') return;
-  
+
   // Skip external requests (APIs, fonts, etc)
   if (!event.request.url.startsWith(self.location.origin)) return;
 

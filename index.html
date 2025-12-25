@@ -1,41 +1,45 @@
-
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ScoutLens - Find Undervalued Football Players | Hidden Gems & Transfer Values</title>
-    <meta name="description" content="Discover undervalued footballers using real Transfermarkt data & xG stats. 300+ players across 25+ leagues. Find hidden gems before the big clubs do. Free to use.">
-    <meta name="keywords" content="football scouting, undervalued players, transfer market, xG stats, hidden gems, football analytics, Transfermarkt, player values, football transfers">
+    <meta name="description"
+        content="Discover undervalued footballers using real Transfermarkt data & xG stats. 300+ players across 25+ leagues. Find hidden gems before the big clubs do. Free to use.">
+    <meta name="keywords"
+        content="football scouting, undervalued players, transfer market, xG stats, hidden gems, football analytics, Transfermarkt, player values, football transfers">
     <meta name="author" content="ScoutLens">
     <meta name="robots" content="index, follow">
     <meta name="theme-color" content="#0a0d10">
     <link rel="canonical" href="https://scoutlens-app.vercel.app/">
-    
+
     <!-- PWA -->
     <link rel="manifest" href="manifest.json">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="ScoutLens">
-    
+
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://scoutlens-app.vercel.app/">
     <meta property="og:title" content="ScoutLens - Find Undervalued Football Players">
-    <meta property="og:description" content="Discover hidden gems using real Transfermarkt values & xG data. 300+ players across 25+ leagues. Scout before the big clubs do.">
+    <meta property="og:description"
+        content="Discover hidden gems using real Transfermarkt values & xG data. 300+ players across 25+ leagues. Scout before the big clubs do.">
     <meta property="og:image" content="https://scoutlens-app.vercel.app/og-image.png">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
     <meta property="og:site_name" content="ScoutLens">
-    
+
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:url" content="https://scoutlens-app.vercel.app/">
     <meta name="twitter:title" content="ScoutLens - Find Undervalued Football Players">
-    <meta name="twitter:description" content="Discover hidden gems using real Transfermarkt values & xG data. 300+ players across 25+ leagues.">
+    <meta name="twitter:description"
+        content="Discover hidden gems using real Transfermarkt values & xG data. 300+ players across 25+ leagues.">
     <meta name="twitter:image" content="https://scoutlens-app.vercel.app/og-image.png">
-    
+
     <!-- Structured Data / JSON-LD -->
     <script type="application/ld+json">
     {
@@ -58,14 +62,18 @@
         }
     }
     </script>
-    
+
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔭</text></svg>">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="styles.css?v=2">
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔭</text></svg>">
 </head>
+
 <body>
     <!-- Loading Screen -->
     <div id="loader" class="loader">
@@ -97,19 +105,21 @@
                     <button class="btn btn-primary btn-sm" onclick="App.enterApp()">Open App →</button>
                 </div>
             </nav>
-            
+
             <div class="hero-content">
                 <div class="hero-badge">🏆 #1 Football Scouting Tool</div>
-                <h1 class="hero-title">Find <span class="gradient-text">Undervalued</span> Players<br>Before Anyone Else</h1>
-                <p class="hero-subtitle">Real Transfermarkt values • xG analytics • 25+ leagues<br>Discover hidden gems that big clubs are sleeping on.</p>
-                
+                <h1 class="hero-title">Find <span class="gradient-text">Undervalued</span> Players<br>Before Anyone Else
+                </h1>
+                <p class="hero-subtitle">Real Transfermarkt values • xG analytics • 25+ leagues<br>Discover hidden gems
+                    that big clubs are sleeping on.</p>
+
                 <div class="hero-cta">
                     <button class="btn btn-primary btn-xl" onclick="App.enterApp()">
                         Start Scouting Free →
                     </button>
                     <p class="hero-note">No signup required • 300+ players analyzed</p>
                 </div>
-                
+
                 <div class="hero-stats">
                     <div class="hero-stat">
                         <span class="hero-stat-value">300+</span>
@@ -126,7 +136,7 @@
                 </div>
             </div>
         </div>
-        
+
         <!-- Features Section -->
         <section id="features" class="landing-section">
             <h2 class="section-title">Why Scouts Love ScoutLens</h2>
@@ -163,17 +173,19 @@
                 </div>
             </div>
         </section>
-        
+
         <!-- Social Proof -->
         <section class="landing-section social-proof">
             <h2 class="section-title">Trusted by Football Analysts</h2>
             <div class="testimonials">
                 <div class="testimonial">
-                    <p>"Finally a tool that uses real Transfermarkt data. Found 3 signings for my FM save within an hour."</p>
+                    <p>"Finally a tool that uses real Transfermarkt data. Found 3 signings for my FM save within an
+                        hour."</p>
                     <span class="testimonial-author">— @FMAnalyst, Twitter</span>
                 </div>
                 <div class="testimonial">
-                    <p>"The hidden gems feature is incredible. Discovered players I'd never heard of who are now in the Premier League."</p>
+                    <p>"The hidden gems feature is incredible. Discovered players I'd never heard of who are now in the
+                        Premier League."</p>
                     <span class="testimonial-author">— Scout, Championship Club</span>
                 </div>
                 <div class="testimonial">
@@ -182,7 +194,7 @@
                 </div>
             </div>
         </section>
-        
+
         <!-- Pricing Section -->
         <section id="pricing" class="landing-section pricing-section">
             <h2 class="section-title">Simple Pricing</h2>
@@ -218,7 +230,7 @@
                 </div>
             </div>
         </section>
-        
+
         <!-- Final CTA -->
         <section class="landing-section cta-section">
             <h2>Ready to Find Your Next Hidden Gem?</h2>
@@ -227,7 +239,7 @@
                 Open ScoutLens Free →
             </button>
         </section>
-        
+
         <!-- Footer -->
         <footer class="landing-footer">
             <p>© 2024 ScoutLens. Data from Transfermarkt & Football-Data.org.</p>
@@ -237,9 +249,11 @@
     <!-- Mobile Navigation Menu -->
     <div class="nav-menu-overlay" id="nav-menu-overlay"></div>
     <div class="nav-menu" id="nav-menu">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border-subtle);">
+        <div
+            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border-subtle);">
             <h3 style="margin: 0;">Menu</h3>
-            <button class="nav-menu-close" id="nav-menu-close" style="background: none; border: none; color: var(--text-primary); font-size: 1.5rem; cursor: pointer; padding: 0.5rem;">×</button>
+            <button class="nav-menu-close" id="nav-menu-close"
+                style="background: none; border: none; color: var(--text-primary); font-size: 1.5rem; cursor: pointer; padding: 0.5rem;">×</button>
         </div>
         <a href="#" class="nav-menu-link active" data-view="dashboard">
             <span>📊</span> <span>Undervalued</span>
@@ -270,7 +284,7 @@
             <h3>Filters & Sort</h3>
             <button class="filter-close-btn" onclick="App.toggleFilters()">×</button>
         </div>
-        
+
         <div class="filter-section">
             <label class="filter-label">Sort By</label>
             <select id="sort-by" class="filter-select">
@@ -282,7 +296,7 @@
                 <option value="age_desc">Age (Oldest)</option>
             </select>
         </div>
-        
+
         <div class="filter-section">
             <label class="filter-label">League</label>
             <select id="filter-league" class="filter-select">
@@ -298,7 +312,7 @@
                 <option value="Brasileirão">Brasileirão</option>
             </select>
         </div>
-        
+
         <div class="filter-section">
             <label class="filter-label">Position</label>
             <select id="filter-position" class="filter-select">
@@ -309,25 +323,26 @@
                 <option value="G">Goalkeeper</option>
             </select>
         </div>
-        
+
         <div class="filter-section">
             <label class="filter-label">Max Age</label>
             <input type="range" id="filter-age" min="16" max="40" value="40" class="filter-range">
             <span id="age-value">40</span>
         </div>
-        
+
         <div class="filter-section">
             <label class="filter-label">Max Value (€M)</label>
             <input type="range" id="filter-value" min="1" max="200" value="200" class="filter-range">
             <span id="value-display">€200M</span>
         </div>
-        
+
         <div class="filter-actions">
             <button class="btn btn-primary" onclick="App.applyFilters()">Apply Filters</button>
             <button class="btn btn-ghost" onclick="App.resetFilters()">Reset</button>
         </div>
-        
-        <div class="filter-section" style="border-top: 2px solid var(--border-default); margin-top: 1rem; padding-top: 1.5rem;">
+
+        <div class="filter-section"
+            style="border-top: 2px solid var(--border-default); margin-top: 1rem; padding-top: 1.5rem;">
             <label class="filter-label">Pro Features</label>
             <button class="export-btn" onclick="App.exportToCSV()" style="width: 100%; margin-bottom: 0.75rem;">
                 📥 Export to CSV
@@ -401,7 +416,7 @@
             <div class="hero-content">
                 <h1 class="hero-title">Find Undervalued<br>Football Players</h1>
                 <p class="hero-subtitle">
-                    We analyze xG, xA, age, and league context to find players whose 
+                    We analyze xG, xA, age, and league context to find players whose
                     market value doesn't match their performance. Updated weekly.
                 </p>
                 <div class="hero-stats">
@@ -474,7 +489,8 @@
             <section id="view-gems" class="view">
                 <div class="section-intro">
                     <h2>💎 Hidden Gems</h2>
-                    <p>Overlooked talents from 25+ leagues - Championship, Eredivisie, Portugal, Brazil, Belgium, Turkey & more. Scout before the big clubs do.</p>
+                    <p>Overlooked talents from 25+ leagues - Championship, Eredivisie, Portugal, Brazil, Belgium, Turkey
+                        & more. Scout before the big clubs do.</p>
                 </div>
 
                 <div class="players-list" id="gems-list">
@@ -486,7 +502,8 @@
             <section id="view-bargains" class="view">
                 <div class="section-intro">
                     <h2>⏰ Contract Bargains</h2>
-                    <p>High-value players with expiring contracts (2025-2026). Free transfers or reduced fees incoming.</p>
+                    <p>High-value players with expiring contracts (2025-2026). Free transfers or reduced fees incoming.
+                    </p>
                 </div>
 
                 <div class="players-list" id="bargains-list">
@@ -580,20 +597,21 @@
                 <button class="modal-close" id="methodology-modal-close">×</button>
                 <div class="methodology-body">
                     <h2>📊 How We Calculate Undervaluation</h2>
-                    
+
                     <h3>The Formula</h3>
                     <pre class="code-block">Fair Value = Base Value × Performance Ratio × Age Multiplier × League Multiplier
 
 Undervaluation % = (Fair Value - Market Value) / Market Value × 100</pre>
-                    
+
                     <h3>Performance Ratio</h3>
-                    <p>We use <strong>xG + xA per 90 minutes</strong> (expected goals + expected assists) compared to position averages:</p>
+                    <p>We use <strong>xG + xA per 90 minutes</strong> (expected goals + expected assists) compared to
+                        position averages:</p>
                     <ul>
                         <li>Forwards: 0.55 xGI/90 average</li>
                         <li>Midfielders: 0.35 xGI/90 average</li>
                         <li>Defenders: 0.15 xGI/90 average</li>
                     </ul>
-                    
+
                     <h3>Age Curve</h3>
                     <p>Player value peaks at 24-26. We apply multipliers:</p>
                     <ul>
@@ -603,7 +621,7 @@ Undervaluation % = (Fair Value - Market Value) / Market Value × 100</pre>
                         <li>29-32: 0.7x (decline)</li>
                         <li>33+: 0.4x (veteran)</li>
                     </ul>
-                    
+
                     <h3>League Multipliers</h3>
                     <ul>
                         <li>Premier League: 2.0x</li>
@@ -612,11 +630,11 @@ Undervaluation % = (Fair Value - Market Value) / Market Value × 100</pre>
                         <li>Serie A: 1.2x</li>
                         <li>Ligue 1: 1.1x</li>
                     </ul>
-                    
+
                     <h3>Data Sources</h3>
                     <p><strong>xG/xA:</strong> Understat (updated after each matchday)</p>
                     <p><strong>Market Values:</strong> Transfermarkt</p>
-                    
+
                     <h3>Limitations</h3>
                     <ul>
                         <li>No injury history factored in</li>
@@ -629,7 +647,12 @@ Undervaluation % = (Fair Value - Market Value) / Market Value × 100</pre>
         </div>
     </div>
 
-    <script src="data/player_data.js"></script>
-    <script src="app.js"></script>
+    <script src="data/player_data.js?v=2"></script>
+    <script src="app.js?v=2"></script>
+    <script>
+        window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+    </script>
+    <script defer src="/_vercel/insights/script.js"></script>
 </body>
+
 </html>
