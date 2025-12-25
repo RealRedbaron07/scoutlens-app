@@ -3,7 +3,7 @@
  * Main Application Logic
  */
 
-(function() {
+(function () {
     'use strict';
 
     // ============================================
@@ -17,20 +17,20 @@
             div.textContent = text;
             return div.innerHTML;
         },
-        
+
         // Validate email format
         isValidEmail(email) {
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             return emailRegex.test(email);
         },
-        
+
         // Sanitize search input
         sanitizeSearch(input) {
             if (typeof input !== 'string') return '';
             // Remove any HTML tags and limit length
             return input.replace(/<[^>]*>/g, '').substring(0, 100).toLowerCase();
         },
-        
+
         // Generate simple hash for verification (not cryptographic)
         simpleHash(str) {
             let hash = 0;
@@ -64,7 +64,7 @@
         isPro: false,     // Pro user status
         proEmail: null    // Email for Pro access
     };
-    
+
     // Load Pro status from localStorage
     const savedProStatus = localStorage.getItem('scoutlens_pro');
     if (savedProStatus) {
@@ -97,7 +97,7 @@
             const initials = this.getInitials(name);
             const color = this.getColor(position);
             const fontSize = size * 0.4;
-            
+
             return `
                 <div class="player-avatar" style="
                     width: ${size}px;
@@ -147,7 +147,7 @@
             if (player.locked) {
                 return this.renderLockedCard(player, index);
             }
-            
+
             const isInWatchlist = state.watchlist.some(p => p.id === player.id);
             const undervalued = player.undervaluation_pct > 0;
             const hasReleaseClause = player.release_clause_eur_m && player.release_clause_eur_m > 0;
@@ -156,7 +156,7 @@
             const isVerified = player.valuation_confidence === 'verified' || player.tm_verified;
             const confidence = player.valuation_confidence || (player.tm_verified ? 'verified' : 'estimated');
             const isHiddenGem = player.is_hidden_gem || player.league_tier >= 2;
-            
+
             // League tier badge
             const tier = player.tier || (player.league_tier || 1);
             let tierBadge = '';
@@ -165,25 +165,25 @@
             } else if (tier === 3) {
                 tierBadge = '<span class="tier-badge tier-3" title="Tier 3 League">T3</span>';
             }
-            
+
             // Confidence badge
-            const confidenceBadge = confidence === 'verified' ? 
+            const confidenceBadge = confidence === 'verified' ?
                 '<span class="confidence-badge verified" title="Transfermarkt verified">✓ TM</span>' :
-                confidence === 'high' ? 
-                '<span class="confidence-badge high" title="High confidence">TM</span>' :
-                '<span class="confidence-badge estimated" title="Estimated value">~</span>';
-            
+                confidence === 'high' ?
+                    '<span class="confidence-badge high" title="High confidence">TM</span>' :
+                    '<span class="confidence-badge estimated" title="Estimated value">~</span>';
+
             // Contract badge
-            const contractBadge = isExpiring ? 
+            const contractBadge = isExpiring ?
                 '<span class="contract-badge expiring" title="Contract expiring 2025!">⏰ 2025</span>' :
                 hasContractExpiry && player.contract_expiry <= 2026 ?
-                `<span class="contract-badge short" title="Contract until ${player.contract_expiry}">${player.contract_expiry}</span>` : '';
-            
+                    `<span class="contract-badge short" title="Contract until ${player.contract_expiry}">${player.contract_expiry}</span>` : '';
+
             // Hidden gem badge
             const gemBadge = isHiddenGem ? '<span class="gem-badge" title="Hidden Gem">💎</span>' : '';
-            
+
             const isComparing = state.compareList.some(p => p.id === player.id);
-            
+
             return `
                 <div class="player-card ${undervalued ? 'undervalued' : ''} ${isComparing ? 'selected-compare' : ''}" data-player-id="${player.id}">
                     <input type="checkbox" class="compare-checkbox" data-player-id="${player.id}" 
@@ -247,12 +247,12 @@
                 </div>
             `;
         },
-        
+
         renderLockedCard(player, index = null) {
             const name = player.name || 'Hidden Player';
             const team = player.team || '???';
             const league = player.league || '???';
-            
+
             return `
                 <div class="player-card locked" onclick="App.showUpgrade()">
                     ${index !== null ? `<div class="player-rank">${index + 1}</div>` : ''}
@@ -279,7 +279,7 @@
                 </div>
             `;
         },
-        
+
         renderUpgradeCard() {
             return `
                 <div class="upgrade-card" data-action="upgrade" style="background:linear-gradient(135deg,rgba(251,191,36,0.15),rgba(0,212,170,0.1));border:2px dashed #fbbf24;border-radius:16px;padding:2rem;text-align:center;cursor:pointer;margin:1.5rem 0;transition:all 0.25s ease;">
@@ -296,7 +296,7 @@
         renderPlayerDetail(player) {
             const isInWatchlist = state.watchlist.some(p => p.id === player.id);
             const undervalued = player.undervaluation_pct > 0;
-            
+
             return `
                 <div class="player-detail">
                     <div class="player-detail-header">
@@ -375,12 +375,12 @@
         showNotification(message, type = 'info') {
             const existing = document.querySelector('.notification');
             if (existing) existing.remove();
-            
+
             const notification = document.createElement('div');
             notification.className = `notification notification-${type}`;
             notification.innerHTML = message;
             document.body.appendChild(notification);
-            
+
             setTimeout(() => {
                 notification.classList.add('fade-out');
                 setTimeout(() => notification.remove(), 300);
@@ -392,29 +392,29 @@
     // APP
     // ============================================
     let liveData = null; // Store live data when fetched
-    
+
     const App = {
         async init() {
             console.log('🔭 ScoutLens initializing...');
-            
+
             // On mobile, ALWAYS skip landing page and go straight to app
             const isMobile = window.innerWidth <= 768 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-            
+
             if (isMobile) {
                 // Mobile users ALWAYS go straight to app - no landing page
                 const landing = document.getElementById('landing');
                 const app = document.getElementById('app');
                 const loader = document.getElementById('loader');
-                
+
                 if (landing) landing.classList.add('hidden');
                 if (app) app.classList.remove('hidden');
                 if (loader) loader.classList.add('fade-out');
-                
+
                 // Continue initialization
                 this.initApp();
                 return;
             }
-            
+
             // Desktop: Check if user has visited before
             const hasVisited = localStorage.getItem('scoutlens_visited');
             if (!hasVisited) {
@@ -424,64 +424,64 @@
                 document.getElementById('loader')?.classList.add('hidden');
                 return;
             }
-            
+
             // Returning user - go straight to app
             this.enterApp();
         },
-        
+
         enterApp() {
             // Hide landing, show app
             const landing = document.getElementById('landing');
             const app = document.getElementById('app');
             const loader = document.getElementById('loader');
-            
+
             if (landing) landing.classList.add('hidden');
             if (app) app.classList.remove('hidden');
             if (loader) loader.classList.add('fade-out');
-            
+
             // Mark as visited
             localStorage.setItem('scoutlens_visited', 'true');
-            
+
             // Continue initialization
             this.initApp();
         },
-        
+
         async initApp() {
             console.log('🔭 Loading ScoutLens app...');
-            
+
             this.loadState();
             this.bindEvents();
-            
+
             // Render immediately with static data
             this.renderView('dashboard');
             this.showDataFreshness();
-            
+
             // Register service worker
             if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.register('sw.js').catch(() => {});
+                navigator.serviceWorker.register('sw.js').catch(() => { });
             }
-            
+
             // Hide loader
             setTimeout(() => {
                 document.getElementById('loader').classList.add('fade-out');
                 document.getElementById('app').classList.remove('hidden');
             }, 1200);
-            
+
             // Try to fetch LIVE data in background (non-blocking)
             this.fetchLiveData();
-            
+
             console.log('✅ ScoutLens ready');
         },
-        
+
         async fetchLiveData() {
             // Try to fetch live data from API (non-blocking)
             try {
                 const controller = new AbortController();
                 const timeout = setTimeout(() => controller.abort(), 15000); // 15s timeout
-                
+
                 const response = await fetch('/api/players', { signal: controller.signal });
                 clearTimeout(timeout);
-                
+
                 if (response.ok) {
                     liveData = await response.json();
                     console.log('📡 Live data loaded!', liveData.lastUpdated);
@@ -493,7 +493,7 @@
                 console.log('📦 Using static data:', e.message || 'API timeout');
             }
         },
-        
+
         getData() {
             // Return live data if available, otherwise static
             return liveData || PLAYER_DATA;
@@ -506,13 +506,13 @@
                 const lastUpdate = new Date(data.lastUpdated);
                 const now = new Date();
                 const daysDiff = Math.floor((now - lastUpdate) / (1000 * 60 * 60 * 24));
-                
+
                 let freshnessText = '';
                 let freshnessClass = '';
-                
+
                 // Check if using live data
                 const isLive = data.updateFrequency === 'live';
-                
+
                 if (isLive) {
                     freshnessText = '🟢 Live data';
                     freshnessClass = 'fresh';
@@ -529,7 +529,7 @@
                     freshnessText = `⚠️ Data ${daysDiff} days old - may be outdated`;
                     freshnessClass = 'old';
                 }
-                
+
                 // Add freshness indicator to hero
                 const heroStats = document.querySelector('.hero-stats');
                 if (heroStats && !document.querySelector('.data-freshness')) {
@@ -547,7 +547,7 @@
                         color: ${freshnessClass === 'old' ? '#f87171' : 'var(--accent-primary)'};
                         margin-top: 1rem;
                     `;
-                    
+
                     const dot = badge.querySelector('.freshness-dot');
                     if (dot) {
                         dot.style.cssText = `
@@ -558,7 +558,7 @@
                             ${freshnessClass !== 'old' ? 'animation: pulse 2s infinite;' : ''}
                         `;
                     }
-                    
+
                     heroStats.parentNode.insertBefore(badge, heroStats.nextSibling);
                 }
             }
@@ -589,7 +589,7 @@
                     handler(e);
                 }, { passive: false });
             };
-            
+
             // Mobile hamburger menu
             this.initMobileMenu();
 
@@ -616,7 +616,7 @@
                     });
                 }
             });
-            
+
             // Also handle any remaining onclick handlers
             document.querySelectorAll('button[onclick]').forEach(btn => {
                 const onclick = btn.getAttribute('onclick');
@@ -722,7 +722,7 @@
                 if (e.type === 'touchend') {
                     e.preventDefault();
                 }
-                
+
                 // Player card click
                 const card = e.target.closest('.player-card');
                 if (card && !e.target.closest('.player-save-btn') && !e.target.closest('.compare-checkbox')) {
@@ -731,7 +731,7 @@
                     if (card.classList.contains('locked')) {
                         this.showUpgrade();
                     } else {
-                    this.showPlayerDetail(playerId);
+                        this.showPlayerDetail(playerId);
                     }
                 }
 
@@ -749,7 +749,7 @@
                     const playerName = decodeURIComponent(shareBtn.dataset.player);
                     this.sharePlayer(playerName);
                 }
-                
+
                 // Upgrade card or button
                 const upgradeCard = e.target.closest('.upgrade-card, .upgrade-btn, [data-action="upgrade"]');
                 if (upgradeCard) {
@@ -758,7 +758,7 @@
                     this.showUpgrade();
                     return;
                 }
-                
+
                 // Modal backdrop close
                 const backdrop = e.target.closest('.modal-backdrop');
                 if (backdrop) {
@@ -766,10 +766,10 @@
                     if (modal) modal.remove();
                 }
             };
-            
+
             document.addEventListener('click', handleInteraction);
             document.addEventListener('touchend', handleInteraction, { passive: false });
-            
+
             // Also handle upgrade cards that might be dynamically added
             document.addEventListener('click', (e) => {
                 if (e.target.closest('.upgrade-card, .upgrade-btn, [data-action="upgrade"]')) {
@@ -778,7 +778,7 @@
                     this.showUpgrade();
                 }
             });
-            
+
             document.addEventListener('touchend', (e) => {
                 if (e.target.closest('.upgrade-card, .upgrade-btn, [data-action="upgrade"]')) {
                     e.preventDefault();
@@ -838,81 +838,81 @@
         renderUndervalued() {
             const container = document.getElementById('undervalued-list');
             if (!container) return;
-            
+
             const data = this.getData();
             const allPlayers = data.free?.undervalued || data.undervalued || [];
-            
+
             // FREE: Show only first 5
             const freePlayers = allPlayers.slice(0, 5);
             // PRO: Everything else is locked
             const proPlayers = allPlayers.slice(5);
-            
+
             let html = freePlayers.map((p, i) => UI.renderPlayerCard(p, i)).join('');
-            
+
             // ALWAYS show upgrade card after free players
             html += UI.renderUpgradeCard();
-            
+
             if (proPlayers.length > 0) {
                 html += `<div class="pro-section-header">🔒 ${proPlayers.length} more undervalued players with Pro</div>`;
                 // Show locked previews
                 html += proPlayers.slice(0, 5).map((p, i) => UI.renderLockedCard(p, freePlayers.length + i)).join('');
             }
-            
+
             container.innerHTML = html;
         },
 
         renderPerformers() {
             const container = document.getElementById('performers-list');
             if (!container) return;
-            
+
             const data = this.getData();
             const allPlayers = data.free?.topPerformers || data.topPerformers || [];
-            
+
             const freePlayers = allPlayers.slice(0, 5);
             const proPlayers = allPlayers.slice(5);
-            
+
             let html = freePlayers.map((p, i) => UI.renderPlayerCard(p, i)).join('');
-            
+
             if (proPlayers.length > 0) {
                 html += `<div class="pro-section-header">🔒 ${proPlayers.length} more top performers with Pro</div>`;
                 html += proPlayers.slice(0, 3).map((p, i) => UI.renderLockedCard(p, freePlayers.length + i)).join('');
                 html += UI.renderUpgradeCard();
             }
-            
+
             container.innerHTML = html;
         },
 
         renderRising() {
             const container = document.getElementById('rising-list');
             if (!container) return;
-            
+
             const data = this.getData();
             const allPlayers = data.free?.risingStars || data.risingStars || [];
-            
+
             const freePlayers = allPlayers.slice(0, 5);
             const proPlayers = allPlayers.slice(5);
-            
+
             let html = freePlayers.map((p, i) => UI.renderPlayerCard(p, i)).join('');
-            
+
             if (proPlayers.length > 0) {
                 html += `<div class="pro-section-header">🔒 ${proPlayers.length} more rising stars with Pro</div>`;
                 html += proPlayers.slice(0, 3).map((p, i) => UI.renderLockedCard(p, freePlayers.length + i)).join('');
                 html += UI.renderUpgradeCard();
             }
-            
+
             container.innerHTML = html;
         },
-        
+
         renderGems() {
             const container = document.getElementById('gems-list');
             if (!container) return;
-            
+
             const data = this.getData();
             // Hidden gems = players from lower leagues (Championship, Eredivisie, Portugal, Brazil, etc.)
             const lowerLeagues = ['Championship', 'Eredivisie', 'Primeira Liga', 'Serie A Brasil', 'Série A'];
-            
+
             let allGems = [];
-            
+
             // Get gems from API structure or static data
             if (data.free?.hiddenGems) {
                 allGems = [...(data.free.hiddenGems || []), ...(data.pro?.hiddenGems || [])];
@@ -925,13 +925,13 @@
                     ...(data.topPerformers || []),
                     ...(data.risingStars || [])
                 ];
-                allGems = allPlayers.filter(p => 
-                    lowerLeagues.some(l => p.league?.includes(l)) || 
+                allGems = allPlayers.filter(p =>
+                    lowerLeagues.some(l => p.league?.includes(l)) ||
                     p.tier === 2 ||
                     p.is_hidden_gem
                 );
             }
-            
+
             // Remove duplicates
             const seen = new Set();
             allGems = allGems.filter(p => {
@@ -939,10 +939,10 @@
                 seen.add(p.name);
                 return true;
             });
-            
+
             // Show ALL hidden gems (they're from lower leagues - main value prop)
             let html = '';
-            
+
             if (allGems.length === 0) {
                 html = `
                     <div class="empty-state">
@@ -955,22 +955,22 @@
                 // Show all gems - this is the main feature
                 html = allGems.map((p, i) => UI.renderPlayerCard(p, i)).join('');
             }
-            
+
             // ALWAYS show upgrade card - even if showing all gems (for other Pro features)
             html += UI.renderUpgradeCard();
-            
+
             container.innerHTML = html;
         },
-        
+
         renderBargains() {
             const container = document.getElementById('bargains-list');
             if (!container) return;
-            
+
             const data = this.getData();
-            
+
             // Get players with expiring contracts
             let allBargains = [];
-            
+
             if (data.bargains) {
                 allBargains = data.bargains;
             } else if (data.expiringContracts) {
@@ -983,11 +983,11 @@
                     ...(data.risingStars || []),
                     ...(data.hiddenGems || [])
                 ];
-                allBargains = allPlayers.filter(p => 
+                allBargains = allPlayers.filter(p =>
                     p.contract_expiry && p.contract_expiry <= 2026
                 );
             }
-            
+
             // Remove duplicates and sort by value
             const seen = new Set();
             allBargains = allBargains.filter(p => {
@@ -995,12 +995,12 @@
                 seen.add(p.name);
                 return true;
             }).sort((a, b) => (b.market_value_eur_m || 0) - (a.market_value_eur_m || 0));
-            
+
             const freePlayers = allBargains.slice(0, 5);
             const proPlayers = allBargains.slice(5);
-            
+
             let html = '';
-            
+
             if (freePlayers.length === 0) {
                 html = `
                     <div class="empty-state">
@@ -1014,28 +1014,28 @@
                     <strong style="color:#f87171;">⏰ Expiring 2025</strong> = Free agent soon! Clubs can negotiate pre-contracts now.
                 </div>`;
                 html += freePlayers.map((p, i) => UI.renderPlayerCard(p, i)).join('');
-                
+
                 if (proPlayers.length > 0) {
                     html += `<div class="pro-section-header">🔒 ${proPlayers.length} more bargains with Pro</div>`;
                     html += proPlayers.slice(0, 3).map((p, i) => UI.renderLockedCard(p, freePlayers.length + i)).join('');
                 }
-                
+
                 html += UI.renderUpgradeCard();
             }
-            
+
             container.innerHTML = html;
         },
-        
+
         async renderRumors() {
             const container = document.getElementById('rumors-list');
             if (!container) return;
-            
+
             // Load rumors from JSON file with auto-expiration
             let rumors = [];
             try {
                 const response = await fetch('/data/rumors.json');
                 const data = await response.json();
-                
+
                 // Filter expired rumors
                 const today = new Date();
                 rumors = data.rumors.filter(r => {
@@ -1062,7 +1062,7 @@
                     },
                     {
                         player: 'Trent Alexander-Arnold',
-                        from: 'Liverpool', 
+                        from: 'Liverpool',
                         to: 'Real Madrid',
                         fee: 'Free (contract expires 2025)',
                         status: 'hot',
@@ -1072,7 +1072,7 @@
                     }
                 ];
             }
-            
+
             let html = `
                 <div class="email-capture" style="margin-bottom: 2rem;">
                     <h3>🔔 Get Transfer Alerts</h3>
@@ -1083,7 +1083,7 @@
                     </form>
                 </div>
             `;
-            
+
             html += rumors.map(r => `
                 <div class="rumor-card">
                     <div class="rumor-header">
@@ -1104,7 +1104,7 @@
                     </div>
                 </div>
             `).join('');
-            
+
             if (rumors.length === 0) {
                 html = `
                     <div class="empty-state">
@@ -1114,7 +1114,7 @@
                     </div>
                 `;
             }
-            
+
             html += `
                 <div style="text-align: center; padding: 2rem; color: var(--text-muted);">
                     <p>Want more rumors and exclusive transfer intel?</p>
@@ -1123,20 +1123,20 @@
                     </button>
                 </div>
             `;
-            
+
             container.innerHTML = html;
         },
-        
+
         showUpgrade() {
             // PAYMENT OPTIONS - Stripe Payment Links (Anonymous & Professional)
             // To set up: https://dashboard.stripe.com/payment-links
             // 1. Create Payment Link for $9.99/month (recurring)
             // 2. Create Payment Link for $79/year (recurring)
             // 3. Replace the links below with your actual Stripe Payment Link IDs
-            
+
             const STRIPE_MONTHLY = 'https://buy.stripe.com/[YOUR_MONTHLY_LINK_ID]';
             const STRIPE_ANNUAL = 'https://buy.stripe.com/[YOUR_ANNUAL_LINK_ID]';
-            
+
             // ============================================
             // PAYPAL HOSTED BUTTONS (ANONYMOUS - NO BUSINESS ACCOUNT NEEDED)
             // ============================================
@@ -1147,36 +1147,36 @@
             // Step 5: Paste IDs below (replace YOUR_MONTHLY_ID and YOUR_ANNUAL_ID)
             // Step 6: Set USE_PAYPAL_BUTTONS = true
             // See PAYPAL_HOSTED_BUTTONS_SETUP.md for detailed guide
-            
+
             const PAYPAL_MONTHLY_BUTTON = 'https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=YOUR_MONTHLY_ID';
             const PAYPAL_ANNUAL_BUTTON = 'https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=YOUR_ANNUAL_ID';
-            
+
             // Fallback: PayPal.me (only used if buttons not configured)
             // NOTE: This will show your personal name - use Hosted Buttons instead!
             const PAYPAL_BUSINESS_NAME = 'ScoutLensPro';
             const PAYPAL_MONTHLY_ME = `https://paypal.me/${PAYPAL_BUSINESS_NAME}/9.99`;
-            const PAYPAL_ANNUAL_ME = `https://paypal.me/${PAYPAL_BUSINESS_NAME}/79`;
-            
+            const PAYPAL_ANNUAL_ME = `https://paypal.me/${PAYPAL_BUSINESS_NAME}/72`;
+
             // Set to true after you create PayPal Hosted Buttons and add the IDs above
             const USE_PAYPAL_BUTTONS = false; // ⬅️ Change to true after setup
             const PAYMENT_PROVIDER = 'paypal';
-            
+
             const MONTHLY_LINK = USE_PAYPAL_BUTTONS ? PAYPAL_MONTHLY_BUTTON : PAYPAL_MONTHLY_ME;
             const ANNUAL_LINK = USE_PAYPAL_BUTTONS ? PAYPAL_ANNUAL_BUTTON : PAYPAL_ANNUAL_ME;
-            
+
             // Check if Stripe links are configured
             const isStripeConfigured = !STRIPE_MONTHLY.includes('[YOUR_');
             if (!isStripeConfigured && PAYMENT_PROVIDER === 'stripe') {
                 console.warn('⚠️ Stripe Payment Links not configured. Please set up in Stripe Dashboard.');
                 // Fallback to PayPal if Stripe not configured
-                const MONTHLY_LINK = PAYPAL_MONTHLY;
-                const ANNUAL_LINK = PAYPAL_ANNUAL;
+                const MONTHLY_LINK = PAYPAL_MONTHLY_ME;
+                const ANNUAL_LINK = PAYPAL_ANNUAL_ME;
             }
-            
+
             // Remove existing modal if any
             const existingModal = document.getElementById('upgrade-modal');
             if (existingModal) existingModal.remove();
-            
+
             // Show upgrade modal - MORE VISIBLE
             const modal = document.createElement('div');
             modal.className = 'modal active';
@@ -1219,29 +1219,27 @@
                 </div>
             `;
             document.body.appendChild(modal);
-            
+
             // Add event listeners for mobile compatibility (instead of inline onclick)
             const backdrop = modal.querySelector('.modal-backdrop');
             const closeBtn = modal.querySelector('.modal-close');
             const paymentLinks = modal.querySelectorAll('.payment-link');
-            
+
             const closeModal = () => modal.remove();
-            
+
             backdrop.addEventListener('click', closeModal);
             backdrop.addEventListener('touchend', (e) => { e.preventDefault(); closeModal(); });
-            
+
             closeBtn.addEventListener('click', closeModal);
             closeBtn.addEventListener('touchend', (e) => { e.preventDefault(); closeModal(); });
-            
+
             // Ensure payment links work on mobile
             paymentLinks.forEach(link => {
-                link.addEventListener('touchend', (e) => {
-                    // Don't prevent default - let the link work naturally
-                    // But add a small delay for visual feedback
-                    link.style.opacity = '0.8';
-                    setTimeout(() => {
-                        window.open(link.href, '_blank', 'noopener,noreferrer');
-                    }, 100);
+                link.addEventListener('touchstart', () => {
+                    link.style.opacity = '0.7';
+                });
+                link.addEventListener('touchend', () => {
+                    link.style.opacity = '1';
                 });
             });
         },
@@ -1249,7 +1247,7 @@
         renderWatchlist() {
             const container = document.getElementById('watchlist-list');
             if (!container) return;
-            
+
             if (state.watchlist.length === 0) {
                 container.innerHTML = `
                     <div class="empty-state">
@@ -1260,7 +1258,7 @@
                 `;
                 return;
             }
-            
+
             container.innerHTML = state.watchlist.map((p, i) => UI.renderPlayerCard(p, i)).join('');
         },
 
@@ -1273,10 +1271,10 @@
                 ...(data.risingStars || []),
                 ...state.watchlist
             ];
-            
+
             const player = allPlayers.find(p => p.id === playerId);
             if (!player) return;
-            
+
             const modalBody = document.getElementById('player-modal-body');
             modalBody.innerHTML = UI.renderPlayerDetail(player);
             this.openModal('player-modal');
@@ -1290,12 +1288,12 @@
                 ...(data.topPerformers || []),
                 ...(data.risingStars || [])
             ];
-            
+
             const player = allPlayers.find(p => p.id === playerId);
             if (!player) return;
-            
+
             const index = state.watchlist.findIndex(p => p.id === playerId);
-            
+
             if (index > -1) {
                 state.watchlist.splice(index, 1);
                 UI.showNotification(`Removed ${player.name} from watchlist`);
@@ -1303,10 +1301,10 @@
                 state.watchlist.push(player);
                 UI.showNotification(`Saved ${player.name} to watchlist ★`);
             }
-            
+
             this.saveState();
             this.refreshSaveButtons();
-            
+
             if (state.currentView === 'watchlist') {
                 this.renderWatchlist();
             }
@@ -1325,17 +1323,17 @@
             e.preventDefault();
             const form = e.target;
             const email = form.querySelector('input[type="email"]').value;
-            
+
             // In production: Send to Beehiiv, ConvertKit, etc.
             // For now: Store locally and show confirmation
             console.log('Email submitted:', email);
             localStorage.setItem('scoutlens_email', email);
-            
+
             UI.showNotification('✅ Subscribed! Check your inbox Monday.');
-            
+
             // Close modal if open
             document.querySelectorAll('.modal.active').forEach(m => m.classList.remove('active'));
-            
+
             // Clear form
             form.reset();
         },
@@ -1343,9 +1341,9 @@
         sharePlayer(playerName) {
             const text = `Check out ${playerName} on ScoutLens - might be undervalued 🔭`;
             const url = window.location.href;
-            
+
             if (navigator.share) {
-                navigator.share({ title: 'ScoutLens', text, url }).catch(() => {});
+                navigator.share({ title: 'ScoutLens', text, url }).catch(() => { });
             } else {
                 // Fallback: copy to clipboard
                 navigator.clipboard.writeText(`${text}\n${url}`).then(() => {
@@ -1353,13 +1351,13 @@
                 });
             }
         },
-        
+
         formatRumorDate(dateString) {
             const date = new Date(dateString);
             const now = new Date();
             const diffMs = now - date;
             const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-            
+
             if (diffDays === 0) return 'Today';
             if (diffDays === 1) return 'Yesterday';
             if (diffDays < 7) return `${diffDays} days ago`;
@@ -1370,17 +1368,17 @@
         openModal(modalId) {
             document.getElementById(modalId)?.classList.add('active');
         },
-        
+
         // ============================================
         // PLAYER COMPARISON
         // ============================================
-        
+
         toggleCompare(playerId) {
             const player = this.findPlayer(playerId);
             if (!player) return;
-            
+
             const index = state.compareList.findIndex(p => p.id === playerId);
-            
+
             if (index > -1) {
                 state.compareList.splice(index, 1);
             } else if (state.compareList.length < 3) {
@@ -1389,11 +1387,11 @@
                 UI.showNotification('⚠️ Max 3 players to compare');
                 return;
             }
-            
+
             this.updateComparePanel();
             this.refreshCompareCheckboxes();
         },
-        
+
         findPlayer(playerId) {
             const data = this.getData();
             const allLists = [
@@ -1407,10 +1405,10 @@
             ];
             return allLists.find(p => p.id === playerId);
         },
-        
+
         updateComparePanel() {
             let panel = document.getElementById('compare-panel');
-            
+
             if (!panel) {
                 panel = document.createElement('div');
                 panel.id = 'compare-panel';
@@ -1422,41 +1420,41 @@
                 `;
                 document.body.appendChild(panel);
             }
-            
+
             const count = state.compareList.length;
             panel.querySelector('.compare-count').textContent = `${count} selected`;
             panel.querySelector('.compare-btn').disabled = count < 2;
             panel.classList.toggle('hidden', count === 0);
         },
-        
+
         refreshCompareCheckboxes() {
             document.querySelectorAll('.compare-checkbox').forEach(cb => {
                 const playerId = parseInt(cb.dataset.playerId);
                 cb.checked = state.compareList.some(p => p.id === playerId);
             });
-            
+
             document.querySelectorAll('.player-card').forEach(card => {
                 const playerId = parseInt(card.dataset.playerId);
                 card.classList.toggle('selected-compare', state.compareList.some(p => p.id === playerId));
             });
         },
-        
+
         clearCompare() {
             state.compareList = [];
             this.updateComparePanel();
             this.refreshCompareCheckboxes();
         },
-        
+
         showComparison() {
             if (state.compareList.length < 2) return;
-            
+
             const modal = document.createElement('div');
             modal.className = 'compare-modal';
             modal.id = 'compare-modal';
-            
+
             const stats = ['market_value_eur_m', 'fair_value_eur_m', 'goals', 'assists', 'xgi_per_90', 'age'];
             const labels = ['Market Value', 'Fair Value', 'Goals', 'Assists', 'xGI/90', 'Age'];
-            
+
             // Find best value for each stat
             const bestValues = {};
             stats.forEach((stat, i) => {
@@ -1467,7 +1465,7 @@
                     bestValues[stat] = Math.max(...values); // Higher is better
                 }
             });
-            
+
             modal.innerHTML = `
                 <button class="compare-close-btn" onclick="App.closeComparison()">✕</button>
                 <div class="compare-grid">
@@ -1476,19 +1474,19 @@
                             <h3>${player.name} ${player.is_hidden_gem ? '💎' : ''}</h3>
                             <p style="color:var(--text-muted);font-size:0.85rem;margin-bottom:1rem;">${player.team} • ${player.league}</p>
                             ${stats.map((stat, i) => {
-                                const value = player[stat] || 0;
-                                const isBest = value === bestValues[stat];
-                                let displayValue = value;
-                                if (stat.includes('value') || stat.includes('clause')) {
-                                    displayValue = '€' + value + 'M';
-                                }
-                                return `
+                const value = player[stat] || 0;
+                const isBest = value === bestValues[stat];
+                let displayValue = value;
+                if (stat.includes('value') || stat.includes('clause')) {
+                    displayValue = '€' + value + 'M';
+                }
+                return `
                                     <div class="compare-stat-row">
                                         <span class="compare-stat-label">${labels[i]}</span>
                                         <span class="compare-stat-value ${isBest ? 'best' : ''}">${displayValue}</span>
                                     </div>
                                 `;
-                            }).join('')}
+            }).join('')}
                             ${player.contract_expiry ? `
                                 <div class="compare-stat-row">
                                     <span class="compare-stat-label">Contract Until</span>
@@ -1505,18 +1503,18 @@
                     `).join('')}
                 </div>
             `;
-            
+
             document.body.appendChild(modal);
         },
-        
+
         closeComparison() {
             document.getElementById('compare-modal')?.remove();
         },
-        
+
         // ============================================
         // SEARCH & FILTER
         // ============================================
-        
+
         initSearch() {
             const searchInput = document.getElementById('player-search');
             if (searchInput) {
@@ -1526,31 +1524,31 @@
                     this.renderView(state.currentView);
                 });
             }
-            
+
             // Filter range displays
             const ageRange = document.getElementById('filter-age');
             const valueRange = document.getElementById('filter-value');
-            
+
             if (ageRange) {
                 ageRange.addEventListener('input', (e) => {
                     document.getElementById('age-value').textContent = e.target.value;
                 });
             }
-            
+
             if (valueRange) {
                 valueRange.addEventListener('input', (e) => {
                     document.getElementById('value-display').textContent = `€${e.target.value}M`;
                 });
             }
         },
-        
+
         initMobileMenu() {
             const hamburger = document.getElementById('nav-hamburger');
             const menu = document.getElementById('nav-menu');
             const overlay = document.getElementById('nav-menu-overlay');
             const closeBtn = document.getElementById('nav-menu-close');
             const menuLinks = document.querySelectorAll('.nav-menu-link');
-            
+
             // Show hamburger on mobile
             if (window.innerWidth <= 768) {
                 if (hamburger) hamburger.style.display = 'block';
@@ -1558,20 +1556,20 @@
                     document.querySelector('.nav-links').style.display = 'none';
                 }
             }
-            
+
             // Toggle menu
             const toggleMenu = () => {
                 if (menu) menu.classList.toggle('active');
                 if (overlay) overlay.classList.toggle('active');
                 document.body.style.overflow = menu?.classList.contains('active') ? 'hidden' : '';
             };
-            
+
             const closeMenu = () => {
                 if (menu) menu.classList.remove('active');
                 if (overlay) overlay.classList.remove('active');
                 document.body.style.overflow = '';
             };
-            
+
             if (hamburger) {
                 hamburger.addEventListener('click', toggleMenu);
                 hamburger.addEventListener('touchend', (e) => {
@@ -1579,7 +1577,7 @@
                     toggleMenu();
                 }, { passive: false });
             }
-            
+
             if (closeBtn) {
                 closeBtn.addEventListener('click', closeMenu);
                 closeBtn.addEventListener('touchend', (e) => {
@@ -1587,11 +1585,11 @@
                     closeMenu();
                 }, { passive: false });
             }
-            
+
             if (overlay) {
                 overlay.addEventListener('click', closeMenu);
             }
-            
+
             // Handle menu link clicks
             menuLinks.forEach(link => {
                 link.addEventListener('click', (e) => {
@@ -1603,7 +1601,7 @@
                     }
                 });
             });
-            
+
             // Handle window resize
             window.addEventListener('resize', () => {
                 if (window.innerWidth > 768) {
@@ -1620,12 +1618,12 @@
                 }
             });
         },
-        
+
         toggleFilters() {
             const panel = document.getElementById('filter-panel');
             const btn = document.getElementById('filter-toggle');
             const isMobile = window.innerWidth <= 768;
-            
+
             if (isMobile) {
                 // Use bottom sheet on mobile
                 panel?.classList.toggle('filter-bottom-sheet');
@@ -1634,10 +1632,10 @@
                 // Use sidebar on desktop
                 panel?.classList.toggle('hidden');
             }
-            
+
             btn?.classList.toggle('active');
         },
-        
+
         applyFilters() {
             state.filters = {
                 league: document.getElementById('filter-league')?.value || '',
@@ -1646,12 +1644,12 @@
                 maxValue: parseInt(document.getElementById('filter-value')?.value) || 200,
                 sortBy: document.getElementById('sort-by')?.value || 'undervaluation'
             };
-            
+
             this.toggleFilters();
             this.renderView(state.currentView);
             UI.showNotification('✅ Filters applied');
         },
-        
+
         resetFilters() {
             state.filters = {
                 league: '',
@@ -1661,7 +1659,7 @@
                 sortBy: 'undervaluation'
             };
             state.searchQuery = '';
-            
+
             // Reset UI
             document.getElementById('filter-league').value = '';
             document.getElementById('filter-position').value = '';
@@ -1671,40 +1669,40 @@
             document.getElementById('player-search').value = '';
             document.getElementById('age-value').textContent = '40';
             document.getElementById('value-display').textContent = '€200M';
-            
+
             this.toggleFilters();
             this.renderView(state.currentView);
             UI.showNotification('🔄 Filters reset');
         },
-        
+
         filterAndSortPlayers(players) {
             let filtered = [...players];
-            
+
             // Search filter
             if (state.searchQuery) {
-                filtered = filtered.filter(p => 
+                filtered = filtered.filter(p =>
                     p.name?.toLowerCase().includes(state.searchQuery) ||
                     p.team?.toLowerCase().includes(state.searchQuery) ||
                     p.league?.toLowerCase().includes(state.searchQuery)
                 );
             }
-            
+
             // League filter
             if (state.filters.league) {
                 filtered = filtered.filter(p => p.league === state.filters.league);
             }
-            
+
             // Position filter
             if (state.filters.position) {
                 filtered = filtered.filter(p => p.position === state.filters.position);
             }
-            
+
             // Age filter
             filtered = filtered.filter(p => (p.age || 25) <= state.filters.maxAge);
-            
+
             // Value filter
             filtered = filtered.filter(p => (p.market_value_eur_m || 0) <= state.filters.maxValue);
-            
+
             // Sort
             const sortBy = state.filters.sortBy;
             filtered.sort((a, b) => {
@@ -1725,14 +1723,14 @@
                         return 0;
                 }
             });
-            
+
             return filtered;
         },
-        
+
         // ============================================
         // EXPORT TO CSV
         // ============================================
-        
+
         exportToCSV() {
             const data = this.getData();
             let allPlayers = [
@@ -1742,7 +1740,7 @@
                 ...(data.hiddenGems || []),
                 ...state.watchlist
             ];
-            
+
             // Remove duplicates
             const seen = new Set();
             allPlayers = allPlayers.filter(p => {
@@ -1750,10 +1748,10 @@
                 seen.add(p.id);
                 return true;
             });
-            
+
             // Apply current filters
             allPlayers = this.filterAndSortPlayers(allPlayers);
-            
+
             // Create CSV
             const headers = ['Name', 'Team', 'League', 'Position', 'Age', 'Market Value (€M)', 'Fair Value (€M)', 'Undervaluation %', 'Goals', 'Assists', 'xGI/90', 'Contract Expiry'];
             const rows = allPlayers.map(p => [
@@ -1770,9 +1768,9 @@
                 p.xgi_per_90,
                 p.contract_expiry || 'N/A'
             ]);
-            
+
             const csv = [headers, ...rows].map(row => row.join(',')).join('\n');
-            
+
             // Download
             const blob = new Blob([csv], { type: 'text/csv' });
             const url = URL.createObjectURL(blob);
@@ -1781,21 +1779,21 @@
             a.download = `scoutlens-players-${new Date().toISOString().split('T')[0]}.csv`;
             a.click();
             URL.revokeObjectURL(url);
-            
+
             UI.showNotification('📥 CSV downloaded!');
         },
-        
+
         // ============================================
         // PRICE ALERTS
         // ============================================
-        
+
         setPriceAlert(playerId) {
             const player = this.findPlayer(playerId);
             if (!player) return;
-            
+
             const currentValue = player.market_value_eur_m || 0;
             const targetPrice = prompt(`Set alert when ${player.name}'s value drops below (€M):`, Math.floor(currentValue * 0.8));
-            
+
             if (targetPrice && !isNaN(parseFloat(targetPrice))) {
                 state.priceAlerts.push({
                     playerId,
@@ -1804,26 +1802,26 @@
                     currentValue,
                     createdAt: new Date().toISOString()
                 });
-                
+
                 localStorage.setItem('scoutlens_alerts', JSON.stringify(state.priceAlerts));
                 UI.showNotification(`🔔 Alert set: ${player.name} < €${targetPrice}M`);
             }
         },
-        
+
         loadPriceAlerts() {
             const saved = localStorage.getItem('scoutlens_alerts');
             if (saved) {
                 state.priceAlerts = JSON.parse(saved);
             }
         },
-        
+
         // ============================================
         // EMAIL CAPTURE
         // ============================================
-        
+
         showEmailCapture() {
             if (state.emailSubmitted) return '';
-            
+
             return `
                 <div class="email-capture">
                     <h3>📬 Weekly Hidden Gems Report</h3>
@@ -1835,38 +1833,38 @@
                 </div>
             `;
         },
-        
+
         submitEmail(e) {
             e.preventDefault();
             const email = e.target.querySelector('input').value.trim();
-            
+
             // Validate email
             if (!Security.isValidEmail(email)) {
                 UI.showNotification('⚠️ Please enter a valid email address', 'error');
                 return;
             }
-            
+
             // Store email (in production, send to your email service)
             localStorage.setItem('scoutlens_email', Security.escapeHtml(email));
             state.emailSubmitted = true;
-            
+
             // Hide the form
             document.querySelector('.email-capture')?.remove();
-            
+
             UI.showNotification('✅ Subscribed! Check your inbox Monday.');
-            
+
             // Log for later integration
             console.log('Email captured:', email);
         },
-        
+
         // ============================================
         // PRO USER MANAGEMENT
         // ============================================
-        
+
         checkProAccess() {
             return state.isPro;
         },
-        
+
         activatePro(email) {
             state.isPro = true;
             state.proEmail = email;
@@ -1875,12 +1873,12 @@
                 email: email,
                 activatedAt: new Date().toISOString()
             }));
-            
+
             UI.showNotification('🎉 Pro activated! Enjoy unlimited access.');
             this.renderView(state.currentView);
             this.updateProBadge();
         },
-        
+
         showProActivation() {
             const modal = document.createElement('div');
             modal.className = 'modal active';
@@ -1902,41 +1900,41 @@
             `;
             document.body.appendChild(modal);
         },
-        
+
         verifyProEmail(e) {
             e.preventDefault();
             const email = e.target.querySelector('input').value.trim();
-            
+
             // Validate email format
             if (!Security.isValidEmail(email)) {
                 UI.showNotification('⚠️ Please enter a valid email address', 'error');
                 return;
             }
-            
+
             // IMPORTANT: In production, verify against your payment provider:
             // 1. Send email to your server
             // 2. Server checks Stripe/PayPal for payment with this email
             // 3. Server returns verification token
             // 4. Only then activate Pro
-            
+
             // For demo purposes, we'll activate
             // REPLACE THIS with actual server verification in production!
             console.warn('⚠️ Pro verification is in demo mode. Implement server-side verification for production.');
-            
+
             this.activatePro(Security.escapeHtml(email));
             e.target.closest('.modal').remove();
         },
-        
+
         updateProBadge() {
             const badge = document.getElementById('pro-badge');
             if (state.isPro && badge) {
                 badge.style.display = 'flex';
             }
         },
-        
+
         renderProGate() {
             if (state.isPro) return '';
-            
+
             return `
                 <div class="pro-gate" style="background:linear-gradient(135deg,rgba(251,191,36,0.1),rgba(0,212,170,0.1));border:2px solid var(--accent-gold);border-radius:12px;padding:2rem;text-align:center;margin:1rem 0;">
                     <h3 style="color:var(--accent-gold);margin-bottom:0.5rem;">🔒 Pro Content</h3>
@@ -1949,7 +1947,7 @@
             `;
         }
     };
-    
+
     // Initialize search on load
     document.addEventListener('DOMContentLoaded', () => {
         App.initSearch();
@@ -1958,4 +1956,7 @@
 
     // Initialize on DOM ready
     document.addEventListener('DOMContentLoaded', () => App.init());
+
+    // Expose App to window for global access
+    window.App = App;
 })();
