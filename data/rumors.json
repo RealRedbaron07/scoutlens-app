@@ -1,7 +1,8 @@
 {
-  "lastUpdated": "2024-12-24",
+  "last_updated": "2024-12-24",
   "rumors": [
     {
+      "id": "rumor_001",
       "player": "Mohamed Salah",
       "from": "Liverpool",
       "to": "Saudi Pro League / PSG",
@@ -9,11 +10,11 @@
       "status": "hot",
       "source": "Fabrizio Romano",
       "date": "2024-12-20",
-      "expires": "2025-01-20",
       "verified": true,
-      "league": "Premier League"
+      "expires": "2025-01-20"
     },
     {
+      "id": "rumor_002",
       "player": "Trent Alexander-Arnold",
       "from": "Liverpool",
       "to": "Real Madrid",
@@ -21,11 +22,11 @@
       "status": "hot",
       "source": "Multiple Sources",
       "date": "2024-12-19",
-      "expires": "2025-01-19",
       "verified": true,
-      "league": "Premier League"
+      "expires": "2025-01-19"
     },
     {
+      "id": "rumor_003",
       "player": "Joshua Kimmich",
       "from": "Bayern Munich",
       "to": "Barcelona / Man City",
@@ -33,11 +34,59 @@
       "status": "hot",
       "source": "Sky Germany",
       "date": "2024-12-18",
-      "expires": "2025-01-18",
       "verified": true,
-      "league": "Bundesliga"
+      "expires": "2025-01-18"
     },
     {
+      "id": "rumor_004",
+      "player": "Alphonso Davies",
+      "from": "Bayern Munich",
+      "to": "Real Madrid",
+      "fee": "Free (contract expires 2025)",
+      "status": "warm",
+      "source": "Marca",
+      "date": "2024-12-17",
+      "verified": true,
+      "expires": "2025-01-17"
+    },
+    {
+      "id": "rumor_005",
+      "player": "Viktor Gyökeres",
+      "from": "Sporting CP",
+      "to": "Arsenal / Man United / Chelsea",
+      "fee": "€100M release clause",
+      "status": "hot",
+      "source": "Record Portugal",
+      "date": "2024-12-16",
+      "verified": true,
+      "expires": "2025-01-16"
+    },
+    {
+      "id": "rumor_006",
+      "player": "Florian Wirtz",
+      "from": "Bayer Leverkusen",
+      "to": "Real Madrid / Bayern",
+      "fee": "€150M+",
+      "status": "warm",
+      "source": "Kicker",
+      "date": "2024-12-15",
+      "verified": true,
+      "expires": "2025-01-15"
+    },
+    {
+      "id": "rumor_007",
+      "player": "Omar Marmoush",
+      "from": "Eintracht Frankfurt",
+      "to": "Liverpool / Arsenal",
+      "fee": "€40-50M",
+      "status": "warm",
+      "source": "Bild",
+      "date": "2024-12-14",
+      "verified": true,
+      "expires": "2025-01-14"
+    },
+    {
+      "id": "rumor_008",
       "player": "Nico Williams",
       "from": "Athletic Bilbao",
       "to": "Barcelona / Chelsea",
@@ -45,21 +94,9 @@
       "status": "warm",
       "source": "Sport",
       "date": "2024-12-13",
-      "expires": "2025-01-13",
       "verified": true,
-      "league": "La Liga"
-    },
-    {
-      "player": "Omar Marmoush",
-      "from": "Eintracht Frankfurt",
-      "to": "Premier League clubs",
-      "fee": "€60M rumored",
-      "status": "warm",
-      "source": "Bild",
-      "date": "2024-12-15",
-      "expires": "2025-01-15",
-      "verified": false,
-      "league": "Bundesliga"
+      "expires": "2025-01-13"
     }
   ]
 }
+

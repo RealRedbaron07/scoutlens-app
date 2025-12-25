@@ -355,6 +355,21 @@ body::before {
     transition: all var(--transition-base);
     -webkit-tap-highlight-color: transparent;
     touch-action: manipulation;
+    /* Modern card design with subtle depth */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Desktop: Enhanced hover effect */
+@media (min-width: 769px) {
+    .player-card {
+        backdrop-filter: blur(10px);
+    }
+    
+    .player-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(0, 212, 170, 0.15);
+        border-color: var(--accent-primary);
+    }
 }
 
 .player-card:hover {
@@ -997,18 +1012,16 @@ body::before {
    RESPONSIVE - UNIFIED DESIGN
    ============================================ */
 @media (max-width: 768px) {
-    /* Mobile UX Improvements - Less Cramped */
-    
-    /* Navigation - More breathing room */
+    /* Navigation - Unified layout */
     .nav {
         flex-wrap: wrap;
-        gap: var(--space-md);
-        padding: var(--space-lg) var(--space-md);
+        gap: var(--space-sm);
+        padding: var(--space-md);
     }
     
     .nav-brand {
         width: 100%;
-        margin-bottom: var(--space-sm);
+        margin-bottom: var(--space-xs);
     }
     
     .nav-links {
@@ -1016,116 +1029,100 @@ body::before {
         overflow-x: auto;
         -webkit-overflow-scrolling: touch;
         scroll-snap-type: x mandatory;
-        gap: var(--space-sm);
-        padding: var(--space-sm) 0;
-        padding-bottom: var(--space-md);
+        gap: 0.5rem; /* Better spacing */
+        padding-bottom: var(--space-xs);
+        padding-right: 1rem; /* Prevent cut-off */
     }
     
     .nav-link {
-        padding: var(--space-sm) var(--space-md);
+        padding: 0.75rem 1rem; /* Larger touch target */
         white-space: nowrap;
         scroll-snap-align: start;
         flex-shrink: 0;
-        min-height: 48px; /* Better touch target */
+        min-height: 44px; /* Apple HIG standard */
     }
     
     .nav-link-text {
         display: inline;
-        font-size: 0.9rem;
+        font-size: 0.85rem;
     }
     
     .nav-link-icon {
-        font-size: 1.1rem;
-        margin-right: 6px;
+        font-size: 1rem;
+        margin-right: 4px;
     }
     
     .nav-actions {
         display: flex;
-        gap: var(--space-sm);
+        gap: var(--space-xs);
         width: 100%;
-        margin-top: var(--space-sm);
+        margin-top: var(--space-xs);
     }
     
-    /* Search bar - More spacious */
+    /* Search bar in nav - unified */
     .search-filter-bar {
         flex: 1;
         margin: 0;
         min-width: 0;
-        padding: var(--space-sm) 0;
     }
     
     .search-input {
         width: 100%;
         min-width: 150px;
-        padding: 0.75rem 1rem 0.75rem 2.75rem;
-        font-size: 1rem; /* Prevent zoom on iOS */
     }
     
     .search-input:focus {
         width: 100%;
     }
     
-    /* Hero - Better spacing */
+    /* Hero - Keep same layout, just adjust spacing */
     .hero {
-        padding: var(--space-2xl) var(--space-lg);
+        padding: var(--space-xl) var(--space-md);
     }
     
     .hero-stats {
-        gap: var(--space-xl);
+        gap: var(--space-lg);
         flex-wrap: wrap;
         justify-content: center;
-        margin-top: var(--space-xl);
     }
     
     .hero-stat-value {
-        font-size: 1.75rem;
+        font-size: 1.5rem;
     }
     
-    /* Main content - More padding */
+    /* Main content */
     .main {
-        padding: var(--space-lg);
+        padding: var(--space-md);
     }
     
-    /* Player cards - More spacious, better touch targets */
+    /* Player cards - Improved mobile spacing */
     .player-card {
-        padding: var(--space-lg);
-        margin-bottom: var(--space-md);
-        border-radius: var(--radius-lg);
+        padding: 1.25rem; /* Increased from 1rem for better touch */
+        margin-bottom: 1rem; /* More space between cards */
     }
     
     .player-card-main {
-        margin-left: 48px; /* More space for rank */
-        gap: var(--space-md);
+        margin-left: 44px; /* Slightly more space for rank */
     }
     
     .player-rank {
-        display: flex;
-        width: 40px;
-        height: 40px;
-        font-size: 0.85rem;
+        display: flex; /* Keep visible */
+        width: 36px; /* Larger for better visibility */
+        height: 36px;
+        font-size: 0.8rem;
     }
     
     .player-card-stats {
         grid-template-columns: repeat(2, 1fr);
-        margin-left: 48px;
-        gap: var(--space-md);
-        margin-top: var(--space-md);
+        margin-left: 44px; /* Align with card content */
+        gap: 0.75rem; /* Better spacing */
     }
     
-    /* Section intros - More spacing */
-    .section-intro {
-        margin-bottom: var(--space-xl);
-        padding: 0 var(--space-sm);
-    }
-    
-    .section-intro h2 {
-        font-size: 1.75rem;
-        margin-bottom: var(--space-md);
-    }
-    
-    .section-intro p {
-        font-size: 1rem;
-        line-height: 1.6;
+    /* Better touch targets */
+    .player-save-btn {
+        min-width: 48px;
+        min-height: 48px;
+        padding: 0.75rem;
     }
     
     /* CTA and forms */
@@ -2132,6 +2129,27 @@ body::before {
     padding: 4px 8px;
     border-radius: 4px;
     font-weight: 700;
+}
+
+/* League Tier Badges */
+.tier-badge {
+    display: inline-block;
+    font-size: 0.65rem;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-weight: 700;
+    margin-left: 6px;
+    vertical-align: middle;
+}
+
+.tier-badge.tier-2 {
+    background: linear-gradient(135deg, #00d4aa, #00b894);
+    color: #000;
+}
+
+.tier-badge.tier-3 {
+    background: linear-gradient(135deg, #a855f7, #9333ea);
+    color: #fff;
 }
 
 /* Pro Section Header */

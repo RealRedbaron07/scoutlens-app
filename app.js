@@ -190,7 +190,7 @@
                             <div class="player-name">${player.name} ${gemBadge}</div>
                             <div class="player-meta">
                                 <span class="player-team">${player.team}</span>
-                                <span class="player-league">${player.league}</span>
+                                <span class="player-league">${player.league} ${tierBadge}</span>
                                 ${confidenceBadge}
                                 ${contractBadge}
                             </div>
@@ -1018,37 +1018,24 @@
             const container = document.getElementById('rumors-list');
             if (!container) return;
             
-            // Load rumors from API endpoint (with caching) or fallback to JSON
+            // Load rumors from JSON file with auto-expiration
             let rumors = [];
             try {
-                // Try API endpoint first (better caching, auto-expiration)
-                const response = await fetch('/api/rumors', {
-                    headers: { 'Accept': 'application/json' }
-                });
+                const response = await fetch('/data/rumors.json');
+                const data = await response.json();
                 
-                if (response.ok) {
-                    const data = await response.json();
-                    rumors = data.rumors || [];
-                } else {
-                    throw new Error('API not available');
-                }
-            } catch (apiError) {
-                // Fallback to static JSON file
-                try {
-                    const response = await fetch('/data/rumors.json');
-                    const data = await response.json();
-                    
-                    // Filter expired rumors
-                    const today = new Date();
-                    rumors = (data.rumors || []).filter(r => {
-                        if (!r.expires) return true;
-                        const expiry = new Date(r.expires);
-                        return expiry > today;
-                    }).sort((a, b) => {
-                        return new Date(b.date) - new Date(a.date);
-                    });
-                } catch (error) {
-                    console.warn('Could not load rumors, using fallback');
+                // Filter expired rumors
+                const today = new Date();
+                rumors = data.rumors.filter(r => {
+                    if (!r.expires) return true; // Keep if no expiry
+                    const expiry = new Date(r.expires);
+                    return expiry > today;
+                }).sort((a, b) => {
+                    // Sort by date (newest first)
+                    return new Date(b.date) - new Date(a.date);
+                });
+            } catch (error) {
+                console.warn('Could not load rumors.json, using fallback');
                 // Fallback to hardcoded rumors if JSON fails
                 rumors = [
                     {
@@ -1138,26 +1125,25 @@
             const STRIPE_MONTHLY = 'https://buy.stripe.com/[YOUR_MONTHLY_LINK_ID]';
             const STRIPE_ANNUAL = 'https://buy.stripe.com/[YOUR_ANNUAL_LINK_ID]';
             
-            // PayPal Business Links (Anonymous - Recommended)
-            // To set up anonymous PayPal:
-            // 1. Go to PayPal Settings > Profile > Business Information
-            // 2. Change "Business Display Name" to "ScoutLens Pro" (or similar)
-            // 3. Use this link format (replace with your business name)
-            const PAYPAL_BUSINESS_NAME = 'ScoutLensPro'; // Change this to your PayPal business display name
-            const PAYPAL_MONTHLY = `https://paypal.me/${PAYPAL_BUSINESS_NAME}/9.99`;
-            const PAYPAL_ANNUAL = `https://paypal.me/${PAYPAL_BUSINESS_NAME}/79`;
+            // PayPal Hosted Buttons (ANONYMOUS - Recommended)
+            // To create: PayPal Dashboard > Tools > PayPal Buttons > Create Button
+            // Then replace YOUR_MONTHLY_ID and YOUR_ANNUAL_ID with your button IDs
+            const PAYPAL_MONTHLY_BUTTON = 'https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=YOUR_MONTHLY_ID';
+            const PAYPAL_ANNUAL_BUTTON = 'https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=YOUR_ANNUAL_ID';
             
-            // Alternative: PayPal Business Payment Buttons (Most Anonymous)
-            // Create in PayPal Dashboard: Tools > PayPal Buttons > Create Button
-            // Then use: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=YOUR_ID
-            // const PAYPAL_MONTHLY = 'https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=YOUR_MONTHLY_ID';
-            // const PAYPAL_ANNUAL = 'https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=YOUR_ANNUAL_ID';
+            // Fallback: PayPal.me Business Link (if buttons not set up)
+            // Create business account and set display name to "ScoutLens Pro"
+            const PAYPAL_BUSINESS_NAME = 'ScoutLensPro'; // Change to your business display name
+            const PAYPAL_MONTHLY_ME = `https://paypal.me/${PAYPAL_BUSINESS_NAME}/9.99`;
+            const PAYPAL_ANNUAL_ME = `https://paypal.me/${PAYPAL_BUSINESS_NAME}/79`;
             
-            // Use PayPal by default (configured for anonymity)
-            // Change to 'stripe' if you set up Stripe
+            // Use PayPal Hosted Buttons for anonymity (no username visible)
+            // Fallback to PayPal.me if buttons not configured
+            const USE_PAYPAL_BUTTONS = false; // Set to true after creating buttons
             const PAYMENT_PROVIDER = 'paypal';
-            const MONTHLY_LINK = PAYMENT_PROVIDER === 'stripe' ? STRIPE_MONTHLY : PAYPAL_MONTHLY;
-            const ANNUAL_LINK = PAYMENT_PROVIDER === 'stripe' ? STRIPE_ANNUAL : PAYPAL_ANNUAL;
+            
+            const MONTHLY_LINK = USE_PAYPAL_BUTTONS ? PAYPAL_MONTHLY_BUTTON : PAYPAL_MONTHLY_ME;
+            const ANNUAL_LINK = USE_PAYPAL_BUTTONS ? PAYPAL_ANNUAL_BUTTON : PAYPAL_ANNUAL_ME;
             
             // Check if Stripe links are configured
             const isStripeConfigured = !STRIPE_MONTHLY.includes('[YOUR_');
