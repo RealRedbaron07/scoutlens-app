@@ -63,7 +63,11 @@
         priceAlerts: [],  // {playerId, targetPrice}
         isPro: false,     // Pro user status (client-side only - not trusted)
         proEmail: null,   // Email for Pro access
-        proToken: null    // Server-verified Pro token (trusted)
+        proToken: null,   // Server-verified Pro token (trusted)
+        pagination: {
+            currentPage: 1,
+            itemsPerPage: 20
+        }
     };
 
     // Development mode check (for testing only)
@@ -887,6 +891,40 @@
                             if (modal) modal.remove();
                             this.showUpgrade();
                             break;
+                        case 'page-prev':
+                            if (state.pagination.currentPage > 1) {
+                                state.pagination.currentPage--;
+                                this.renderView(state.currentView);
+                            }
+                            break;
+                        case 'page-next':
+                            let totalItems = 0;
+                            if (state.currentView === 'gems') {
+                                const data = this.getData();
+                                const lowerLeagues = ['Championship', 'Eredivisie', 'Primeira Liga', 'Serie A Brasil', 'Série A'];
+                                let allGems = data.hiddenGems || [];
+                                if (!allGems.length) {
+                                    const allPlayers = [
+                                        ...(data.undervalued || []),
+                                        ...(data.topPerformers || []),
+                                        ...(data.risingStars || [])
+                                    ];
+                                    allGems = allPlayers.filter(p =>
+                                        lowerLeagues.some(l => p.league?.includes(l)) ||
+                                        p.tier === 2 ||
+                                        p.is_hidden_gem
+                                    );
+                                }
+                                totalItems = allGems.length;
+                            } else if (state.currentView === 'watchlist') {
+                                totalItems = state.watchlist.length;
+                            }
+                            const maxPage = Math.ceil(totalItems / state.pagination.itemsPerPage);
+                            if (state.pagination.currentPage < maxPage) {
+                                state.pagination.currentPage++;
+                                this.renderView(state.currentView);
+                            }
+                            break;
                     }
                     return;
                 }
@@ -938,6 +976,9 @@
         },
 
         switchView(viewId) {
+            // Reset pagination when switching views
+            state.pagination.currentPage = 1;
+
             // Update nav
             document.querySelectorAll('.nav-link').forEach(link => {
                 link.classList.toggle('active', link.dataset.view === viewId);
@@ -988,8 +1029,9 @@
             const container = document.getElementById('undervalued-list');
             if (!container) return;
 
-            const data = this.getData();
-            const allPlayers = data.free?.undervalued || data.undervalued || [];
+            try {
+                const data = this.getData();
+                const allPlayers = data.free?.undervalued || data.undervalued || [];
 
             // FREE: Show only first 5
             const freePlayers = allPlayers.slice(0, 5);
@@ -1001,279 +1043,325 @@
             // ALWAYS show upgrade card after free players
             html += UI.renderUpgradeCard();
 
-            if (proPlayers.length > 0) {
-                html += `<div class="pro-section-header">🔒 ${proPlayers.length} more undervalued players with Pro</div>`;
-                // Show locked previews
-                html += proPlayers.slice(0, 5).map((p, i) => UI.renderLockedCard(p, freePlayers.length + i)).join('');
-            }
+                if (proPlayers.length > 0) {
+                    html += `<div class="pro-section-header">🔒 ${proPlayers.length} more undervalued players with Pro</div>`;
+                    // Show locked previews
+                    html += proPlayers.slice(0, 5).map((p, i) => UI.renderLockedCard(p, freePlayers.length + i)).join('');
+                }
 
-            container.innerHTML = html;
+                container.innerHTML = html;
+            } catch (e) {
+                console.error('Error rendering undervalued players:', e);
+                container.innerHTML = '<div class="error-state" style="padding:2rem;text-align:center;color:var(--text-muted);"><p>⚠️ Failed to load players. Please refresh the page.</p></div>';
+            }
         },
 
         renderPerformers() {
             const container = document.getElementById('performers-list');
             if (!container) return;
 
-            const data = this.getData();
-            const allPlayers = data.free?.topPerformers || data.topPerformers || [];
+            try {
+                const data = this.getData();
+                const allPlayers = data.free?.topPerformers || data.topPerformers || [];
 
-            const freePlayers = allPlayers.slice(0, 5);
-            const proPlayers = allPlayers.slice(5);
+                const freePlayers = allPlayers.slice(0, 5);
+                const proPlayers = allPlayers.slice(5);
 
-            let html = freePlayers.map((p, i) => UI.renderPlayerCard(p, i)).join('');
+                let html = freePlayers.map((p, i) => UI.renderPlayerCard(p, i)).join('');
 
-            if (proPlayers.length > 0) {
-                html += `<div class="pro-section-header">🔒 ${proPlayers.length} more top performers with Pro</div>`;
-                html += proPlayers.slice(0, 3).map((p, i) => UI.renderLockedCard(p, freePlayers.length + i)).join('');
-                html += UI.renderUpgradeCard();
+                if (proPlayers.length > 0) {
+                    html += `<div class="pro-section-header">🔒 ${proPlayers.length} more top performers with Pro</div>`;
+                    html += proPlayers.slice(0, 3).map((p, i) => UI.renderLockedCard(p, freePlayers.length + i)).join('');
+                    html += UI.renderUpgradeCard();
+                }
+
+                container.innerHTML = html;
+            } catch (e) {
+                console.error('Error rendering performers:', e);
+                container.innerHTML = '<div class="error-state" style="padding:2rem;text-align:center;color:var(--text-muted);"><p>⚠️ Failed to load players. Please refresh the page.</p></div>';
             }
-
-            container.innerHTML = html;
         },
 
         renderRising() {
             const container = document.getElementById('rising-list');
             if (!container) return;
 
-            const data = this.getData();
-            const allPlayers = data.free?.risingStars || data.risingStars || [];
+            try {
+                const data = this.getData();
+                const allPlayers = data.free?.risingStars || data.risingStars || [];
 
-            const freePlayers = allPlayers.slice(0, 5);
-            const proPlayers = allPlayers.slice(5);
+                const freePlayers = allPlayers.slice(0, 5);
+                const proPlayers = allPlayers.slice(5);
 
-            let html = freePlayers.map((p, i) => UI.renderPlayerCard(p, i)).join('');
+                let html = freePlayers.map((p, i) => UI.renderPlayerCard(p, i)).join('');
 
-            if (proPlayers.length > 0) {
-                html += `<div class="pro-section-header">🔒 ${proPlayers.length} more rising stars with Pro</div>`;
-                html += proPlayers.slice(0, 3).map((p, i) => UI.renderLockedCard(p, freePlayers.length + i)).join('');
-                html += UI.renderUpgradeCard();
+                if (proPlayers.length > 0) {
+                    html += `<div class="pro-section-header">🔒 ${proPlayers.length} more rising stars with Pro</div>`;
+                    html += proPlayers.slice(0, 3).map((p, i) => UI.renderLockedCard(p, freePlayers.length + i)).join('');
+                    html += UI.renderUpgradeCard();
+                }
+
+                container.innerHTML = html;
+            } catch (e) {
+                console.error('Error rendering rising stars:', e);
+                container.innerHTML = '<div class="error-state" style="padding:2rem;text-align:center;color:var(--text-muted);"><p>⚠️ Failed to load players. Please refresh the page.</p></div>';
             }
-
-            container.innerHTML = html;
         },
 
         renderGems() {
             const container = document.getElementById('gems-list');
             if (!container) return;
 
-            const data = this.getData();
-            // Hidden gems = players from lower leagues (Championship, Eredivisie, Portugal, Brazil, etc.)
-            const lowerLeagues = ['Championship', 'Eredivisie', 'Primeira Liga', 'Serie A Brasil', 'Série A'];
+            try {
+                const data = this.getData();
+                // Hidden gems = players from lower leagues (Championship, Eredivisie, Portugal, Brazil, etc.)
+                const lowerLeagues = ['Championship', 'Eredivisie', 'Primeira Liga', 'Serie A Brasil', 'Série A'];
 
-            let allGems = [];
+                let allGems = [];
 
-            // Get gems from API structure or static data
-            if (data.free?.hiddenGems) {
-                allGems = [...(data.free.hiddenGems || []), ...(data.pro?.hiddenGems || [])];
-            } else if (data.hiddenGems) {
-                allGems = data.hiddenGems;
-            } else {
-                // Filter from undervalued/performers for lower league players
-                const allPlayers = [
-                    ...(data.undervalued || []),
-                    ...(data.topPerformers || []),
-                    ...(data.risingStars || [])
-                ];
-                allGems = allPlayers.filter(p =>
-                    lowerLeagues.some(l => p.league?.includes(l)) ||
-                    p.tier === 2 ||
-                    p.is_hidden_gem
-                );
+                // Get gems from API structure or static data
+                if (data.free?.hiddenGems) {
+                    allGems = [...(data.free.hiddenGems || []), ...(data.pro?.hiddenGems || [])];
+                } else if (data.hiddenGems) {
+                    allGems = data.hiddenGems;
+                } else {
+                    // Filter from undervalued/performers for lower league players
+                    const allPlayers = [
+                        ...(data.undervalued || []),
+                        ...(data.topPerformers || []),
+                        ...(data.risingStars || [])
+                    ];
+                    allGems = allPlayers.filter(p =>
+                        lowerLeagues.some(l => p.league?.includes(l)) ||
+                        p.tier === 2 ||
+                        p.is_hidden_gem
+                    );
+                }
+
+                // Remove duplicates
+                const seen = new Set();
+                allGems = allGems.filter(p => {
+                    if (seen.has(p.name)) return false;
+                    seen.add(p.name);
+                    return true;
+                });
+
+                // Show ALL hidden gems (they're from lower leagues - main value prop)
+                // Add pagination for large lists
+                const itemsPerPage = state.pagination.itemsPerPage;
+                const currentPage = state.pagination.currentPage;
+                const totalPages = Math.ceil(allGems.length / itemsPerPage);
+                const startIdx = (currentPage - 1) * itemsPerPage;
+                const endIdx = startIdx + itemsPerPage;
+                const paginatedGems = allGems.slice(startIdx, endIdx);
+
+                let html = '';
+
+                if (allGems.length === 0) {
+                    html = `
+                        <div class="empty-state">
+                            <span class="empty-state-icon">💎</span>
+                            <h3>Hidden Gems Coming Soon</h3>
+                            <p>We're adding Championship, Eredivisie, Portuguese & Brazilian league data.</p>
+                        </div>
+                    `;
+                } else {
+                    // Show paginated gems
+                    html = paginatedGems.map((p, i) => UI.renderPlayerCard(p, startIdx + i)).join('');
+                    
+                    // Add pagination controls if more than one page
+                    if (totalPages > 1) {
+                        html += `<div class="pagination-controls" style="display:flex;justify-content:center;align-items:center;gap:1rem;margin:2rem 0;padding:1rem;">
+                            <button class="btn btn-ghost" data-action="page-prev" ${currentPage === 1 ? 'disabled' : ''} style="min-width:44px;min-height:44px;">←</button>
+                            <span style="color:var(--text-secondary);">Page ${currentPage} of ${totalPages}</span>
+                            <button class="btn btn-ghost" data-action="page-next" ${currentPage === totalPages ? 'disabled' : ''} style="min-width:44px;min-height:44px;">→</button>
+                        </div>`;
+                    }
+                }
+
+                // ALWAYS show upgrade card - even if showing all gems (for other Pro features)
+                html += UI.renderUpgradeCard();
+
+                container.innerHTML = html;
+            } catch (e) {
+                console.error('Error rendering hidden gems:', e);
+                container.innerHTML = '<div class="error-state" style="padding:2rem;text-align:center;color:var(--text-muted);"><p>⚠️ Failed to load players. Please refresh the page.</p></div>';
             }
-
-            // Remove duplicates
-            const seen = new Set();
-            allGems = allGems.filter(p => {
-                if (seen.has(p.name)) return false;
-                seen.add(p.name);
-                return true;
-            });
-
-            // Show ALL hidden gems (they're from lower leagues - main value prop)
-            let html = '';
-
-            if (allGems.length === 0) {
-                html = `
-                    <div class="empty-state">
-                        <span class="empty-state-icon">💎</span>
-                        <h3>Hidden Gems Coming Soon</h3>
-                        <p>We're adding Championship, Eredivisie, Portuguese & Brazilian league data.</p>
-                    </div>
-                `;
-            } else {
-                // Show all gems - this is the main feature
-                html = allGems.map((p, i) => UI.renderPlayerCard(p, i)).join('');
-            }
-
-            // ALWAYS show upgrade card - even if showing all gems (for other Pro features)
-            html += UI.renderUpgradeCard();
-
-            container.innerHTML = html;
         },
 
         renderBargains() {
             const container = document.getElementById('bargains-list');
             if (!container) return;
 
-            const data = this.getData();
+            try {
+                const data = this.getData();
 
-            // Get players with expiring contracts
-            let allBargains = [];
+                // Get players with expiring contracts
+                let allBargains = [];
 
-            if (data.bargains) {
-                allBargains = data.bargains;
-            } else if (data.expiringContracts) {
-                allBargains = data.expiringContracts;
-            } else {
-                // Filter from all lists for players with contract_expiry
-                const allPlayers = [
-                    ...(data.undervalued || []),
-                    ...(data.topPerformers || []),
-                    ...(data.risingStars || []),
-                    ...(data.hiddenGems || [])
-                ];
-                allBargains = allPlayers.filter(p =>
-                    p.contract_expiry && p.contract_expiry <= 2026
-                );
-            }
-
-            // Remove duplicates and sort by value
-            const seen = new Set();
-            allBargains = allBargains.filter(p => {
-                if (seen.has(p.name)) return false;
-                seen.add(p.name);
-                return true;
-            }).sort((a, b) => (b.market_value_eur_m || 0) - (a.market_value_eur_m || 0));
-
-            const freePlayers = allBargains.slice(0, 5);
-            const proPlayers = allBargains.slice(5);
-
-            let html = '';
-
-            if (freePlayers.length === 0) {
-                html = `
-                    <div class="empty-state">
-                        <span class="empty-state-icon">⏰</span>
-                        <h3>Contract Data Coming Soon</h3>
-                        <p>We're adding contract expiry dates to identify free transfer bargains.</p>
-                    </div>
-                `;
-            } else {
-                html = `<div class="bargains-info" style="background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.2);border-radius:8px;padding:1rem;margin-bottom:1rem;">
-                    <strong style="color:#f87171;">⏰ Expiring 2025</strong> = Free agent soon! Clubs can negotiate pre-contracts now.
-                </div>`;
-                html += freePlayers.map((p, i) => UI.renderPlayerCard(p, i)).join('');
-
-                if (proPlayers.length > 0) {
-                    html += `<div class="pro-section-header">🔒 ${proPlayers.length} more bargains with Pro</div>`;
-                    html += proPlayers.slice(0, 3).map((p, i) => UI.renderLockedCard(p, freePlayers.length + i)).join('');
+                if (data.bargains) {
+                    allBargains = data.bargains;
+                } else if (data.expiringContracts) {
+                    allBargains = data.expiringContracts;
+                } else {
+                    // Filter from all lists for players with contract_expiry
+                    const allPlayers = [
+                        ...(data.undervalued || []),
+                        ...(data.topPerformers || []),
+                        ...(data.risingStars || []),
+                        ...(data.hiddenGems || [])
+                    ];
+                    allBargains = allPlayers.filter(p =>
+                        p.contract_expiry && p.contract_expiry <= 2026
+                    );
                 }
 
-                html += UI.renderUpgradeCard();
-            }
+                // Remove duplicates and sort by value
+                const seen = new Set();
+                allBargains = allBargains.filter(p => {
+                    if (seen.has(p.name)) return false;
+                    seen.add(p.name);
+                    return true;
+                }).sort((a, b) => (b.market_value_eur_m || 0) - (a.market_value_eur_m || 0));
 
-            container.innerHTML = html;
+                const freePlayers = allBargains.slice(0, 5);
+                const proPlayers = allBargains.slice(5);
+
+                let html = '';
+
+                if (freePlayers.length === 0) {
+                    html = `
+                        <div class="empty-state">
+                            <span class="empty-state-icon">⏰</span>
+                            <h3>Contract Data Coming Soon</h3>
+                            <p>We're adding contract expiry dates to identify free transfer bargains.</p>
+                        </div>
+                    `;
+                } else {
+                    html = `<div class="bargains-info" style="background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.2);border-radius:8px;padding:1rem;margin-bottom:1rem;">
+                        <strong style="color:#f87171;">⏰ Expiring 2025</strong> = Free agent soon! Clubs can negotiate pre-contracts now.
+                    </div>`;
+                    html += freePlayers.map((p, i) => UI.renderPlayerCard(p, i)).join('');
+
+                    if (proPlayers.length > 0) {
+                        html += `<div class="pro-section-header">🔒 ${proPlayers.length} more bargains with Pro</div>`;
+                        html += proPlayers.slice(0, 3).map((p, i) => UI.renderLockedCard(p, freePlayers.length + i)).join('');
+                    }
+
+                    html += UI.renderUpgradeCard();
+                }
+
+                container.innerHTML = html;
+            } catch (e) {
+                console.error('Error rendering bargains:', e);
+                container.innerHTML = '<div class="error-state" style="padding:2rem;text-align:center;color:var(--text-muted);"><p>⚠️ Failed to load players. Please refresh the page.</p></div>';
+            }
         },
 
         async renderRumors() {
             const container = document.getElementById('rumors-list');
             if (!container) return;
 
-            // Load rumors from JSON file with auto-expiration
-            let rumors = [];
             try {
-                const response = await fetch('/data/rumors.json');
-                const data = await response.json();
+                // Load rumors from JSON file with auto-expiration
+                let rumors = [];
+                try {
+                    const response = await fetch('/data/rumors.json');
+                    const data = await response.json();
 
-                // Filter expired rumors
-                const today = new Date();
-                rumors = data.rumors.filter(r => {
-                    if (!r.expires) return true; // Keep if no expiry
-                    const expiry = new Date(r.expires);
-                    return expiry > today;
-                }).sort((a, b) => {
-                    // Sort by date (newest first)
-                    return new Date(b.date) - new Date(a.date);
-                });
-            } catch (error) {
-                console.warn('Could not load rumors.json, using fallback');
-                // Fallback to hardcoded rumors if JSON fails
-                rumors = [
-                    {
-                        player: 'Mohamed Salah',
-                        from: 'Liverpool',
-                        to: 'Saudi Pro League / PSG',
-                        fee: 'Free (contract expires 2025)',
-                        status: 'hot',
-                        source: 'Fabrizio Romano',
-                        date: '2024-12-20',
-                        verified: true
-                    },
-                    {
-                        player: 'Trent Alexander-Arnold',
-                        from: 'Liverpool',
-                        to: 'Real Madrid',
-                        fee: 'Free (contract expires 2025)',
-                        status: 'hot',
-                        source: 'Multiple Sources',
-                        date: '2024-12-19',
-                        verified: true
-                    }
-                ];
-            }
+                    // Filter expired rumors
+                    const today = new Date();
+                    rumors = data.rumors.filter(r => {
+                        if (!r.expires) return true; // Keep if no expiry
+                        const expiry = new Date(r.expires);
+                        return expiry > today;
+                    }).sort((a, b) => {
+                        // Sort by date (newest first)
+                        return new Date(b.date) - new Date(a.date);
+                    });
+                } catch (error) {
+                    console.warn('Could not load rumors.json, using fallback');
+                    // Fallback to hardcoded rumors if JSON fails
+                    rumors = [
+                        {
+                            player: 'Mohamed Salah',
+                            from: 'Liverpool',
+                            to: 'Saudi Pro League / PSG',
+                            fee: 'Free (contract expires 2025)',
+                            status: 'hot',
+                            source: 'Fabrizio Romano',
+                            date: '2024-12-20',
+                            verified: true
+                        },
+                        {
+                            player: 'Trent Alexander-Arnold',
+                            from: 'Liverpool',
+                            to: 'Real Madrid',
+                            fee: 'Free (contract expires 2025)',
+                            status: 'hot',
+                            source: 'Multiple Sources',
+                            date: '2024-12-19',
+                            verified: true
+                        }
+                    ];
+                }
 
-            let html = `
-                <div class="email-capture" style="margin-bottom: 2rem;">
-                    <h3>🔔 Get Transfer Alerts</h3>
-                    <p>Be first to know when big transfers happen. Daily updates in your inbox.</p>
-                    <form class="email-form" data-action="submit-email">
-                        <input type="email" placeholder="your@email.com" required>
-                        <button type="submit">Subscribe Free</button>
-                    </form>
-                </div>
-            `;
-
-            html += rumors.map(r => `
-                <div class="rumor-card">
-                    <div class="rumor-header">
-                        <div>
-                            <div class="rumor-player">
-                                ${Security.escapeHtml(r.player || '')}
-                                ${r.verified ? '<span class="verified-badge" title="Verified source">✓</span>' : ''}
-                            </div>
-                            <div class="rumor-details">${Security.escapeHtml(r.from || '')} → ${Security.escapeHtml(r.to || '')}</div>
-                        </div>
-                        <span class="rumor-badge ${Security.escapeHtml(r.status || '')}">${r.status === 'hot' ? '🔥 HOT' : '⚡ WARM'}</span>
-                    </div>
-                    <div class="rumor-details" style="margin-top: 0.5rem;">
-                        <strong>Fee:</strong> ${Security.escapeHtml(r.fee || '')}
-                    </div>
-                    <div class="rumor-source">
-                        📰 ${Security.escapeHtml(r.source || '')} • ${Security.escapeHtml(this.formatRumorDate(r.date || ''))}
-                    </div>
-                </div>
-            `).join('');
-
-            if (rumors.length === 0) {
-                html = `
-                    <div class="empty-state">
-                        <span class="empty-state-icon">📰</span>
-                        <h3>No Active Rumors</h3>
-                        <p>Check back soon for the latest transfer news!</p>
+                let html = `
+                    <div class="email-capture" style="margin-bottom: 2rem;">
+                        <h3>🔔 Get Transfer Alerts</h3>
+                        <p>Be first to know when big transfers happen. Daily updates in your inbox.</p>
+                        <form class="email-form" data-action="submit-email">
+                            <input type="email" placeholder="your@email.com" required>
+                            <button type="submit">Subscribe Free</button>
+                        </form>
                     </div>
                 `;
+
+                html += rumors.map(r => `
+                    <div class="rumor-card">
+                        <div class="rumor-header">
+                            <div>
+                                <div class="rumor-player">
+                                    ${Security.escapeHtml(r.player || '')}
+                                    ${r.verified ? '<span class="verified-badge" title="Verified source">✓</span>' : ''}
+                                </div>
+                                <div class="rumor-details">${Security.escapeHtml(r.from || '')} → ${Security.escapeHtml(r.to || '')}</div>
+                            </div>
+                            <span class="rumor-badge ${Security.escapeHtml(r.status || '')}">${r.status === 'hot' ? '🔥 HOT' : '⚡ WARM'}</span>
+                        </div>
+                        <div class="rumor-details" style="margin-top: 0.5rem;">
+                            <strong>Fee:</strong> ${Security.escapeHtml(r.fee || '')}
+                        </div>
+                        <div class="rumor-source">
+                            📰 ${Security.escapeHtml(r.source || '')} • ${Security.escapeHtml(this.formatRumorDate(r.date || ''))}
+                        </div>
+                    </div>
+                `).join('');
+
+                if (rumors.length === 0) {
+                    html = `
+                        <div class="empty-state">
+                            <span class="empty-state-icon">📰</span>
+                            <h3>No Active Rumors</h3>
+                            <p>Check back soon for the latest transfer news!</p>
+                        </div>
+                    `;
+                }
+
+                html += `
+                    <div style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                        <p>Want more rumors and exclusive transfer intel?</p>
+                        <button class="btn btn-primary" data-action="upgrade">
+                            Upgrade to Pro →
+                        </button>
+                    </div>
+                `;
+
+                container.innerHTML = html;
+            } catch (e) {
+                console.error('Error rendering rumors:', e);
+                container.innerHTML = '<div class="error-state" style="padding:2rem;text-align:center;color:var(--text-muted);"><p>⚠️ Failed to load rumors. Please refresh the page.</p></div>';
             }
-
-            html += `
-                <div style="text-align: center; padding: 2rem; color: var(--text-muted);">
-                    <p>Want more rumors and exclusive transfer intel?</p>
-                    <button class="btn btn-primary" data-action="upgrade">
-                        Upgrade to Pro →
-                    </button>
-                </div>
-            `;
-
-            container.innerHTML = html;
         },
 
         showUpgrade() {
@@ -1397,18 +1485,42 @@
             const container = document.getElementById('watchlist-list');
             if (!container) return;
 
-            if (state.watchlist.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <span class="empty-state-icon">★</span>
-                        <h3>No saved players yet</h3>
-                        <p>Click the star on any player to add them here.</p>
-                    </div>
-                `;
-                return;
-            }
+            try {
+                if (state.watchlist.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <span class="empty-state-icon">★</span>
+                            <h3>No saved players yet</h3>
+                            <p>Click the star on any player to add them here.</p>
+                        </div>
+                    `;
+                    return;
+                }
 
-            container.innerHTML = state.watchlist.map((p, i) => UI.renderPlayerCard(p, i)).join('');
+                // Add pagination for large watchlists
+                const itemsPerPage = state.pagination.itemsPerPage;
+                const currentPage = state.pagination.currentPage;
+                const totalPages = Math.ceil(state.watchlist.length / itemsPerPage);
+                const startIdx = (currentPage - 1) * itemsPerPage;
+                const endIdx = startIdx + itemsPerPage;
+                const paginatedWatchlist = state.watchlist.slice(startIdx, endIdx);
+
+                let html = paginatedWatchlist.map((p, i) => UI.renderPlayerCard(p, startIdx + i)).join('');
+                
+                // Add pagination controls if more than one page
+                if (totalPages > 1) {
+                    html += `<div class="pagination-controls" style="display:flex;justify-content:center;align-items:center;gap:1rem;margin:2rem 0;padding:1rem;">
+                        <button class="btn btn-ghost" data-action="page-prev" ${currentPage === 1 ? 'disabled' : ''} style="min-width:44px;min-height:44px;">←</button>
+                        <span style="color:var(--text-secondary);">Page ${currentPage} of ${totalPages}</span>
+                        <button class="btn btn-ghost" data-action="page-next" ${currentPage === totalPages ? 'disabled' : ''} style="min-width:44px;min-height:44px;">→</button>
+                    </div>`;
+                }
+
+                container.innerHTML = html;
+            } catch (e) {
+                console.error('Error rendering watchlist:', e);
+                container.innerHTML = '<div class="error-state" style="padding:2rem;text-align:center;color:var(--text-muted);"><p>⚠️ Failed to load watchlist. Please refresh the page.</p></div>';
+            }
         },
 
         showPlayerDetail(playerId) {

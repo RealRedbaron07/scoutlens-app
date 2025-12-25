@@ -304,10 +304,51 @@ function processScorer(scorer, leagueInfo) {
     };
 }
 
+// Simple in-memory rate limiting (10 requests per minute per IP)
+const rateLimitMap = new Map();
+const RATE_LIMIT_WINDOW = 60 * 1000; // 1 minute
+const RATE_LIMIT_MAX = 10; // 10 requests per window
+
+function checkRateLimit(ip) {
+    const now = Date.now();
+    const record = rateLimitMap.get(ip);
+    
+    if (!record) {
+        rateLimitMap.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW });
+        return true;
+    }
+    
+    if (now > record.resetAt) {
+        // Window expired, reset
+        rateLimitMap.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW });
+        return true;
+    }
+    
+    if (record.count >= RATE_LIMIT_MAX) {
+        return false; // Rate limit exceeded
+    }
+    
+    record.count++;
+    return true;
+}
+
 export default async function handler(req, res) {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET');
     res.setHeader('Cache-Control', 's-maxage=1800, stale-while-revalidate');
+    
+    // Basic rate limiting
+    const clientIp = req.headers['x-forwarded-for']?.split(',')[0] || 
+                     req.headers['x-real-ip'] || 
+                     req.connection?.remoteAddress || 
+                     'unknown';
+    
+    if (!checkRateLimit(clientIp)) {
+        return res.status(429).json({ 
+            error: 'Too many requests. Please try again in a minute.',
+            retryAfter: 60
+        });
+    }
     
     const API_KEY = process.env.FOOTBALL_DATA_KEY;
     
