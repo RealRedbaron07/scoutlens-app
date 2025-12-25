@@ -1459,8 +1459,17 @@
             const PAYPAL_ANNUAL_ME = `https://paypal.me/${PAYPAL_BUSINESS_NAME}/72`;
 
             // Set to true after you create PayPal Hosted Buttons and add the IDs above
-            const USE_PAYPAL_BUTTONS = true; // ⬅️ Set to true for total anonymity
+            let USE_PAYPAL_BUTTONS = true; // ⬅️ Set to true for total anonymity
             const PAYMENT_PROVIDER = 'paypal';
+
+            // Failsafe: Check if IDs are still placeholders
+            const isMonthlyPlaceholder = PAYPAL_MONTHLY_BUTTON.includes('PASTE_');
+            const isAnnualPlaceholder = PAYPAL_ANNUAL_BUTTON.includes('PASTE_');
+
+            if (USE_PAYPAL_BUTTONS && (isMonthlyPlaceholder || isAnnualPlaceholder)) {
+                console.warn('⚠️ PayPal Hosted Button IDs are missing or invalid. Falling back to PayPal.me.');
+                USE_PAYPAL_BUTTONS = false;
+            }
 
             const MONTHLY_LINK = USE_PAYPAL_BUTTONS ? PAYPAL_MONTHLY_BUTTON : PAYPAL_MONTHLY_ME;
             const ANNUAL_LINK = USE_PAYPAL_BUTTONS ? PAYPAL_ANNUAL_BUTTON : PAYPAL_ANNUAL_ME;
