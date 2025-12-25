@@ -1,0 +1,35 @@
+name: Clean Expired Rumors
+
+on:
+  schedule:
+    # Run every Sunday at midnight UTC
+    - cron: '0 0 * * 0'
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  clean-rumors:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+      
+      - name: Clean expired rumors
+        run: |
+          cd data
+          python3 ../scripts/update_rumors.py clean
+      
+      - name: Commit and push changes
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add data/rumors.json
+          git diff --staged --quiet || git commit -m "Auto-clean expired rumors [skip ci]"
+          git push || echo "No changes to commit"
+
