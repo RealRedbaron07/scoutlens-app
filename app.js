@@ -1148,17 +1148,17 @@
             // Step 6: Set USE_PAYPAL_BUTTONS = true
             // See PAYPAL_HOSTED_BUTTONS_SETUP.md for detailed guide
 
-            const PAYPAL_MONTHLY_BUTTON = 'https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=YOUR_MONTHLY_ID';
-            const PAYPAL_ANNUAL_BUTTON = 'https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=YOUR_ANNUAL_ID';
+            const PAYPAL_MONTHLY_BUTTON = 'https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=PASTE_MONTHLY_ID_HERE';
+            const PAYPAL_ANNUAL_BUTTON = 'https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=PASTE_ANNUAL_ID_HERE';
 
             // Fallback: PayPal.me (only used if buttons not configured)
             // NOTE: This will show your personal name - use Hosted Buttons instead!
-            const PAYPAL_BUSINESS_NAME = 'ScoutLensPro';
+            const PAYPAL_BUSINESS_NAME = 'MustafaAlpARI';
             const PAYPAL_MONTHLY_ME = `https://paypal.me/${PAYPAL_BUSINESS_NAME}/9.99`;
             const PAYPAL_ANNUAL_ME = `https://paypal.me/${PAYPAL_BUSINESS_NAME}/72`;
 
             // Set to true after you create PayPal Hosted Buttons and add the IDs above
-            const USE_PAYPAL_BUTTONS = false; // ⬅️ Change to true after setup
+            const USE_PAYPAL_BUTTONS = true; // ⬅️ Set to true for total anonymity
             const PAYMENT_PROVIDER = 'paypal';
 
             const MONTHLY_LINK = USE_PAYPAL_BUTTONS ? PAYPAL_MONTHLY_BUTTON : PAYPAL_MONTHLY_ME;
