@@ -160,12 +160,18 @@
     // ============================================
     const UI = {
         renderPlayerCard(player, index = null) {
+            // Guard against null/undefined player
+            if (!player || !player.id) {
+                console.warn('Invalid player data in renderPlayerCard');
+                return '';
+            }
+
             // Check if this is a locked PRO player
             if (player.locked) {
                 return this.renderLockedCard(player, index);
             }
 
-            const isInWatchlist = state.watchlist.some(p => p.id === player.id);
+            const isInWatchlist = state.watchlist.some(p => p && p.id === player.id);
             const undervalued = player.undervaluation_pct > 0;
             const hasReleaseClause = player.release_clause_eur_m && player.release_clause_eur_m > 0;
             const hasContractExpiry = player.contract_expiry;
@@ -205,7 +211,7 @@
                 <div class="player-card ${undervalued ? 'undervalued' : ''} ${isComparing ? 'selected-compare' : ''}" data-player-id="${player.id}">
                     <input type="checkbox" class="compare-checkbox" data-player-id="${player.id}" 
                            ${isComparing ? 'checked' : ''} 
-                           onclick="event.stopPropagation(); App.toggleCompare(${player.id})" 
+                           data-action="toggle-compare"
                            title="Add to comparison">
                     ${index !== null ? `<div class="player-rank">${index + 1}</div>` : ''}
                     
@@ -271,7 +277,7 @@
             const league = Security.escapeHtml(player.league || '???');
 
             return `
-                <div class="player-card locked" onclick="App.showUpgrade()">
+                <div class="player-card locked" data-action="upgrade">
                     ${index !== null ? `<div class="player-rank">${index + 1}</div>` : ''}
                     
                     <div class="player-card-main">
@@ -311,8 +317,14 @@
         },
 
         renderPlayerDetail(player) {
-            const isInWatchlist = state.watchlist.some(p => p.id === player.id);
-            const undervalued = player.undervaluation_pct > 0;
+            // Guard against null/undefined player
+            if (!player || !player.id) {
+                console.warn('Invalid player data in renderPlayerDetail');
+                return '<div class="error">Invalid player data</div>';
+            }
+
+            const isInWatchlist = state.watchlist.some(p => p && p.id === player.id);
+            const undervalued = (player.undervaluation_pct || 0) > 0;
 
             return `
                 <div class="player-detail">
@@ -351,27 +363,27 @@
                         <h3>Performance This Season</h3>
                         <div class="stats-grid">
                             <div class="stat-box">
-                                <span class="stat-box-value">${player.xgi_per_90.toFixed(2)}</span>
+                                <span class="stat-box-value">${((player.xgi_per_90 != null && !isNaN(player.xgi_per_90)) ? player.xgi_per_90 : 0).toFixed(2)}</span>
                                 <span class="stat-box-label">xGI per 90</span>
                             </div>
                             <div class="stat-box">
-                                <span class="stat-box-value">${player.goals}</span>
+                                <span class="stat-box-value">${player.goals != null ? player.goals : 0}</span>
                                 <span class="stat-box-label">Goals</span>
                             </div>
                             <div class="stat-box">
-                                <span class="stat-box-value">${player.assists}</span>
+                                <span class="stat-box-value">${player.assists != null ? player.assists : 0}</span>
                                 <span class="stat-box-label">Assists</span>
                             </div>
                             <div class="stat-box">
-                                <span class="stat-box-value">${player.games}</span>
+                                <span class="stat-box-value">${player.games != null ? player.games : 0}</span>
                                 <span class="stat-box-label">Games</span>
                             </div>
                             <div class="stat-box">
-                                <span class="stat-box-value">${player.xG.toFixed(1)}</span>
+                                <span class="stat-box-value">${((player.xG != null && !isNaN(player.xG)) ? player.xG : 0).toFixed(1)}</span>
                                 <span class="stat-box-label">xG</span>
                             </div>
                             <div class="stat-box">
-                                <span class="stat-box-value">${player.xA.toFixed(1)}</span>
+                                <span class="stat-box-value">${((player.xA != null && !isNaN(player.xA)) ? player.xA : 0).toFixed(1)}</span>
                                 <span class="stat-box-label">xA</span>
                             </div>
                         </div>
@@ -381,7 +393,7 @@
                         <button class="btn btn-primary btn-lg watchlist-detail-btn" data-player-id="${player.id}">
                             ${isInWatchlist ? '★ In Watchlist' : '☆ Save to Watchlist'}
                         </button>
-                        <button class="btn btn-ghost btn-lg share-btn" data-player="${encodeURIComponent(player.name)}">
+                        <button class="btn btn-ghost btn-lg share-btn" data-player="${encodeURIComponent(player.name || '')}">
                             📤 Share
                         </button>
                     </div>
@@ -410,6 +422,9 @@
     // APP
     // ============================================
     let liveData = null; // Store live data when fetched
+    let fetchInProgress = false; // Prevent race conditions
+    let eventsBound = false; // Prevent duplicate event listeners
+    let eventAbortController = new AbortController(); // For cleanup
 
     const App = {
         async init() {
@@ -467,6 +482,9 @@
         async initApp() {
             console.log('🔭 Loading ScoutLens app...');
 
+            // Cleanup any existing event listeners before re-binding (allows re-init)
+            this.cleanupEvents();
+
             this.loadState();
             this.bindEvents();
 
@@ -492,24 +510,62 @@
         },
 
         async fetchLiveData() {
-            // Try to fetch live data from API (non-blocking)
-            try {
-                const controller = new AbortController();
-                const timeout = setTimeout(() => controller.abort(), 15000); // 15s timeout
-
-                const response = await fetch('/api/players', { signal: controller.signal });
-                clearTimeout(timeout);
-
-                if (response.ok) {
-                    liveData = await response.json();
-                    console.log('📡 Live data loaded!', liveData.lastUpdated);
-                    // Re-render with live data
-                    this.renderView(state.currentView);
-                    this.showDataFreshness();
-                }
-            } catch (e) {
-                console.log('📦 Using static data:', e.message || 'API timeout');
+            // Prevent race conditions: only one fetch at a time
+            if (fetchInProgress) {
+                return;
             }
+
+            fetchInProgress = true;
+            const maxRetries = 2;
+            let retryCount = 0;
+
+            while (retryCount <= maxRetries) {
+                try {
+                    const controller = new AbortController();
+                    const timeout = setTimeout(() => controller.abort(), 15000); // 15s timeout
+
+                    const response = await fetch('/api/players', { signal: controller.signal });
+                    clearTimeout(timeout);
+
+                    if (response.ok) {
+                        liveData = await response.json();
+                        console.log('📡 Live data loaded!', liveData.lastUpdated);
+                        // Re-render with live data
+                        this.renderView(state.currentView);
+                        this.showDataFreshness();
+                        fetchInProgress = false;
+                        return; // Success, exit retry loop
+                    } else if (response.status >= 500 && response.status < 600 && retryCount < maxRetries) {
+                        // Server error (5xx only), retry
+                        retryCount++;
+                        const delay = Math.pow(2, retryCount) * 1000; // Exponential backoff: 2s, 4s
+                        await new Promise(resolve => setTimeout(resolve, delay));
+                        continue;
+                    } else {
+                        // Client error (4xx) or other non-retryable error, don't retry
+                        console.log('📦 API returned error:', response.status);
+                        fetchInProgress = false;
+                        return;
+                    }
+                } catch (e) {
+                    // Network error or timeout only - retry these
+                    const isNetworkError = e.name === 'AbortError' || e.name === 'TypeError' || 
+                                         (e.message && e.message.includes('fetch'));
+                    if (isNetworkError && retryCount < maxRetries) {
+                        retryCount++;
+                        const delay = Math.pow(2, retryCount) * 1000; // Exponential backoff: 2s, 4s
+                        await new Promise(resolve => setTimeout(resolve, delay));
+                        continue;
+                    } else {
+                        // Not a network error or max retries reached
+                        console.log('📦 Using static data:', e.message || 'API timeout');
+                        fetchInProgress = false;
+                        return;
+                    }
+                }
+            }
+
+            fetchInProgress = false;
         },
 
         getData() {
@@ -600,15 +656,32 @@
             localStorage.setItem('scoutlens_watchlist', JSON.stringify(state.watchlist));
         },
 
+        cleanupEvents() {
+            // Cleanup all event listeners and reset for potential re-init
+            if (eventsBound) {
+                eventAbortController.abort();
+                eventAbortController = new AbortController(); // Create new controller for re-init
+                eventsBound = false;
+            }
+        },
+
         bindEvents() {
+            // Prevent duplicate event listeners
+            if (eventsBound) {
+                return;
+            }
+            eventsBound = true;
+
+            const signal = eventAbortController.signal;
+
             // Helper to handle both click and touch
             const addMobileHandler = (element, handler) => {
                 if (!element) return;
-                element.addEventListener('click', handler);
+                element.addEventListener('click', handler, { signal });
                 element.addEventListener('touchend', (e) => {
                     e.preventDefault();
                     handler(e);
-                }, { passive: false });
+                }, { passive: false, signal });
             };
 
             // Mobile hamburger menu
@@ -714,7 +787,7 @@
                     const modal = e.target.closest('.modal') || document.querySelector('.modal.active');
                     if (modal) modal.remove();
                 }
-            });
+            }, { signal });
 
             document.addEventListener('touchend', (e) => {
                 if (e.target.classList.contains('modal-close') || e.target.closest('.modal-close')) {
@@ -722,7 +795,7 @@
                     const modal = e.target.closest('.modal') || document.querySelector('.modal.active');
                     if (modal) modal.remove();
                 }
-            }, { passive: false });
+            }, { passive: false, signal });
 
             document.querySelectorAll('.modal-backdrop').forEach(backdrop => {
                 addMobileHandler(backdrop, () => {
@@ -735,7 +808,7 @@
                 if (e.key === 'Escape') {
                     document.querySelectorAll('.modal.active').forEach(m => m.remove());
                 }
-            });
+            }, { signal });
 
             // Delegated events - use both click and touchend for mobile
             const handleInteraction = (e) => {
@@ -780,16 +853,71 @@
                     return;
                 }
 
+                // Compare checkbox
+                const compareCheckbox = e.target.closest('.compare-checkbox[data-action="toggle-compare"]');
+                if (compareCheckbox) {
+                    e.stopPropagation();
+                    const playerId = parseInt(compareCheckbox.dataset.playerId);
+                    this.toggleCompare(playerId);
+                    return;
+                }
+
+                // Data-action handlers
+                const actionElement = e.target.closest('[data-action]');
+                if (actionElement) {
+                    const action = actionElement.dataset.action;
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    switch (action) {
+                        case 'show-comparison':
+                            this.showComparison();
+                            break;
+                        case 'clear-compare':
+                            this.clearCompare();
+                            break;
+                        case 'close-comparison':
+                            this.closeComparison();
+                            break;
+                        case 'show-pro-activation':
+                            this.showProActivation();
+                            break;
+                        case 'upgrade':
+                            const modal = actionElement.closest('.modal');
+                            if (modal) modal.remove();
+                            this.showUpgrade();
+                            break;
+                    }
+                    return;
+                }
+
+                // Form submissions
+                const form = e.target.closest('form[data-action]');
+                if (form) {
+                    e.preventDefault();
+                    const action = form.dataset.action;
+                    if (action === 'submit-email') {
+                        this.submitEmail(e);
+                    } else if (action === 'verify-pro-email') {
+                        this.verifyProEmail(e);
+                    }
+                    return;
+                }
+
                 // Modal backdrop close
                 const backdrop = e.target.closest('.modal-backdrop');
                 if (backdrop) {
                     const modal = backdrop.closest('.modal');
-                    if (modal) modal.remove();
+                    if (modal) {
+                        modal.remove();
+                        // Cleanup modal-specific event listeners if needed
+                        // (Global listeners remain bound for app lifetime)
+                    }
                 }
             };
 
-            document.addEventListener('click', handleInteraction);
-            document.addEventListener('touchend', handleInteraction, { passive: false });
+            document.addEventListener('click', handleInteraction, { signal });
+            document.addEventListener('touchend', handleInteraction, { passive: false, signal });
 
             // Also handle upgrade cards that might be dynamically added
             document.addEventListener('click', (e) => {
@@ -798,7 +926,7 @@
                     e.stopPropagation();
                     this.showUpgrade();
                 }
-            });
+            }, { signal });
 
             document.addEventListener('touchend', (e) => {
                 if (e.target.closest('.upgrade-card, .upgrade-btn, [data-action="upgrade"]')) {
@@ -806,7 +934,7 @@
                     e.stopPropagation();
                     this.showUpgrade();
                 }
-            }, { passive: false });
+            }, { passive: false, signal });
         },
 
         switchView(viewId) {
@@ -1098,7 +1226,7 @@
                 <div class="email-capture" style="margin-bottom: 2rem;">
                     <h3>🔔 Get Transfer Alerts</h3>
                     <p>Be first to know when big transfers happen. Daily updates in your inbox.</p>
-                    <form class="email-form" onsubmit="App.submitEmail(event)">
+                    <form class="email-form" data-action="submit-email">
                         <input type="email" placeholder="your@email.com" required>
                         <button type="submit">Subscribe Free</button>
                     </form>
@@ -1139,7 +1267,7 @@
             html += `
                 <div style="text-align: center; padding: 2rem; color: var(--text-muted);">
                     <p>Want more rumors and exclusive transfer intel?</p>
-                    <button class="btn btn-primary" onclick="App.showUpgrade()">
+                    <button class="btn btn-primary" data-action="upgrade">
                         Upgrade to Pro →
                     </button>
                 </div>
@@ -1317,10 +1445,10 @@
 
             if (index > -1) {
                 state.watchlist.splice(index, 1);
-                UI.showNotification(`Removed ${player.name} from watchlist`);
+                UI.showNotification(`Removed ${player.name || 'player'} from watchlist`);
             } else {
                 state.watchlist.push(player);
-                UI.showNotification(`Saved ${player.name} to watchlist ★`);
+                UI.showNotification(`Saved ${player.name || 'player'} to watchlist ★`);
             }
 
             this.saveState();
@@ -1436,8 +1564,8 @@
                 panel.className = 'compare-panel hidden';
                 panel.innerHTML = `
                     <span class="compare-count">0 selected</span>
-                    <button class="compare-btn" onclick="App.showComparison()" disabled>Compare</button>
-                    <button class="btn btn-ghost" onclick="App.clearCompare()">Clear</button>
+                    <button class="compare-btn" data-action="show-comparison" disabled>Compare</button>
+                    <button class="btn btn-ghost" data-action="clear-compare">Clear</button>
                 `;
                 document.body.appendChild(panel);
             }
@@ -1488,7 +1616,7 @@
             });
 
             modal.innerHTML = `
-                <button class="compare-close-btn" onclick="App.closeComparison()">✕</button>
+                <button class="compare-close-btn" data-action="close-comparison">✕</button>
                 <div class="compare-grid">
                     ${state.compareList.map(player => `
                         <div class="compare-card">
@@ -1539,10 +1667,15 @@
         initSearch() {
             const searchInput = document.getElementById('player-search');
             if (searchInput) {
+                let searchTimeout;
                 searchInput.addEventListener('input', (e) => {
-                    // Sanitize search input to prevent XSS
-                    state.searchQuery = Security.sanitizeSearch(e.target.value);
-                    this.renderView(state.currentView);
+                    // Debounce search to prevent excessive re-renders
+                    clearTimeout(searchTimeout);
+                    searchTimeout = setTimeout(() => {
+                        // Sanitize search input to prevent XSS
+                        state.searchQuery = Security.sanitizeSearch(e.target.value);
+                        this.renderView(state.currentView);
+                    }, 300); // 300ms debounce
                 });
             }
 
@@ -1810,23 +1943,37 @@
 
         setPriceAlert(playerId) {
             const player = this.findPlayer(playerId);
-            if (!player) return;
+            if (!player || !player.id) {
+                UI.showNotification('⚠️ Invalid player selected', 'error');
+                return;
+            }
 
             const currentValue = player.market_value_eur_m || 0;
-            const targetPrice = prompt(`Set alert when ${player.name}'s value drops below (€M):`, Math.floor(currentValue * 0.8));
+            const defaultPrice = Math.max(0.1, Math.floor(currentValue * 0.8));
+            const targetPriceInput = prompt(`Set alert when ${player.name || 'player'}'s value drops below (€M):`, defaultPrice);
 
-            if (targetPrice && !isNaN(parseFloat(targetPrice))) {
-                state.priceAlerts.push({
-                    playerId,
-                    playerName: player.name,
-                    targetPrice: parseFloat(targetPrice),
-                    currentValue,
-                    createdAt: new Date().toISOString()
-                });
-
-                localStorage.setItem('scoutlens_alerts', JSON.stringify(state.priceAlerts));
-                UI.showNotification(`🔔 Alert set: ${player.name} < €${targetPrice}M`);
+            if (!targetPriceInput || targetPriceInput.trim() === '') {
+                return; // User cancelled
             }
+
+            const targetPrice = parseFloat(targetPriceInput.trim());
+            
+            // Validate input: must be a number, positive, and reasonable
+            if (isNaN(targetPrice) || targetPrice <= 0 || targetPrice > 1000) {
+                UI.showNotification('⚠️ Invalid price. Please enter a number between 0.1 and 1000 (€M)', 'error');
+                return;
+            }
+
+            state.priceAlerts.push({
+                playerId,
+                playerName: player.name || 'Unknown',
+                targetPrice: targetPrice,
+                currentValue,
+                createdAt: new Date().toISOString()
+            });
+
+            localStorage.setItem('scoutlens_alerts', JSON.stringify(state.priceAlerts));
+            UI.showNotification(`🔔 Alert set: ${player.name || 'Player'} < €${targetPrice}M`);
         },
 
         loadPriceAlerts() {
@@ -1924,17 +2071,17 @@
             modal.className = 'modal active';
             modal.id = 'pro-activate-modal';
             modal.innerHTML = `
-                <div class="modal-backdrop" onclick="this.parentElement.remove()"></div>
+                <div class="modal-backdrop"></div>
                 <div class="modal-content" style="max-width:400px;padding:2rem;text-align:center;">
-                    <button onclick="this.closest('.modal').remove()" style="position:absolute;top:10px;right:15px;background:none;border:none;color:#fff;font-size:1.5rem;cursor:pointer;">×</button>
+                    <button class="modal-close" style="position:absolute;top:10px;right:15px;background:none;border:none;color:#fff;font-size:1.5rem;cursor:pointer;min-width:44px;min-height:44px;">×</button>
                     <h2 style="margin-bottom:1rem;">🔓 Activate Pro</h2>
                     <p style="color:var(--text-secondary);margin-bottom:1.5rem;">Enter the email you used to purchase Pro access:</p>
-                    <form onsubmit="App.verifyProEmail(event)" style="display:flex;flex-direction:column;gap:1rem;">
+                    <form data-action="verify-pro-email" style="display:flex;flex-direction:column;gap:1rem;">
                         <input type="email" placeholder="your@email.com" required style="padding:0.8rem;border:1px solid var(--border-default);border-radius:8px;background:var(--bg-secondary);color:var(--text-primary);font-size:1rem;">
                         <button type="submit" class="btn btn-primary" style="padding:0.8rem;">Activate Pro Access</button>
                     </form>
                     <p style="color:var(--text-muted);font-size:0.8rem;margin-top:1rem;">
-                        Don't have Pro? <a href="#" onclick="App.showUpgrade();this.closest('.modal').remove();" style="color:var(--accent-primary);">Upgrade now →</a>
+                        Don't have Pro? <a href="#" data-action="upgrade" style="color:var(--accent-primary);">Upgrade now →</a>
                     </p>
                 </div>
             `;
@@ -1991,8 +2138,8 @@
                     <h3 style="color:var(--accent-gold);margin-bottom:0.5rem;">🔒 Pro Content</h3>
                     <p style="color:var(--text-secondary);margin-bottom:1rem;">Unlock all players, export data, and get price alerts</p>
                     <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;">
-                        <button onclick="App.showUpgrade()" class="btn btn-primary">Upgrade to Pro</button>
-                        <button onclick="App.showProActivation()" class="btn btn-ghost">I already have Pro</button>
+                        <button data-action="upgrade" class="btn btn-primary">Upgrade to Pro</button>
+                        <button data-action="show-pro-activation" class="btn btn-ghost">I already have Pro</button>
                     </div>
                 </div>
             `;
