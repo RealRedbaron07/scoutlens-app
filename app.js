@@ -484,33 +484,69 @@
         },
 
         async initApp() {
-            console.log('🔭 Loading ScoutLens app...');
+            // Safety timeout: always hide loader after 5 seconds max
+            const safetyTimeout = setTimeout(() => {
+                const loader = document.getElementById('loader');
+                const app = document.getElementById('app');
+                if (loader) loader.classList.add('fade-out');
+                if (app) app.classList.remove('hidden');
+            }, 5000);
 
-            // Cleanup any existing event listeners before re-binding (allows re-init)
-            this.cleanupEvents();
+            try {
+                console.log('🔭 Loading ScoutLens app...');
 
-            this.loadState();
-            this.bindEvents();
+                // Cleanup any existing event listeners before re-binding (allows re-init)
+                this.cleanupEvents();
 
-            // Render immediately with static data
-            this.renderView('dashboard');
-            this.showDataFreshness();
+                this.loadState();
+                this.bindEvents();
 
-            // Register service worker
-            if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.register('sw.js').catch(() => { });
+                // Render immediately with static data
+                this.renderView('dashboard');
+                this.showDataFreshness();
+
+                // Register service worker
+                if ('serviceWorker' in navigator) {
+                    navigator.serviceWorker.register('sw.js').catch(() => { });
+                }
+
+                // Hide loader (always hide, even on error)
+                clearTimeout(safetyTimeout);
+                setTimeout(() => {
+                    const loader = document.getElementById('loader');
+                    const app = document.getElementById('app');
+                    if (loader) loader.classList.add('fade-out');
+                    if (app) app.classList.remove('hidden');
+                }, 1200);
+
+                // Try to fetch LIVE data in background (non-blocking)
+                this.fetchLiveData();
+
+                console.log('✅ ScoutLens ready');
+            } catch (error) {
+                console.error('❌ Failed to initialize ScoutLens:', error);
+                clearTimeout(safetyTimeout);
+                
+                // Always hide loader and show app, even on error
+                const loader = document.getElementById('loader');
+                const app = document.getElementById('app');
+                if (loader) loader.classList.add('fade-out');
+                if (app) app.classList.remove('hidden');
+                
+                // Show error message to user
+                const container = document.getElementById('undervalued-list');
+                if (container) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <span class="empty-state-icon">⚠️</span>
+                            <h3>Failed to Load</h3>
+                            <p>Unable to load player data. Please refresh the page.</p>
+                            <p style="font-size:0.85rem;color:var(--text-muted);margin-top:0.5rem;">Error: ${Security.escapeHtml(error.message || 'Unknown error')}</p>
+                            <button data-action="refresh" class="btn btn-primary" style="margin-top:1rem;">Refresh Page</button>
+                        </div>
+                    `;
+                }
             }
-
-            // Hide loader
-            setTimeout(() => {
-                document.getElementById('loader').classList.add('fade-out');
-                document.getElementById('app').classList.remove('hidden');
-            }, 1200);
-
-            // Try to fetch LIVE data in background (non-blocking)
-            this.fetchLiveData();
-
-            console.log('✅ ScoutLens ready');
         },
 
         async fetchLiveData() {
@@ -574,6 +610,11 @@
 
         getData() {
             // Return live data if available, otherwise static
+            // Safety check: ensure PLAYER_DATA is defined
+            if (typeof PLAYER_DATA === 'undefined') {
+                console.error('❌ PLAYER_DATA not loaded. Check if data/player_data.js is accessible.');
+                return { undervalued: [], topPerformers: [], risingStars: [], hiddenGems: [], bargains: [] };
+            }
             return liveData || PLAYER_DATA;
         },
 
@@ -896,6 +937,9 @@
                                 state.pagination.currentPage--;
                                 this.renderView(state.currentView);
                             }
+                            break;
+                        case 'refresh':
+                            window.location.reload();
                             break;
                         case 'page-next':
                             let totalItems = 0;
