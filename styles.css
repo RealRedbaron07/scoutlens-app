@@ -358,9 +358,24 @@ body::before {
 }
 
 .player-card:hover {
-    border-color: var(--border-default);
-    transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    border-color: var(--accent-primary);
+    transform: translateY(-4px);
+    box-shadow: 
+        0 12px 32px rgba(0, 0, 0, 0.4),
+        0 0 0 1px rgba(0, 212, 170, 0.1);
+    background: var(--bg-elevated);
+}
+
+/* Modern PC design - Glassmorphism effect */
+@media (min-width: 769px) {
+    .player-card {
+        backdrop-filter: blur(10px);
+        background: rgba(21, 26, 33, 0.8);
+    }
+    
+    .player-card:hover {
+        background: rgba(28, 35, 45, 0.9);
+    }
 }
 
 .player-card.undervalued {
@@ -412,8 +427,40 @@ body::before {
 }
 
 .player-team { color: var(--text-primary); }
-.player-league { color: var(--text-muted); }
+.player-league { 
+    color: var(--text-muted);
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
 .player-league::before { content: '· '; }
+
+/* League Badge System */
+.league-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.league-badge.tier-1 {
+    background: linear-gradient(135deg, #fbbf24, #f59e0b);
+    color: #000;
+}
+
+.league-badge.tier-2 {
+    background: linear-gradient(135deg, #94a3b8, #64748b);
+    color: #fff;
+}
+
+.league-badge.tier-3 {
+    background: linear-gradient(135deg, #78716c, #57534e);
+    color: #fff;
+}
 
 .player-value-box {
     text-align: right;
@@ -950,16 +997,18 @@ body::before {
    RESPONSIVE - UNIFIED DESIGN
    ============================================ */
 @media (max-width: 768px) {
-    /* Navigation - Unified layout */
+    /* Mobile UX Improvements - Less Cramped */
+    
+    /* Navigation - More breathing room */
     .nav {
         flex-wrap: wrap;
-        gap: var(--space-sm);
-        padding: var(--space-md);
+        gap: var(--space-md);
+        padding: var(--space-lg) var(--space-md);
     }
     
     .nav-brand {
         width: 100%;
-        margin-bottom: var(--space-xs);
+        margin-bottom: var(--space-sm);
     }
     
     .nav-links {
@@ -967,90 +1016,116 @@ body::before {
         overflow-x: auto;
         -webkit-overflow-scrolling: touch;
         scroll-snap-type: x mandatory;
-        gap: var(--space-xs);
-        padding-bottom: var(--space-xs);
+        gap: var(--space-sm);
+        padding: var(--space-sm) 0;
+        padding-bottom: var(--space-md);
     }
     
     .nav-link {
-        padding: var(--space-xs) var(--space-sm);
+        padding: var(--space-sm) var(--space-md);
         white-space: nowrap;
         scroll-snap-align: start;
         flex-shrink: 0;
+        min-height: 48px; /* Better touch target */
     }
     
     .nav-link-text {
         display: inline;
-        font-size: 0.85rem;
+        font-size: 0.9rem;
     }
     
     .nav-link-icon {
-        font-size: 1rem;
-        margin-right: 4px;
+        font-size: 1.1rem;
+        margin-right: 6px;
     }
     
     .nav-actions {
         display: flex;
-        gap: var(--space-xs);
+        gap: var(--space-sm);
         width: 100%;
-        margin-top: var(--space-xs);
+        margin-top: var(--space-sm);
     }
     
-    /* Search bar in nav - unified */
+    /* Search bar - More spacious */
     .search-filter-bar {
         flex: 1;
         margin: 0;
         min-width: 0;
+        padding: var(--space-sm) 0;
     }
     
     .search-input {
         width: 100%;
         min-width: 150px;
+        padding: 0.75rem 1rem 0.75rem 2.75rem;
+        font-size: 1rem; /* Prevent zoom on iOS */
     }
     
     .search-input:focus {
         width: 100%;
     }
     
-    /* Hero - Keep same layout, just adjust spacing */
+    /* Hero - Better spacing */
     .hero {
-        padding: var(--space-xl) var(--space-md);
+        padding: var(--space-2xl) var(--space-lg);
     }
     
     .hero-stats {
-        gap: var(--space-lg);
+        gap: var(--space-xl);
         flex-wrap: wrap;
         justify-content: center;
+        margin-top: var(--space-xl);
     }
     
     .hero-stat-value {
-        font-size: 1.5rem;
+        font-size: 1.75rem;
     }
     
-    /* Main content */
+    /* Main content - More padding */
     .main {
-        padding: var(--space-md);
+        padding: var(--space-lg);
     }
     
-    /* Player cards - Keep rank visible, adjust layout */
+    /* Player cards - More spacious, better touch targets */
     .player-card {
-        padding: var(--space-md);
+        padding: var(--space-lg);
+        margin-bottom: var(--space-md);
+        border-radius: var(--radius-lg);
     }
     
     .player-card-main {
-        margin-left: 40px; /* Keep space for rank */
+        margin-left: 48px; /* More space for rank */
+        gap: var(--space-md);
     }
     
     .player-rank {
-        display: flex; /* Keep visible */
-        width: 32px;
-        height: 32px;
-        font-size: 0.75rem;
+        display: flex;
+        width: 40px;
+        height: 40px;
+        font-size: 0.85rem;
     }
     
     .player-card-stats {
         grid-template-columns: repeat(2, 1fr);
-        margin-left: 40px; /* Align with card content */
-        gap: var(--space-sm);
+        margin-left: 48px;
+        gap: var(--space-md);
+        margin-top: var(--space-md);
+    }
+    
+    /* Section intros - More spacing */
+    .section-intro {
+        margin-bottom: var(--space-xl);
+        padding: 0 var(--space-sm);
+    }
+    
+    .section-intro h2 {
+        font-size: 1.75rem;
+        margin-bottom: var(--space-md);
+    }
+    
+    .section-intro p {
+        font-size: 1rem;
+        line-height: 1.6;
     }
     
     /* CTA and forms */

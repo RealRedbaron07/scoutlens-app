@@ -1,5 +1,15 @@
 {
   "version": 2,
+  "rewrites": [
+    {
+      "source": "/api/rumors",
+      "destination": "/api/rumors.js"
+    },
+    {
+      "source": "/api/players",
+      "destination": "/api/players.js"
+    }
+  ],
   "headers": [
     {
       "source": "/(.*)",

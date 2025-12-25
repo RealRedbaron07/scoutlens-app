@@ -1014,85 +1014,65 @@
             container.innerHTML = html;
         },
         
-        renderRumors() {
+        async renderRumors() {
             const container = document.getElementById('rumors-list');
             if (!container) return;
             
-            // Transfer rumors data (in production, fetch from API)
-            const rumors = [
-                {
-                    player: 'Mohamed Salah',
-                    from: 'Liverpool',
-                    to: 'Saudi Pro League / PSG',
-                    fee: 'Free (contract expires 2025)',
-                    status: 'hot',
-                    source: 'Fabrizio Romano',
-                    date: '2024-12-20'
-                },
-                {
-                    player: 'Trent Alexander-Arnold',
-                    from: 'Liverpool', 
-                    to: 'Real Madrid',
-                    fee: 'Free (contract expires 2025)',
-                    status: 'hot',
-                    source: 'Multiple Sources',
-                    date: '2024-12-19'
-                },
-                {
-                    player: 'Joshua Kimmich',
-                    from: 'Bayern Munich',
-                    to: 'Barcelona / Man City',
-                    fee: 'Free (contract expires 2025)',
-                    status: 'hot',
-                    source: 'Sky Germany',
-                    date: '2024-12-18'
-                },
-                {
-                    player: 'Alphonso Davies',
-                    from: 'Bayern Munich',
-                    to: 'Real Madrid',
-                    fee: 'Free (contract expires 2025)',
-                    status: 'warm',
-                    source: 'Marca',
-                    date: '2024-12-17'
-                },
-                {
-                    player: 'Viktor Gyökeres',
-                    from: 'Sporting CP',
-                    to: 'Arsenal / Man United / Chelsea',
-                    fee: '€100M release clause',
-                    status: 'hot',
-                    source: 'Record Portugal',
-                    date: '2024-12-16'
-                },
-                {
-                    player: 'Florian Wirtz',
-                    from: 'Bayer Leverkusen',
-                    to: 'Real Madrid / Bayern',
-                    fee: '€150M+',
-                    status: 'warm',
-                    source: 'Kicker',
-                    date: '2024-12-15'
-                },
-                {
-                    player: 'Omar Marmoush',
-                    from: 'Eintracht Frankfurt',
-                    to: 'Liverpool / Arsenal',
-                    fee: '€40-50M',
-                    status: 'warm',
-                    source: 'Bild',
-                    date: '2024-12-14'
-                },
-                {
-                    player: 'Nico Williams',
-                    from: 'Athletic Bilbao',
-                    to: 'Barcelona / Chelsea',
-                    fee: '€58M release clause',
-                    status: 'warm',
-                    source: 'Sport',
-                    date: '2024-12-13'
+            // Load rumors from API endpoint (with caching) or fallback to JSON
+            let rumors = [];
+            try {
+                // Try API endpoint first (better caching, auto-expiration)
+                const response = await fetch('/api/rumors', {
+                    headers: { 'Accept': 'application/json' }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    rumors = data.rumors || [];
+                } else {
+                    throw new Error('API not available');
                 }
-            ];
+            } catch (apiError) {
+                // Fallback to static JSON file
+                try {
+                    const response = await fetch('/data/rumors.json');
+                    const data = await response.json();
+                    
+                    // Filter expired rumors
+                    const today = new Date();
+                    rumors = (data.rumors || []).filter(r => {
+                        if (!r.expires) return true;
+                        const expiry = new Date(r.expires);
+                        return expiry > today;
+                    }).sort((a, b) => {
+                        return new Date(b.date) - new Date(a.date);
+                    });
+                } catch (error) {
+                    console.warn('Could not load rumors, using fallback');
+                // Fallback to hardcoded rumors if JSON fails
+                rumors = [
+                    {
+                        player: 'Mohamed Salah',
+                        from: 'Liverpool',
+                        to: 'Saudi Pro League / PSG',
+                        fee: 'Free (contract expires 2025)',
+                        status: 'hot',
+                        source: 'Fabrizio Romano',
+                        date: '2024-12-20',
+                        verified: true
+                    },
+                    {
+                        player: 'Trent Alexander-Arnold',
+                        from: 'Liverpool', 
+                        to: 'Real Madrid',
+                        fee: 'Free (contract expires 2025)',
+                        status: 'hot',
+                        source: 'Multiple Sources',
+                        date: '2024-12-19',
+                        verified: true
+                    }
+                ];
+            }
             
             let html = `
                 <div class="email-capture" style="margin-bottom: 2rem;">
@@ -1109,7 +1089,10 @@
                 <div class="rumor-card">
                     <div class="rumor-header">
                         <div>
-                            <div class="rumor-player">${r.player}</div>
+                            <div class="rumor-player">
+                                ${r.player}
+                                ${r.verified ? '<span class="verified-badge" title="Verified source">✓</span>' : ''}
+                            </div>
                             <div class="rumor-details">${r.from} → ${r.to}</div>
                         </div>
                         <span class="rumor-badge ${r.status}">${r.status === 'hot' ? '🔥 HOT' : '⚡ WARM'}</span>
@@ -1118,10 +1101,20 @@
                         <strong>Fee:</strong> ${r.fee}
                     </div>
                     <div class="rumor-source">
-                        📰 ${r.source} • ${new Date(r.date).toLocaleDateString()}
+                        📰 ${r.source} • ${this.formatRumorDate(r.date)}
                     </div>
                 </div>
             `).join('');
+            
+            if (rumors.length === 0) {
+                html = `
+                    <div class="empty-state">
+                        <span class="empty-state-icon">📰</span>
+                        <h3>No Active Rumors</h3>
+                        <p>Check back soon for the latest transfer news!</p>
+                    </div>
+                `;
+            }
             
             html += `
                 <div style="text-align: center; padding: 2rem; color: var(--text-muted);">
@@ -1136,19 +1129,44 @@
         },
         
         showUpgrade() {
-            // PAYMENT OPTIONS - PayPal.me links
-            const PAYPAL_USERNAME = 'MustafaAlpARI';
-            const PAYPAL_MONTHLY = `https://paypal.me/${PAYPAL_USERNAME}/9.99`;
-            const PAYPAL_ANNUAL = `https://paypal.me/${PAYPAL_USERNAME}/79`;
+            // PAYMENT OPTIONS - Stripe Payment Links (Anonymous & Professional)
+            // To set up: https://dashboard.stripe.com/payment-links
+            // 1. Create Payment Link for $9.99/month (recurring)
+            // 2. Create Payment Link for $79/year (recurring)
+            // 3. Replace the links below with your actual Stripe Payment Link IDs
             
-            // Or use Stripe if you prefer
-            const STRIPE_MONTHLY = 'https://buy.stripe.com/test_monthly';
-            const STRIPE_ANNUAL = 'https://buy.stripe.com/test_annual';
+            const STRIPE_MONTHLY = 'https://buy.stripe.com/[YOUR_MONTHLY_LINK_ID]';
+            const STRIPE_ANNUAL = 'https://buy.stripe.com/[YOUR_ANNUAL_LINK_ID]';
             
-            // Choose payment provider (change to 'stripe' if using Stripe)
+            // PayPal Business Links (Anonymous - Recommended)
+            // To set up anonymous PayPal:
+            // 1. Go to PayPal Settings > Profile > Business Information
+            // 2. Change "Business Display Name" to "ScoutLens Pro" (or similar)
+            // 3. Use this link format (replace with your business name)
+            const PAYPAL_BUSINESS_NAME = 'ScoutLensPro'; // Change this to your PayPal business display name
+            const PAYPAL_MONTHLY = `https://paypal.me/${PAYPAL_BUSINESS_NAME}/9.99`;
+            const PAYPAL_ANNUAL = `https://paypal.me/${PAYPAL_BUSINESS_NAME}/79`;
+            
+            // Alternative: PayPal Business Payment Buttons (Most Anonymous)
+            // Create in PayPal Dashboard: Tools > PayPal Buttons > Create Button
+            // Then use: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=YOUR_ID
+            // const PAYPAL_MONTHLY = 'https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=YOUR_MONTHLY_ID';
+            // const PAYPAL_ANNUAL = 'https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=YOUR_ANNUAL_ID';
+            
+            // Use PayPal by default (configured for anonymity)
+            // Change to 'stripe' if you set up Stripe
             const PAYMENT_PROVIDER = 'paypal';
-            const MONTHLY_LINK = PAYMENT_PROVIDER === 'paypal' ? PAYPAL_MONTHLY : STRIPE_MONTHLY;
-            const ANNUAL_LINK = PAYMENT_PROVIDER === 'paypal' ? PAYPAL_ANNUAL : STRIPE_ANNUAL;
+            const MONTHLY_LINK = PAYMENT_PROVIDER === 'stripe' ? STRIPE_MONTHLY : PAYPAL_MONTHLY;
+            const ANNUAL_LINK = PAYMENT_PROVIDER === 'stripe' ? STRIPE_ANNUAL : PAYPAL_ANNUAL;
+            
+            // Check if Stripe links are configured
+            const isStripeConfigured = !STRIPE_MONTHLY.includes('[YOUR_');
+            if (!isStripeConfigured && PAYMENT_PROVIDER === 'stripe') {
+                console.warn('⚠️ Stripe Payment Links not configured. Please set up in Stripe Dashboard.');
+                // Fallback to PayPal if Stripe not configured
+                const MONTHLY_LINK = PAYPAL_MONTHLY;
+                const ANNUAL_LINK = PAYPAL_ANNUAL;
+            }
             
             // Remove existing modal if any
             const existingModal = document.getElementById('upgrade-modal');
@@ -1329,6 +1347,19 @@
                     UI.showNotification('📋 Copied to clipboard!');
                 });
             }
+        },
+        
+        formatRumorDate(dateString) {
+            const date = new Date(dateString);
+            const now = new Date();
+            const diffMs = now - date;
+            const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+            
+            if (diffDays === 0) return 'Today';
+            if (diffDays === 1) return 'Yesterday';
+            if (diffDays < 7) return `${diffDays} days ago`;
+            if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
+            return date.toLocaleDateString();
         },
 
         openModal(modalId) {

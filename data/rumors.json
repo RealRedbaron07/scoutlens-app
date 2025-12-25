@@ -1,0 +1,65 @@
+{
+  "lastUpdated": "2024-12-24",
+  "rumors": [
+    {
+      "player": "Mohamed Salah",
+      "from": "Liverpool",
+      "to": "Saudi Pro League / PSG",
+      "fee": "Free (contract expires 2025)",
+      "status": "hot",
+      "source": "Fabrizio Romano",
+      "date": "2024-12-20",
+      "expires": "2025-01-20",
+      "verified": true,
+      "league": "Premier League"
+    },
+    {
+      "player": "Trent Alexander-Arnold",
+      "from": "Liverpool",
+      "to": "Real Madrid",
+      "fee": "Free (contract expires 2025)",
+      "status": "hot",
+      "source": "Multiple Sources",
+      "date": "2024-12-19",
+      "expires": "2025-01-19",
+      "verified": true,
+      "league": "Premier League"
+    },
+    {
+      "player": "Joshua Kimmich",
+      "from": "Bayern Munich",
+      "to": "Barcelona / Man City",
+      "fee": "Free (contract expires 2025)",
+      "status": "hot",
+      "source": "Sky Germany",
+      "date": "2024-12-18",
+      "expires": "2025-01-18",
+      "verified": true,
+      "league": "Bundesliga"
+    },
+    {
+      "player": "Nico Williams",
+      "from": "Athletic Bilbao",
+      "to": "Barcelona / Chelsea",
+      "fee": "€58M release clause",
+      "status": "warm",
+      "source": "Sport",
+      "date": "2024-12-13",
+      "expires": "2025-01-13",
+      "verified": true,
+      "league": "La Liga"
+    },
+    {
+      "player": "Omar Marmoush",
+      "from": "Eintracht Frankfurt",
+      "to": "Premier League clubs",
+      "fee": "€60M rumored",
+      "status": "warm",
+      "source": "Bild",
+      "date": "2024-12-15",
+      "expires": "2025-01-15",
+      "verified": false,
+      "league": "Bundesliga"
+    }
+  ]
+}
