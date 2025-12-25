@@ -1137,28 +1137,28 @@
             const STRIPE_MONTHLY = 'https://buy.stripe.com/[YOUR_MONTHLY_LINK_ID]';
             const STRIPE_ANNUAL = 'https://buy.stripe.com/[YOUR_ANNUAL_LINK_ID]';
             
-            // PayPal Hosted Buttons (ANONYMOUS - Recommended)
-            // To create: PayPal Dashboard > Tools > PayPal Buttons > Create Button
-            // Then replace YOUR_MONTHLY_ID and YOUR_ANNUAL_ID with your button IDs
+            // ============================================
+            // PAYPAL HOSTED BUTTONS (ANONYMOUS - NO BUSINESS ACCOUNT NEEDED)
+            // ============================================
+            // Step 1: Go to https://www.paypal.com → Tools → PayPal Buttons
+            // Step 2: Create Subscription button for $9.99/month
+            // Step 3: Create Subscription button for $79/year
+            // Step 4: Copy the hosted_button_id from each button
+            // Step 5: Paste IDs below (replace YOUR_MONTHLY_ID and YOUR_ANNUAL_ID)
+            // Step 6: Set USE_PAYPAL_BUTTONS = true
+            // See PAYPAL_HOSTED_BUTTONS_SETUP.md for detailed guide
+            
             const PAYPAL_MONTHLY_BUTTON = 'https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=YOUR_MONTHLY_ID';
             const PAYPAL_ANNUAL_BUTTON = 'https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=YOUR_ANNUAL_ID';
             
-            // Fallback: PayPal.me Business Link (if buttons not set up)
-            // IMPORTANT: Create business account and set display name to hide personal info
-            // Steps: PayPal Dashboard → Settings → Account Type → Upgrade to Business
-            // Then: Settings → Business Information → Set Display Name to "ScoutLens Pro"
-            const PAYPAL_BUSINESS_NAME = 'ScoutLensPro'; // MUST match your PayPal business display name
+            // Fallback: PayPal.me (only used if buttons not configured)
+            // NOTE: This will show your personal name - use Hosted Buttons instead!
+            const PAYPAL_BUSINESS_NAME = 'ScoutLensPro';
             const PAYPAL_MONTHLY_ME = `https://paypal.me/${PAYPAL_BUSINESS_NAME}/9.99`;
             const PAYPAL_ANNUAL_ME = `https://paypal.me/${PAYPAL_BUSINESS_NAME}/79`;
             
-            // NOTE: If you see your personal name, you need to:
-            // 1. Convert PayPal account to Business (free)
-            // 2. Set Business Display Name to match PAYPAL_BUSINESS_NAME above
-            // 3. OR use PayPal Hosted Buttons (set USE_PAYPAL_BUTTONS = true)
-            
-            // Use PayPal Hosted Buttons for anonymity (no username visible)
-            // Fallback to PayPal.me if buttons not configured
-            const USE_PAYPAL_BUTTONS = false; // Set to true after creating buttons
+            // Set to true after you create PayPal Hosted Buttons and add the IDs above
+            const USE_PAYPAL_BUTTONS = false; // ⬅️ Change to true after setup
             const PAYMENT_PROVIDER = 'paypal';
             
             const MONTHLY_LINK = USE_PAYPAL_BUTTONS ? PAYPAL_MONTHLY_BUTTON : PAYPAL_MONTHLY_ME;
