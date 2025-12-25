@@ -157,6 +157,15 @@
             const confidence = player.valuation_confidence || (player.tm_verified ? 'verified' : 'estimated');
             const isHiddenGem = player.is_hidden_gem || player.league_tier >= 2;
             
+            // League tier badge
+            const tier = player.tier || (player.league_tier || 1);
+            let tierBadge = '';
+            if (tier === 2) {
+                tierBadge = '<span class="tier-badge tier-2" title="Tier 2 League">T2</span>';
+            } else if (tier === 3) {
+                tierBadge = '<span class="tier-badge tier-3" title="Tier 3 League">T3</span>';
+            }
+            
             // Confidence badge
             const confidenceBadge = confidence === 'verified' ? 
                 '<span class="confidence-badge verified" title="Transfermarkt verified">✓ TM</span>' :
