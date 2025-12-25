@@ -1144,10 +1144,17 @@
             const PAYPAL_ANNUAL_BUTTON = 'https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=YOUR_ANNUAL_ID';
             
             // Fallback: PayPal.me Business Link (if buttons not set up)
-            // Create business account and set display name to "ScoutLens Pro"
-            const PAYPAL_BUSINESS_NAME = 'ScoutLensPro'; // Change to your business display name
+            // IMPORTANT: Create business account and set display name to hide personal info
+            // Steps: PayPal Dashboard → Settings → Account Type → Upgrade to Business
+            // Then: Settings → Business Information → Set Display Name to "ScoutLens Pro"
+            const PAYPAL_BUSINESS_NAME = 'ScoutLensPro'; // MUST match your PayPal business display name
             const PAYPAL_MONTHLY_ME = `https://paypal.me/${PAYPAL_BUSINESS_NAME}/9.99`;
             const PAYPAL_ANNUAL_ME = `https://paypal.me/${PAYPAL_BUSINESS_NAME}/79`;
+            
+            // NOTE: If you see your personal name, you need to:
+            // 1. Convert PayPal account to Business (free)
+            // 2. Set Business Display Name to match PAYPAL_BUSINESS_NAME above
+            // 3. OR use PayPal Hosted Buttons (set USE_PAYPAL_BUTTONS = true)
             
             // Use PayPal Hosted Buttons for anonymity (no username visible)
             // Fallback to PayPal.me if buttons not configured
