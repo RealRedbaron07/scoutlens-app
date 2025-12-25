@@ -273,12 +273,12 @@
         
         renderUpgradeCard() {
             return `
-                <div class="upgrade-card" onclick="App.showUpgrade()" style="background:linear-gradient(135deg,rgba(251,191,36,0.15),rgba(0,212,170,0.1));border:2px dashed #fbbf24;border-radius:16px;padding:2rem;text-align:center;cursor:pointer;margin:1.5rem 0;transition:all 0.25s ease;">
+                <div class="upgrade-card" data-action="upgrade" style="background:linear-gradient(135deg,rgba(251,191,36,0.15),rgba(0,212,170,0.1));border:2px dashed #fbbf24;border-radius:16px;padding:2rem;text-align:center;cursor:pointer;margin:1.5rem 0;transition:all 0.25s ease;">
                     <div class="upgrade-content">
                         <div class="upgrade-icon" style="font-size:2.5rem;margin-bottom:1rem;">🔓</div>
                         <h3 style="color:#fbbf24;font-size:1.3rem;margin-bottom:0.5rem;">Unlock All 150+ Players</h3>
                         <p style="color:#94a3b8;margin-bottom:1.5rem;">Full access to undervalued players, transfer fees, export reports & alerts</p>
-                        <button class="btn btn-primary" style="background:#00d4aa;color:#000;padding:12px 24px;border:none;border-radius:8px;font-weight:600;font-size:1rem;cursor:pointer;">Upgrade to Pro - $9/mo</button>
+                        <button class="btn btn-primary upgrade-btn" data-action="upgrade" style="background:#00d4aa;color:#000;padding:12px 24px;border:none;border-radius:8px;font-weight:600;font-size:1rem;cursor:pointer;">Upgrade to Pro - $9/mo</button>
                     </div>
                 </div>
             `;
@@ -548,53 +548,116 @@
         },
 
         bindEvents() {
+            // Helper to handle both click and touch
+            const addMobileHandler = (element, handler) => {
+                if (!element) return;
+                element.addEventListener('click', handler);
+                element.addEventListener('touchend', (e) => {
+                    e.preventDefault();
+                    handler(e);
+                }, { passive: false });
+            };
+
             // Navigation - with mobile touch support
             document.querySelectorAll('.nav-link').forEach(link => {
                 const handleNav = (e) => {
                     e.preventDefault();
+                    e.stopPropagation();
                     const view = e.currentTarget.dataset.view;
                     this.switchView(view);
                 };
-                link.addEventListener('click', handleNav);
-                // Also add touchend for iOS
-                link.addEventListener('touchend', (e) => {
-                    e.preventDefault();
-                    handleNav(e);
-                }, { passive: false });
+                addMobileHandler(link, handleNav);
             });
 
+            // Landing page buttons - replace inline onclick
+            document.querySelectorAll('[onclick*="enterApp"]').forEach(btn => {
+                btn.removeAttribute('onclick');
+                addMobileHandler(btn, () => this.enterApp());
+            });
+
+            // Upgrade buttons - replace inline onclick
+            document.querySelectorAll('[onclick*="showUpgrade"]').forEach(btn => {
+                btn.removeAttribute('onclick');
+                addMobileHandler(btn, () => this.showUpgrade());
+            });
+
+            // Filter buttons
+            const filterToggle = document.getElementById('filter-toggle');
+            if (filterToggle) {
+                filterToggle.removeAttribute('onclick');
+                addMobileHandler(filterToggle, () => this.toggleFilters());
+            }
+
+            const filterClose = document.querySelector('.filter-close-btn');
+            if (filterClose) {
+                filterClose.removeAttribute('onclick');
+                addMobileHandler(filterClose, () => this.toggleFilters());
+            }
+
+            const applyFiltersBtn = document.querySelector('[onclick*="applyFilters"]');
+            if (applyFiltersBtn) {
+                applyFiltersBtn.removeAttribute('onclick');
+                addMobileHandler(applyFiltersBtn, () => this.applyFilters());
+            }
+
+            const resetFiltersBtn = document.querySelector('[onclick*="resetFilters"]');
+            if (resetFiltersBtn) {
+                resetFiltersBtn.removeAttribute('onclick');
+                addMobileHandler(resetFiltersBtn, () => this.resetFilters());
+            }
+
+            // Export button
+            const exportBtn = document.querySelector('[onclick*="exportToCSV"]');
+            if (exportBtn) {
+                exportBtn.removeAttribute('onclick');
+                addMobileHandler(exportBtn, () => this.exportToCSV());
+            }
+
             // Newsletter button
-            document.getElementById('newsletter-btn')?.addEventListener('click', () => {
+            addMobileHandler(document.getElementById('newsletter-btn'), () => {
                 this.openModal('newsletter-modal');
             });
 
             // Methodology link
-            document.getElementById('methodology-link')?.addEventListener('click', (e) => {
-                e.preventDefault();
-                this.openModal('methodology-modal');
-            });
+            const methodologyLink = document.getElementById('methodology-link');
+            if (methodologyLink) {
+                methodologyLink.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    this.openModal('methodology-modal');
+                });
+            }
 
             // Email forms
             document.querySelectorAll('#email-form-1, #email-form-2, .newsletter-form').forEach(form => {
                 form.addEventListener('submit', (e) => this.handleEmailSubmit(e));
             });
 
-            // Modal closes
-            document.querySelectorAll('.modal-close').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    document.querySelectorAll('.modal.active').forEach(m => m.classList.remove('active'));
-                });
+            // Modal closes - use delegation for dynamically created modals
+            document.addEventListener('click', (e) => {
+                if (e.target.classList.contains('modal-close') || e.target.closest('.modal-close')) {
+                    const modal = e.target.closest('.modal') || document.querySelector('.modal.active');
+                    if (modal) modal.remove();
+                }
             });
 
+            document.addEventListener('touchend', (e) => {
+                if (e.target.classList.contains('modal-close') || e.target.closest('.modal-close')) {
+                    e.preventDefault();
+                    const modal = e.target.closest('.modal') || document.querySelector('.modal.active');
+                    if (modal) modal.remove();
+                }
+            }, { passive: false });
+
             document.querySelectorAll('.modal-backdrop').forEach(backdrop => {
-                backdrop.addEventListener('click', () => {
-                    document.querySelectorAll('.modal.active').forEach(m => m.classList.remove('active'));
+                addMobileHandler(backdrop, () => {
+                    const modal = backdrop.closest('.modal');
+                    if (modal) modal.remove();
                 });
             });
 
             document.addEventListener('keydown', (e) => {
                 if (e.key === 'Escape') {
-                    document.querySelectorAll('.modal.active').forEach(m => m.classList.remove('active'));
+                    document.querySelectorAll('.modal.active').forEach(m => m.remove());
                 }
             });
 
@@ -632,10 +695,13 @@
                     this.sharePlayer(playerName);
                 }
                 
-                // Upgrade card
-                const upgradeCard = e.target.closest('.upgrade-card');
+                // Upgrade card or button
+                const upgradeCard = e.target.closest('.upgrade-card, .upgrade-btn, [data-action="upgrade"]');
                 if (upgradeCard) {
+                    e.preventDefault();
+                    e.stopPropagation();
                     this.showUpgrade();
+                    return;
                 }
                 
                 // Modal backdrop close
@@ -648,6 +714,23 @@
             
             document.addEventListener('click', handleInteraction);
             document.addEventListener('touchend', handleInteraction, { passive: false });
+            
+            // Also handle upgrade cards that might be dynamically added
+            document.addEventListener('click', (e) => {
+                if (e.target.closest('.upgrade-card, .upgrade-btn, [data-action="upgrade"]')) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    this.showUpgrade();
+                }
+            });
+            
+            document.addEventListener('touchend', (e) => {
+                if (e.target.closest('.upgrade-card, .upgrade-btn, [data-action="upgrade"]')) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    this.showUpgrade();
+                }
+            }, { passive: false });
         },
 
         switchView(viewId) {
@@ -802,12 +885,10 @@
                 return true;
             });
             
-            const freePlayers = allGems.slice(0, 5);
-            const proPlayers = allGems.slice(5);
-            
+            // Show ALL hidden gems (they're from lower leagues - main value prop)
             let html = '';
             
-            if (freePlayers.length === 0) {
+            if (allGems.length === 0) {
                 html = `
                     <div class="empty-state">
                         <span class="empty-state-icon">💎</span>
@@ -816,15 +897,12 @@
                     </div>
                 `;
             } else {
-                html = freePlayers.map((p, i) => UI.renderPlayerCard(p, i)).join('');
-                
-                if (proPlayers.length > 0) {
-                    html += `<div class="pro-section-header">🔒 ${proPlayers.length} more hidden gems with Pro</div>`;
-                    html += proPlayers.slice(0, 3).map((p, i) => UI.renderLockedCard(p, freePlayers.length + i)).join('');
-                }
-                
-                html += UI.renderUpgradeCard();
+                // Show all gems - this is the main feature
+                html = allGems.map((p, i) => UI.renderPlayerCard(p, i)).join('');
             }
+            
+            // ALWAYS show upgrade card - even if showing all gems (for other Pro features)
+            html += UI.renderUpgradeCard();
             
             container.innerHTML = html;
         },
@@ -1033,15 +1111,19 @@
             const existingModal = document.getElementById('upgrade-modal');
             if (existingModal) existingModal.remove();
             
-            // Show upgrade modal
+            // Remove existing modal if any
+            const existingModal = document.getElementById('upgrade-modal');
+            if (existingModal) existingModal.remove();
+            
+            // Show upgrade modal - MORE VISIBLE
             const modal = document.createElement('div');
             modal.className = 'modal active';
             modal.id = 'upgrade-modal';
-            modal.style.cssText = 'position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;';
+            modal.style.cssText = 'position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;padding:1rem;';
             modal.innerHTML = `
-                <div class="modal-backdrop" style="position:absolute;inset:0;background:rgba(0,0,0,0.8);cursor:pointer;"></div>
-                <div class="modal-content upgrade-modal-content" style="position:relative;background:#151a21;border-radius:16px;max-width:480px;width:90%;max-height:90vh;overflow:auto;">
-                    <button class="modal-close" type="button" style="position:absolute;top:15px;right:15px;background:none;border:none;color:#fff;font-size:1.5rem;cursor:pointer;padding:10px;min-width:44px;min-height:44px;">×</button>
+                <div class="modal-backdrop" style="position:absolute;inset:0;background:rgba(0,0,0,0.95);cursor:pointer;"></div>
+                <div class="modal-content upgrade-modal-content" style="position:relative;background:#151a21;border:2px solid #00d4aa;border-radius:20px;max-width:500px;width:100%;max-height:90vh;overflow:auto;box-shadow:0 20px 60px rgba(0,212,170,0.3);">
+                    <button class="modal-close" type="button" style="position:absolute;top:15px;right:15px;background:rgba(255,255,255,0.1);border:none;color:#fff;font-size:1.5rem;cursor:pointer;padding:10px;min-width:44px;min-height:44px;border-radius:8px;z-index:10;">×</button>
                     <div class="upgrade-modal-body" style="padding:2rem;text-align:center;">
                         <div class="upgrade-header" style="margin-bottom:2rem;">
                             <span style="font-size:3rem;display:block;margin-bottom:1rem;">🔭</span>
