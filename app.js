@@ -20,8 +20,27 @@
 
         // Validate email format
         isValidEmail(email) {
+            if (!email || typeof email !== 'string') return false;
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             return emailRegex.test(email);
+        },
+
+        // Safe storage wrapper (prevents crashes in some browsers/private modes)
+        storage: {
+            getItem(key) {
+                try { return localStorage.getItem(key); }
+                catch (e) { return null; }
+            },
+            setItem(key, value) {
+                try {
+                    localStorage.setItem(key, value);
+                    return true;
+                } catch (e) { return false; }
+            },
+            removeItem(key) {
+                try { localStorage.removeItem(key); }
+                catch (e) { }
+            }
         },
 
         // Sanitize search input
@@ -73,16 +92,16 @@
     // Development mode check (for testing only)
     const IS_DEVELOPMENT = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 
-    // Load Pro status from localStorage
-    const savedProStatus = localStorage.getItem('scoutlens_pro');
+    // Load Pro status from localStorage safely
+    const savedProStatus = Security.storage.getItem('scoutlens_pro');
     if (savedProStatus) {
         try {
             const proData = JSON.parse(savedProStatus);
-            state.isPro = proData.isPro;
+            state.isPro = !!proData.isPro;
             state.proEmail = proData.email;
         } catch (e) {
-            console.warn('Invalid Pro data in localStorage, resetting');
-            localStorage.removeItem('scoutlens_pro');
+            console.warn('Invalid Pro data in storage, resetting');
+            Security.storage.removeItem('scoutlens_pro');
             state.isPro = false;
             state.proEmail = null;
         }
@@ -434,31 +453,34 @@
         async init() {
             console.log('🔭 ScoutLens initializing...');
 
+            // Safety failsafe: ensure loader is hidden eventually even if script hangs
+            setTimeout(() => {
+                const loader = document.getElementById('loader');
+                if (loader && !loader.classList.contains('fade-out')) {
+                    console.warn('Failsafe: hiding loader after timeout');
+                    this.enterApp();
+                }
+            }, 6000);
+
             // On mobile, ALWAYS skip landing page and go straight to app
             const isMobile = window.innerWidth <= 768 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
             if (isMobile) {
-                // Mobile users ALWAYS go straight to app - no landing page
-                const landing = document.getElementById('landing');
-                const app = document.getElementById('app');
-                const loader = document.getElementById('loader');
-
-                if (landing) landing.classList.add('hidden');
-                if (app) app.classList.remove('hidden');
-                if (loader) loader.classList.add('fade-out');
-
-                // Continue initialization
-                this.initApp();
+                this.enterApp();
                 return;
             }
 
             // Desktop: Check if user has visited before
-            const hasVisited = localStorage.getItem('scoutlens_visited');
+            const hasVisited = Security.storage.getItem('scoutlens_visited');
             if (!hasVisited) {
                 // Show landing page for first-time visitors (desktop only)
-                document.getElementById('landing')?.classList.remove('hidden');
-                document.getElementById('app')?.classList.add('hidden');
-                document.getElementById('loader')?.classList.add('hidden');
+                const landing = document.getElementById('landing');
+                const app = document.getElementById('app');
+                const loader = document.getElementById('loader');
+
+                if (landing) landing.classList.remove('hidden');
+                if (app) app.classList.add('hidden');
+                if (loader) loader.classList.add('hidden');
                 return;
             }
 
@@ -477,7 +499,7 @@
             if (loader) loader.classList.add('fade-out');
 
             // Mark as visited
-            localStorage.setItem('scoutlens_visited', 'true');
+            Security.storage.setItem('scoutlens_visited', 'true');
 
             // Continue initialization
             this.initApp();
@@ -526,13 +548,13 @@
             } catch (error) {
                 console.error('❌ Failed to initialize ScoutLens:', error);
                 clearTimeout(safetyTimeout);
-                
+
                 // Always hide loader and show app, even on error
                 const loader = document.getElementById('loader');
                 const app = document.getElementById('app');
                 if (loader) loader.classList.add('fade-out');
                 if (app) app.classList.remove('hidden');
-                
+
                 // Show error message to user
                 const container = document.getElementById('undervalued-list');
                 if (container) {
@@ -589,8 +611,8 @@
                     }
                 } catch (e) {
                     // Network error or timeout only - retry these
-                    const isNetworkError = e.name === 'AbortError' || e.name === 'TypeError' || 
-                                         (e.message && e.message.includes('fetch'));
+                    const isNetworkError = e.name === 'AbortError' || e.name === 'TypeError' ||
+                        (e.message && e.message.includes('fetch'));
                     if (isNetworkError && retryCount < maxRetries) {
                         retryCount++;
                         const delay = Math.pow(2, retryCount) * 1000; // Exponential backoff: 2s, 4s
@@ -685,7 +707,7 @@
         },
 
         loadState() {
-            const saved = localStorage.getItem('scoutlens_watchlist');
+            const saved = Security.storage.getItem('scoutlens_watchlist');
             if (saved) {
                 try {
                     state.watchlist = JSON.parse(saved);
@@ -696,7 +718,7 @@
         },
 
         saveState() {
-            localStorage.setItem('scoutlens_watchlist', JSON.stringify(state.watchlist));
+            Security.storage.setItem('scoutlens_watchlist', JSON.stringify(state.watchlist));
         },
 
         cleanupEvents() {
@@ -911,7 +933,7 @@
                     const action = actionElement.dataset.action;
                     e.preventDefault();
                     e.stopPropagation();
-                    
+
                     switch (action) {
                         case 'show-comparison':
                             this.showComparison();
@@ -1075,15 +1097,15 @@
                 const data = this.getData();
                 const allPlayers = data.free?.undervalued || data.undervalued || [];
 
-            // FREE: Show only first 5
-            const freePlayers = allPlayers.slice(0, 5);
-            // PRO: Everything else is locked
-            const proPlayers = allPlayers.slice(5);
+                // FREE: Show only first 5
+                const freePlayers = allPlayers.slice(0, 5);
+                // PRO: Everything else is locked
+                const proPlayers = allPlayers.slice(5);
 
-            let html = freePlayers.map((p, i) => UI.renderPlayerCard(p, i)).join('');
+                let html = freePlayers.map((p, i) => UI.renderPlayerCard(p, i)).join('');
 
-            // ALWAYS show upgrade card after free players
-            html += UI.renderUpgradeCard();
+                // ALWAYS show upgrade card after free players
+                html += UI.renderUpgradeCard();
 
                 if (proPlayers.length > 0) {
                     html += `<div class="pro-section-header">🔒 ${proPlayers.length} more undervalued players with Pro</div>`;
@@ -1210,7 +1232,7 @@
                 } else {
                     // Show paginated gems
                     html = paginatedGems.map((p, i) => UI.renderPlayerCard(p, startIdx + i)).join('');
-                    
+
                     // Add pagination controls if more than one page
                     if (totalPages > 1) {
                         html += `<div class="pagination-controls" style="display:flex;justify-content:center;align-items:center;gap:1rem;margin:2rem 0;padding:1rem;">
@@ -1548,7 +1570,7 @@
                 const paginatedWatchlist = state.watchlist.slice(startIdx, endIdx);
 
                 let html = paginatedWatchlist.map((p, i) => UI.renderPlayerCard(p, startIdx + i)).join('');
-                
+
                 // Add pagination controls if more than one page
                 if (totalPages > 1) {
                     html += `<div class="pagination-controls" style="display:flex;justify-content:center;align-items:center;gap:1rem;margin:2rem 0;padding:1rem;">
@@ -1630,7 +1652,7 @@
             // In production: Send to Beehiiv, ConvertKit, etc.
             // For now: Store locally and show confirmation
             console.log('Email submitted:', email);
-            localStorage.setItem('scoutlens_email', email);
+            Security.storage.setItem('scoutlens_email', email);
 
             UI.showNotification('✅ Subscribed! Check your inbox Monday.');
 
@@ -2111,7 +2133,7 @@
             }
 
             const targetPrice = parseFloat(targetPriceInput.trim());
-            
+
             // Validate input: must be a number, positive, and reasonable
             if (isNaN(targetPrice) || targetPrice <= 0 || targetPrice > 1000) {
                 UI.showNotification('⚠️ Invalid price. Please enter a number between 0.1 and 1000 (€M)', 'error');
@@ -2126,18 +2148,18 @@
                 createdAt: new Date().toISOString()
             });
 
-            localStorage.setItem('scoutlens_alerts', JSON.stringify(state.priceAlerts));
+            Security.storage.setItem('scoutlens_alerts', JSON.stringify(state.priceAlerts));
             UI.showNotification(`🔔 Alert set: ${player.name || 'Player'} < €${targetPrice}M`);
         },
 
         loadPriceAlerts() {
-            const saved = localStorage.getItem('scoutlens_alerts');
+            const saved = Security.storage.getItem('scoutlens_alerts');
             if (saved) {
                 try {
                     state.priceAlerts = JSON.parse(saved);
                 } catch (e) {
-                    console.warn('Invalid price alerts data in localStorage, resetting');
-                    localStorage.removeItem('scoutlens_alerts');
+                    console.warn('Invalid price alerts data, resetting');
+                    Security.storage.removeItem('scoutlens_alerts');
                     state.priceAlerts = [];
                 }
             }
@@ -2173,7 +2195,7 @@
             }
 
             // Store email (in production, send to your email service)
-            localStorage.setItem('scoutlens_email', Security.escapeHtml(email));
+            Security.storage.setItem('scoutlens_email', Security.escapeHtml(email));
             state.emailSubmitted = true;
 
             // Hide the form
@@ -2206,10 +2228,10 @@
                 UI.showNotification('⚠️ Pro activation requires server verification. Please contact support.', 'error');
                 return;
             }
-            
+
             state.isPro = true;
             state.proEmail = email;
-            localStorage.setItem('scoutlens_pro', JSON.stringify({
+            Security.storage.setItem('scoutlens_pro', JSON.stringify({
                 isPro: true,
                 email: email,
                 activatedAt: new Date().toISOString()
@@ -2270,7 +2292,7 @@
             //
             // Current implementation is INSECURE and allows free access to Pro features.
             console.error('⚠️ SECURITY: Pro verification is client-side only. Implement server-side verification immediately.');
-            
+
             // For now, we'll still activate but log the security issue
             // In production, remove this and require server verification
             this.activatePro(Security.escapeHtml(email));
@@ -2300,14 +2322,18 @@
         }
     };
 
-    // Initialize search on load
-    document.addEventListener('DOMContentLoaded', () => {
+    // Initialize on DOM ready or immediately if already loaded
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => {
+            App.initSearch();
+            App.loadPriceAlerts();
+            App.init();
+        });
+    } else {
         App.initSearch();
         App.loadPriceAlerts();
-    });
-
-    // Initialize on DOM ready
-    document.addEventListener('DOMContentLoaded', () => App.init());
+        App.init();
+    }
 
     // Expose App to window for global access
     window.App = App;
