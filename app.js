@@ -61,16 +61,27 @@
             sortBy: 'undervaluation'
         },
         priceAlerts: [],  // {playerId, targetPrice}
-        isPro: false,     // Pro user status
-        proEmail: null    // Email for Pro access
+        isPro: false,     // Pro user status (client-side only - not trusted)
+        proEmail: null,   // Email for Pro access
+        proToken: null    // Server-verified Pro token (trusted)
     };
+
+    // Development mode check (for testing only)
+    const IS_DEVELOPMENT = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 
     // Load Pro status from localStorage
     const savedProStatus = localStorage.getItem('scoutlens_pro');
     if (savedProStatus) {
-        const proData = JSON.parse(savedProStatus);
-        state.isPro = proData.isPro;
-        state.proEmail = proData.email;
+        try {
+            const proData = JSON.parse(savedProStatus);
+            state.isPro = proData.isPro;
+            state.proEmail = proData.email;
+        } catch (e) {
+            console.warn('Invalid Pro data in localStorage, resetting');
+            localStorage.removeItem('scoutlens_pro');
+            state.isPro = false;
+            state.proEmail = null;
+        }
     }
 
     // ============================================
@@ -85,7 +96,10 @@
         },
 
         getInitials(name) {
-            return name.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase();
+            // Utility function - receives raw data, no sanitization here
+            // Sanitization happens at DOM insertion points
+            const safeName = name || '';
+            return safeName.split(' ').map(n => n[0] || '').slice(0, 2).join('').toUpperCase();
         },
 
         getColor(position) {
@@ -94,9 +108,12 @@
         },
 
         render(name, position, size = 48) {
+            // Receives raw data - sanitization happens at DOM insertion
             const initials = this.getInitials(name);
             const color = this.getColor(position);
             const fontSize = size * 0.4;
+            // Escape initials for safe HTML insertion
+            const safeInitials = Security.escapeHtml(initials);
 
             return `
                 <div class="player-avatar" style="
@@ -112,7 +129,7 @@
                     font-weight: 700;
                     font-size: ${fontSize}px;
                     font-family: var(--font-sans);
-                ">${initials}</div>
+                ">${safeInitials}</div>
             `;
         }
     };
@@ -193,13 +210,13 @@
                     ${index !== null ? `<div class="player-rank">${index + 1}</div>` : ''}
                     
                     <div class="player-card-main">
-                        ${Avatar.render(player.name, player.position, 48)}
+                        ${Avatar.render(player.name || '', player.position, 48)}
                         
                         <div class="player-info">
-                            <div class="player-name">${player.name} ${gemBadge}</div>
+                            <div class="player-name">${Security.escapeHtml(player.name || '')} ${gemBadge}</div>
                             <div class="player-meta">
-                                <span class="player-team">${player.team}</span>
-                                <span class="player-league">${player.league} ${tierBadge}</span>
+                                <span class="player-team">${Security.escapeHtml(player.team || '')}</span>
+                                <span class="player-league">${Security.escapeHtml(player.league || '')} ${tierBadge}</span>
                                 ${confidenceBadge}
                                 ${contractBadge}
                             </div>
@@ -249,9 +266,9 @@
         },
 
         renderLockedCard(player, index = null) {
-            const name = player.name || 'Hidden Player';
-            const team = player.team || '???';
-            const league = player.league || '???';
+            const name = Security.escapeHtml(player.name || 'Hidden Player');
+            const team = Security.escapeHtml(player.team || '???');
+            const league = Security.escapeHtml(player.league || '???');
 
             return `
                 <div class="player-card locked" onclick="App.showUpgrade()">
@@ -300,14 +317,14 @@
             return `
                 <div class="player-detail">
                     <div class="player-detail-header">
-                        ${Avatar.render(player.name, player.position, 80)}
+                        ${Avatar.render(player.name || '', player.position, 80)}
                         <div class="player-detail-info">
-                            <h2>${player.name}</h2>
-                            <p>${player.team} · ${player.league}</p>
+                            <h2>${Security.escapeHtml(player.name || '')}</h2>
+                            <p>${Security.escapeHtml(player.team || '')} · ${Security.escapeHtml(player.league || '')}</p>
                             <div class="player-detail-tags">
-                                <span class="tag">${Format.position(player.position)}</span>
-                                <span class="tag">${player.age} years</span>
-                                <span class="tag">${player.nationality}</span>
+                                <span class="tag">${Security.escapeHtml(Format.position(player.position || ''))}</span>
+                                <span class="tag">${Security.escapeHtml(String(player.age || ''))} years</span>
+                                <span class="tag">${Security.escapeHtml(player.nationality || '')}</span>
                             </div>
                         </div>
                     </div>
@@ -373,12 +390,13 @@
         },
 
         showNotification(message, type = 'info') {
+            // Always escaped - textContent automatically prevents XSS
             const existing = document.querySelector('.notification');
             if (existing) existing.remove();
 
             const notification = document.createElement('div');
             notification.className = `notification notification-${type}`;
-            notification.innerHTML = message;
+            notification.textContent = typeof message === 'string' ? message : String(message);
             document.body.appendChild(notification);
 
             setTimeout(() => {
@@ -535,7 +553,10 @@
                 if (heroStats && !document.querySelector('.data-freshness')) {
                     const badge = document.createElement('div');
                     badge.className = `data-freshness ${freshnessClass}`;
-                    badge.innerHTML = `<span class="freshness-dot"></span>${freshnessText}`;
+                    const dot = document.createElement('span');
+                    dot.className = 'freshness-dot';
+                    badge.appendChild(dot);
+                    badge.appendChild(document.createTextNode(Security.escapeHtml(freshnessText)));
                     badge.style.cssText = `
                         display: inline-flex;
                         align-items: center;
@@ -1089,18 +1110,18 @@
                     <div class="rumor-header">
                         <div>
                             <div class="rumor-player">
-                                ${r.player}
+                                ${Security.escapeHtml(r.player || '')}
                                 ${r.verified ? '<span class="verified-badge" title="Verified source">✓</span>' : ''}
                             </div>
-                            <div class="rumor-details">${r.from} → ${r.to}</div>
+                            <div class="rumor-details">${Security.escapeHtml(r.from || '')} → ${Security.escapeHtml(r.to || '')}</div>
                         </div>
-                        <span class="rumor-badge ${r.status}">${r.status === 'hot' ? '🔥 HOT' : '⚡ WARM'}</span>
+                        <span class="rumor-badge ${Security.escapeHtml(r.status || '')}">${r.status === 'hot' ? '🔥 HOT' : '⚡ WARM'}</span>
                     </div>
                     <div class="rumor-details" style="margin-top: 0.5rem;">
-                        <strong>Fee:</strong> ${r.fee}
+                        <strong>Fee:</strong> ${Security.escapeHtml(r.fee || '')}
                     </div>
                     <div class="rumor-source">
-                        📰 ${r.source} • ${this.formatRumorDate(r.date)}
+                        📰 ${Security.escapeHtml(r.source || '')} • ${Security.escapeHtml(this.formatRumorDate(r.date || ''))}
                     </div>
                 </div>
             `).join('');
@@ -1471,8 +1492,8 @@
                 <div class="compare-grid">
                     ${state.compareList.map(player => `
                         <div class="compare-card">
-                            <h3>${player.name} ${player.is_hidden_gem ? '💎' : ''}</h3>
-                            <p style="color:var(--text-muted);font-size:0.85rem;margin-bottom:1rem;">${player.team} • ${player.league}</p>
+                            <h3>${Security.escapeHtml(player.name || '')} ${player.is_hidden_gem ? '💎' : ''}</h3>
+                            <p style="color:var(--text-muted);font-size:0.85rem;margin-bottom:1rem;">${Security.escapeHtml(player.team || '')} • ${Security.escapeHtml(player.league || '')}</p>
                             ${stats.map((stat, i) => {
                 const value = player[stat] || 0;
                 const isBest = value === bestValues[stat];
@@ -1811,7 +1832,13 @@
         loadPriceAlerts() {
             const saved = localStorage.getItem('scoutlens_alerts');
             if (saved) {
-                state.priceAlerts = JSON.parse(saved);
+                try {
+                    state.priceAlerts = JSON.parse(saved);
+                } catch (e) {
+                    console.warn('Invalid price alerts data in localStorage, resetting');
+                    localStorage.removeItem('scoutlens_alerts');
+                    state.priceAlerts = [];
+                }
             }
         },
 
@@ -1862,10 +1889,23 @@
         // ============================================
 
         checkProAccess() {
-            return state.isPro;
+            // SECURITY: Pro access requires server-verified token in production
+            // In development mode, allow client-side flag for testing
+            if (IS_DEVELOPMENT) {
+                return state.isPro;
+            }
+            // In production, only trust server-verified token
+            return state.proToken !== null;
         },
 
         activatePro(email) {
+            // SECURITY: In production, this should only be called after server verification
+            // For now, only allow in development mode
+            if (!IS_DEVELOPMENT) {
+                UI.showNotification('⚠️ Pro activation requires server verification. Please contact support.', 'error');
+                return;
+            }
+            
             state.isPro = true;
             state.proEmail = email;
             localStorage.setItem('scoutlens_pro', JSON.stringify({
@@ -1874,7 +1914,7 @@
                 activatedAt: new Date().toISOString()
             }));
 
-            UI.showNotification('🎉 Pro activated! Enjoy unlimited access.');
+            UI.showNotification('🎉 Pro activated! (Development mode only)');
             this.renderView(state.currentView);
             this.updateProBadge();
         },
@@ -1917,23 +1957,34 @@
             // 3. Server returns verification token
             // 4. Only then activate Pro
 
-            // For demo purposes, we'll activate
+            // SECURITY WARNING: This is client-side only verification and can be bypassed.
             // REPLACE THIS with actual server verification in production!
-            console.warn('⚠️ Pro verification is in demo mode. Implement server-side verification for production.');
-
+            // 
+            // Required implementation:
+            // 1. Send email to your server endpoint (e.g., /api/verify-pro)
+            // 2. Server checks Stripe/PayPal API for active subscription with this email
+            // 3. Server returns signed JWT token or session cookie
+            // 4. Client stores token (not just a boolean flag)
+            // 5. All Pro features verify token on server before serving content
+            //
+            // Current implementation is INSECURE and allows free access to Pro features.
+            console.error('⚠️ SECURITY: Pro verification is client-side only. Implement server-side verification immediately.');
+            
+            // For now, we'll still activate but log the security issue
+            // In production, remove this and require server verification
             this.activatePro(Security.escapeHtml(email));
             e.target.closest('.modal').remove();
         },
 
         updateProBadge() {
             const badge = document.getElementById('pro-badge');
-            if (state.isPro && badge) {
+            if (this.checkProAccess() && badge) {
                 badge.style.display = 'flex';
             }
         },
 
         renderProGate() {
-            if (state.isPro) return '';
+            if (this.checkProAccess()) return '';
 
             return `
                 <div class="pro-gate" style="background:linear-gradient(135deg,rgba(251,191,36,0.1),rgba(0,212,170,0.1));border:2px solid var(--accent-gold);border-radius:12px;padding:2rem;text-align:center;margin:1rem 0;">
