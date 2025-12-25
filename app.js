@@ -670,16 +670,14 @@
                         margin-top: 1rem;
                     `;
 
-                    const dot = badge.querySelector('.freshness-dot');
-                    if (dot) {
-                        dot.style.cssText = `
-                            width: 6px;
-                            height: 6px;
-                            border-radius: 50%;
-                            background: currentColor;
-                            ${freshnessClass !== 'old' ? 'animation: pulse 2s infinite;' : ''}
-                        `;
-                    }
+                    // Style the dot element we created above
+                    dot.style.cssText = `
+                        width: 6px;
+                        height: 6px;
+                        border-radius: 50%;
+                        background: currentColor;
+                        ${freshnessClass !== 'old' ? 'animation: pulse 2s infinite;' : ''}
+                    `;
 
                     heroStats.parentNode.insertBefore(badge, heroStats.nextSibling);
                 }
