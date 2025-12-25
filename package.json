@@ -2,6 +2,8 @@
   "name": "scoutlens",
   "version": "1.0.0",
   "type": "module",
-  "private": true
+  "private": true,
+  "dependencies": {
+    "@vercel/analytics": "^1.6.1"
+  }
 }
-
