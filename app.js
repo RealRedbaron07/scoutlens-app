@@ -388,13 +388,31 @@
         async init() {
             console.log('🔭 ScoutLens initializing...');
             
-            // Check if user has visited before
+            // On mobile, ALWAYS skip landing page and go straight to app
+            const isMobile = window.innerWidth <= 768 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            
+            if (isMobile) {
+                // Mobile users ALWAYS go straight to app - no landing page
+                const landing = document.getElementById('landing');
+                const app = document.getElementById('app');
+                const loader = document.getElementById('loader');
+                
+                if (landing) landing.classList.add('hidden');
+                if (app) app.classList.remove('hidden');
+                if (loader) loader.classList.add('fade-out');
+                
+                // Continue initialization
+                this.initApp();
+                return;
+            }
+            
+            // Desktop: Check if user has visited before
             const hasVisited = localStorage.getItem('scoutlens_visited');
             if (!hasVisited) {
-                // Show landing page for first-time visitors
-                document.getElementById('landing').classList.remove('hidden');
-                document.getElementById('app').classList.add('hidden');
-                document.getElementById('loader').classList.add('hidden');
+                // Show landing page for first-time visitors (desktop only)
+                document.getElementById('landing')?.classList.remove('hidden');
+                document.getElementById('app')?.classList.add('hidden');
+                document.getElementById('loader')?.classList.add('hidden');
                 return;
             }
             
@@ -404,8 +422,13 @@
         
         enterApp() {
             // Hide landing, show app
-            document.getElementById('landing')?.classList.add('hidden');
-            document.getElementById('app')?.classList.remove('hidden');
+            const landing = document.getElementById('landing');
+            const app = document.getElementById('app');
+            const loader = document.getElementById('loader');
+            
+            if (landing) landing.classList.add('hidden');
+            if (app) app.classList.remove('hidden');
+            if (loader) loader.classList.add('fade-out');
             
             // Mark as visited
             localStorage.setItem('scoutlens_visited', 'true');
@@ -570,9 +593,29 @@
             });
 
             // Landing page buttons - replace inline onclick
-            document.querySelectorAll('[onclick*="enterApp"]').forEach(btn => {
-                btn.removeAttribute('onclick');
-                addMobileHandler(btn, () => this.enterApp());
+            document.querySelectorAll('[onclick*="enterApp"], .btn[onclick*="enterApp"]').forEach(btn => {
+                const onclick = btn.getAttribute('onclick');
+                if (onclick && onclick.includes('enterApp')) {
+                    btn.removeAttribute('onclick');
+                    addMobileHandler(btn, (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        this.enterApp();
+                    });
+                }
+            });
+            
+            // Also handle any remaining onclick handlers
+            document.querySelectorAll('button[onclick]').forEach(btn => {
+                const onclick = btn.getAttribute('onclick');
+                if (onclick && onclick.includes('enterApp')) {
+                    btn.removeAttribute('onclick');
+                    addMobileHandler(btn, (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        this.enterApp();
+                    });
+                }
             });
 
             // Upgrade buttons - replace inline onclick
@@ -1106,10 +1149,6 @@
             const PAYMENT_PROVIDER = 'paypal';
             const MONTHLY_LINK = PAYMENT_PROVIDER === 'paypal' ? PAYPAL_MONTHLY : STRIPE_MONTHLY;
             const ANNUAL_LINK = PAYMENT_PROVIDER === 'paypal' ? PAYPAL_ANNUAL : STRIPE_ANNUAL;
-            
-            // Remove existing modal if any
-            const existingModal = document.getElementById('upgrade-modal');
-            if (existingModal) existingModal.remove();
             
             // Remove existing modal if any
             const existingModal = document.getElementById('upgrade-modal');

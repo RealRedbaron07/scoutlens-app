@@ -1957,6 +1957,22 @@ body::before {
 
 /* Mobile Responsive Landing - Unified */
 @media (max-width: 768px) {
+    /* Hide landing page on mobile - go straight to app */
+    .landing-page {
+        display: none !important;
+    }
+    
+    /* Ensure app is visible on mobile */
+    #app {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
+    
+    #app.hidden {
+        display: block !important;
+    }
+    
     .landing-nav {
         padding: 1rem;
         flex-wrap: wrap;
