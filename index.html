@@ -234,6 +234,36 @@
         </footer>
     </div>
 
+    <!-- Mobile Navigation Menu -->
+    <div class="nav-menu-overlay" id="nav-menu-overlay"></div>
+    <div class="nav-menu" id="nav-menu">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border-subtle);">
+            <h3 style="margin: 0;">Menu</h3>
+            <button class="nav-menu-close" id="nav-menu-close" style="background: none; border: none; color: var(--text-primary); font-size: 1.5rem; cursor: pointer; padding: 0.5rem;">×</button>
+        </div>
+        <a href="#" class="nav-menu-link active" data-view="dashboard">
+            <span>📊</span> <span>Undervalued</span>
+        </a>
+        <a href="#" class="nav-menu-link" data-view="performers">
+            <span>⚡</span> <span>Top xGI</span>
+        </a>
+        <a href="#" class="nav-menu-link" data-view="rising">
+            <span>🌟</span> <span>Rising Stars</span>
+        </a>
+        <a href="#" class="nav-menu-link" data-view="gems">
+            <span>💎</span> <span>Hidden Gems</span>
+        </a>
+        <a href="#" class="nav-menu-link" data-view="bargains">
+            <span>⏰</span> <span>Bargains</span>
+        </a>
+        <a href="#" class="nav-menu-link" data-view="rumors">
+            <span>📰</span> <span>Rumors</span>
+        </a>
+        <a href="#" class="nav-menu-link" data-view="watchlist">
+            <span>★</span> <span>Saved</span>
+        </a>
+    </div>
+
     <!-- Filter Panel (slide-out) -->
     <div id="filter-panel" class="filter-panel hidden">
         <div class="filter-header">
@@ -313,6 +343,9 @@
         <!-- Navigation -->
         <nav class="nav">
             <div class="nav-brand">
+                <button class="nav-hamburger" id="nav-hamburger" aria-label="Menu" style="display: none;">
+                    ☰
+                </button>
                 <span class="nav-logo">🔭</span>
                 <span class="nav-title">ScoutLens</span>
             </div>

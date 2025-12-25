@@ -2060,7 +2060,7 @@ body::before {
     
     /* Hamburger menu for mobile navigation */
     .nav-hamburger {
-        display: block;
+        display: none; /* Hidden by default, shown via JS on mobile */
         background: none;
         border: none;
         color: var(--text-primary);
@@ -2069,6 +2069,7 @@ body::before {
         padding: 0.5rem;
         min-width: 44px;
         min-height: 44px;
+        margin-right: 0.5rem;
     }
     
     .nav-menu-overlay {

@@ -589,6 +589,9 @@
                     handler(e);
                 }, { passive: false });
             };
+            
+            // Mobile hamburger menu
+            this.initMobileMenu();
 
             // Navigation - with mobile touch support
             document.querySelectorAll('.nav-link').forEach(link => {
@@ -1534,10 +1537,97 @@
             }
         },
         
+        initMobileMenu() {
+            const hamburger = document.getElementById('nav-hamburger');
+            const menu = document.getElementById('nav-menu');
+            const overlay = document.getElementById('nav-menu-overlay');
+            const closeBtn = document.getElementById('nav-menu-close');
+            const menuLinks = document.querySelectorAll('.nav-menu-link');
+            
+            // Show hamburger on mobile
+            if (window.innerWidth <= 768) {
+                if (hamburger) hamburger.style.display = 'block';
+                if (document.querySelector('.nav-links')) {
+                    document.querySelector('.nav-links').style.display = 'none';
+                }
+            }
+            
+            // Toggle menu
+            const toggleMenu = () => {
+                if (menu) menu.classList.toggle('active');
+                if (overlay) overlay.classList.toggle('active');
+                document.body.style.overflow = menu?.classList.contains('active') ? 'hidden' : '';
+            };
+            
+            const closeMenu = () => {
+                if (menu) menu.classList.remove('active');
+                if (overlay) overlay.classList.remove('active');
+                document.body.style.overflow = '';
+            };
+            
+            if (hamburger) {
+                hamburger.addEventListener('click', toggleMenu);
+                hamburger.addEventListener('touchend', (e) => {
+                    e.preventDefault();
+                    toggleMenu();
+                }, { passive: false });
+            }
+            
+            if (closeBtn) {
+                closeBtn.addEventListener('click', closeMenu);
+                closeBtn.addEventListener('touchend', (e) => {
+                    e.preventDefault();
+                    closeMenu();
+                }, { passive: false });
+            }
+            
+            if (overlay) {
+                overlay.addEventListener('click', closeMenu);
+            }
+            
+            // Handle menu link clicks
+            menuLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const view = link.dataset.view;
+                    if (view) {
+                        this.switchView(view);
+                        closeMenu();
+                    }
+                });
+            });
+            
+            // Handle window resize
+            window.addEventListener('resize', () => {
+                if (window.innerWidth > 768) {
+                    if (hamburger) hamburger.style.display = 'none';
+                    if (document.querySelector('.nav-links')) {
+                        document.querySelector('.nav-links').style.display = 'flex';
+                    }
+                    closeMenu();
+                } else {
+                    if (hamburger) hamburger.style.display = 'block';
+                    if (document.querySelector('.nav-links')) {
+                        document.querySelector('.nav-links').style.display = 'none';
+                    }
+                }
+            });
+        },
+        
         toggleFilters() {
             const panel = document.getElementById('filter-panel');
             const btn = document.getElementById('filter-toggle');
-            panel?.classList.toggle('hidden');
+            const isMobile = window.innerWidth <= 768;
+            
+            if (isMobile) {
+                // Use bottom sheet on mobile
+                panel?.classList.toggle('filter-bottom-sheet');
+                panel?.classList.toggle('active');
+            } else {
+                // Use sidebar on desktop
+                panel?.classList.toggle('hidden');
+            }
+            
             btn?.classList.toggle('active');
         },
         
