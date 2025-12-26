@@ -1950,14 +1950,14 @@
                 ageRange.addEventListener('input', (e) => {
                     const ageValue = document.getElementById('age-value');
                     if (ageValue) ageValue.textContent = e.target.value;
-                }, { signal });
+                });
             }
 
             if (valueRange) {
                 valueRange.addEventListener('input', (e) => {
                     const valueDisplay = document.getElementById('value-display');
                     if (valueDisplay) valueDisplay.textContent = `€${e.target.value}M`;
-                }, { signal });
+                });
             }
 
             // Sort dropdown - apply immediately on change
@@ -1965,7 +1965,7 @@
                 sortSelect.addEventListener('change', (e) => {
                     state.filters.sortBy = e.target.value;
                     this.renderView(state.currentView);
-                }, { signal });
+                });
             }
         },
 
