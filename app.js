@@ -795,38 +795,11 @@
                 addMobileHandler(btn, () => this.showUpgrade());
             });
 
-            // Filter buttons
-            // Filter toggle button - use both click and touchend for compatibility
-            const filterToggle = document.getElementById('filter-toggle');
-            if (filterToggle) {
-                filterToggle.removeAttribute('onclick');
-                filterToggle.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    this.toggleFilters();
-                }, { signal });
-                filterToggle.addEventListener('touchend', (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    this.toggleFilters();
-                }, { passive: false, signal });
-            }
-
-            // Filter close button
-            const filterClose = document.querySelector('.filter-close-btn');
-            if (filterClose) {
-                filterClose.removeAttribute('onclick');
-                filterClose.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    this.toggleFilters();
-                }, { signal });
-                filterClose.addEventListener('touchend', (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    this.toggleFilters();
-                }, { passive: false, signal });
-            }
+            // Filter buttons - initialize after DOM is ready
+            // Use setTimeout to ensure button exists (it's in the nav which renders after init)
+            setTimeout(() => {
+                this.initFilterButtons(signal);
+            }, 200);
 
             // Export button
             const exportBtn = document.querySelector('[onclick*="exportToCSV"]');
@@ -1986,22 +1959,80 @@
             });
         },
 
+        initFilterButtons(signal) {
+            console.log('🔧 Initializing filter buttons...');
+            
+            // Filter toggle button
+            const filterToggle = document.getElementById('filter-toggle');
+            if (filterToggle) {
+                console.log('✅ Filter toggle button found');
+                // Remove onclick attribute (we'll use event listener)
+                filterToggle.removeAttribute('onclick');
+                
+                // Remove any existing listeners by cloning
+                const newToggle = filterToggle.cloneNode(true);
+                filterToggle.parentNode.replaceChild(newToggle, filterToggle);
+                
+                // Add event listeners
+                newToggle.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('🔧 Filter toggle CLICKED');
+                    this.toggleFilters();
+                }, { signal });
+                
+                newToggle.addEventListener('touchend', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('🔧 Filter toggle TOUCHED');
+                    this.toggleFilters();
+                }, { passive: false, signal });
+            } else {
+                console.error('❌ Filter toggle button NOT found!');
+            }
+
+            // Filter close button
+            const filterClose = document.querySelector('.filter-close-btn');
+            if (filterClose) {
+                console.log('✅ Filter close button found');
+                filterClose.removeAttribute('onclick');
+                const newClose = filterClose.cloneNode(true);
+                filterClose.parentNode.replaceChild(newClose, filterClose);
+                
+                newClose.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    this.toggleFilters();
+                }, { signal });
+            }
+            
+            // Verify filter panel
+            const filterPanel = document.getElementById('filter-panel');
+            if (filterPanel) {
+                console.log('✅ Filter panel found');
+            } else {
+                console.error('❌ Filter panel NOT found!');
+            }
+        },
+
         toggleFilters() {
+            console.log('🔧 toggleFilters() called');
             const panel = document.getElementById('filter-panel');
             const btn = document.getElementById('filter-toggle');
             
             if (!panel) {
-                console.warn('Filter panel not found');
+                console.error('❌ Filter panel not found in toggleFilters()');
                 return;
             }
             
+            console.log('📋 Panel current classes:', panel.className);
             const isMobile = window.innerWidth <= 768;
+            console.log('📱 Is mobile:', isMobile, 'Width:', window.innerWidth);
 
             if (isMobile) {
                 // Use bottom sheet on mobile
                 panel.classList.toggle('filter-bottom-sheet');
                 panel.classList.toggle('active');
-                // Also toggle hidden for mobile
                 panel.classList.toggle('hidden');
             } else {
                 // Use sidebar on desktop - just toggle hidden class
@@ -2012,7 +2043,11 @@
                 btn.classList.toggle('active');
             }
             
-            console.log('Filter panel toggled. Hidden:', panel.classList.contains('hidden'));
+            const isHidden = panel.classList.contains('hidden');
+            console.log('✅ Filter panel toggled. Hidden:', isHidden, 'New classes:', panel.className);
+            
+            // Force a reflow to ensure CSS transition works
+            void panel.offsetHeight;
         },
 
         applyFilters() {

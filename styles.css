@@ -1633,6 +1633,10 @@ body::before {
     cursor: pointer;
     font-size: 1rem;
     transition: all var(--transition-fast);
+    position: relative;
+    z-index: 100;
+    pointer-events: auto;
+    user-select: none;
 }
 
 .filter-toggle-btn:hover {
@@ -1643,6 +1647,10 @@ body::before {
 .filter-toggle-btn.active {
     background: var(--accent-primary);
     color: #000;
+}
+
+.filter-toggle-btn:active {
+    transform: scale(0.95);
 }
 
 /* Filter Panel */
