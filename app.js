@@ -1939,8 +1939,8 @@
             }
 
             // Filter range displays
-            const ageRange = document.getElementById('filter-age');
-            const valueRange = document.getElementById('filter-value');
+            const ageRange = document.getElementById('age-filter');
+            const valueRange = document.getElementById('value-filter');
             const sortSelect = document.getElementById('sort-by');
 
             if (ageRange) {
@@ -2136,9 +2136,9 @@
 
         applyFilters() {
             const leagueEl = document.getElementById('filter-league');
-            const positionEl = document.getElementById('filter-position');
-            const ageEl = document.getElementById('filter-age');
-            const valueEl = document.getElementById('filter-value');
+            const positionEl = document.getElementById('position-filter');
+            const ageEl = document.getElementById('age-filter');
+            const valueEl = document.getElementById('value-filter');
             const sortEl = document.getElementById('sort-by');
 
             state.filters = {
@@ -2171,14 +2171,25 @@
             state.searchQuery = '';
 
             // Reset UI
-            document.getElementById('filter-league').value = '';
-            document.getElementById('filter-position').value = '';
-            document.getElementById('filter-age').value = 40;
-            document.getElementById('filter-value').value = 200;
-            document.getElementById('sort-by').value = 'undervaluation';
-            document.getElementById('player-search').value = '';
-            document.getElementById('age-value').textContent = '40';
-            document.getElementById('value-display').textContent = '€200M';
+            const leagueEl = document.getElementById('filter-league');
+            const positionEl = document.getElementById('position-filter');
+            const ageEl = document.getElementById('age-filter');
+            const valueEl = document.getElementById('value-filter');
+            const sortEl = document.getElementById('sort-by');
+            const searchEl = document.getElementById('player-search');
+
+            if (leagueEl) leagueEl.value = '';
+            if (positionEl) positionEl.value = '';
+            if (ageEl) ageEl.value = 40;
+            if (valueEl) valueEl.value = 200;
+            if (sortEl) sortEl.value = 'undervaluation';
+            if (searchEl) searchEl.value = '';
+
+            const ageValDisp = document.getElementById('age-value');
+            if (ageValDisp) ageValDisp.textContent = '40';
+
+            const valDisp = document.getElementById('value-display');
+            if (valDisp) valDisp.textContent = '€200M';
 
             this.toggleFilters();
             this.renderView(state.currentView);
