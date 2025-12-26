@@ -1663,6 +1663,13 @@ body::before {
 
 .filter-panel.hidden {
     transform: translateX(100%);
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.filter-panel:not(.hidden) {
+    visibility: visible;
+    pointer-events: auto;
 }
 
 .filter-header {

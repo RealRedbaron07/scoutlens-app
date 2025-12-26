@@ -137,7 +137,7 @@
             const fontSize = size * 0.4;
             // Escape initials for safe HTML insertion
             const safeInitials = Security.escapeHtml(initials);
-
+            
             return `
                 <div class="player-avatar" style="
                     width: ${size}px;
@@ -229,7 +229,7 @@
             const gemBadge = isHiddenGem ? '<span class="gem-badge" title="Hidden Gem">💎</span>' : '';
 
             const isComparing = state.compareList.some(p => p.id === player.id);
-
+            
             return `
                 <div class="player-card ${undervalued ? 'undervalued' : ''} ${isComparing ? 'selected-compare' : ''}" data-player-id="${player.id}">
                     <input type="checkbox" class="compare-checkbox" data-player-id="${player.id}" 
@@ -348,7 +348,7 @@
 
             const isInWatchlist = state.watchlist.some(p => p && p.id === player.id);
             const undervalued = (player.undervaluation_pct || 0) > 0;
-
+            
             return `
                 <div class="player-detail">
                     <div class="player-detail-header">
@@ -428,12 +428,12 @@
             // Always escaped - textContent automatically prevents XSS
             const existing = document.querySelector('.notification');
             if (existing) existing.remove();
-
+            
             const notification = document.createElement('div');
             notification.className = `notification notification-${type}`;
             notification.textContent = typeof message === 'string' ? message : String(message);
             document.body.appendChild(notification);
-
+            
             setTimeout(() => {
                 notification.classList.add('fade-out');
                 setTimeout(() => notification.remove(), 300);
@@ -519,32 +519,32 @@
 
                 // Cleanup any existing event listeners before re-binding (allows re-init)
                 this.cleanupEvents();
-
-                this.loadState();
-                this.bindEvents();
+            
+            this.loadState();
+            this.bindEvents();
 
                 // Render immediately with static data
-                this.renderView('dashboard');
+            this.renderView('dashboard');
                 this.showDataFreshness();
-
-                // Register service worker
-                if ('serviceWorker' in navigator) {
+            
+            // Register service worker
+            if ('serviceWorker' in navigator) {
                     navigator.serviceWorker.register('sw.js').catch(() => { });
-                }
-
+            }
+            
                 // Hide loader (always hide, even on error)
                 clearTimeout(safetyTimeout);
-                setTimeout(() => {
+            setTimeout(() => {
                     const loader = document.getElementById('loader');
                     const app = document.getElementById('app');
                     if (loader) loader.classList.add('fade-out');
                     if (app) app.classList.remove('hidden');
-                }, 1200);
+            }, 1200);
 
                 // Try to fetch LIVE data in background (non-blocking)
                 this.fetchLiveData();
-
-                console.log('✅ ScoutLens ready');
+            
+            console.log('✅ ScoutLens ready');
             } catch (error) {
                 console.error('❌ Failed to initialize ScoutLens:', error);
                 clearTimeout(safetyTimeout);
@@ -796,28 +796,36 @@
             });
 
             // Filter buttons
+            // Filter toggle button - use both click and touchend for compatibility
             const filterToggle = document.getElementById('filter-toggle');
             if (filterToggle) {
                 filterToggle.removeAttribute('onclick');
-                addMobileHandler(filterToggle, () => this.toggleFilters());
+                filterToggle.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    this.toggleFilters();
+                }, { signal });
+                filterToggle.addEventListener('touchend', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    this.toggleFilters();
+                }, { passive: false, signal });
             }
 
+            // Filter close button
             const filterClose = document.querySelector('.filter-close-btn');
             if (filterClose) {
                 filterClose.removeAttribute('onclick');
-                addMobileHandler(filterClose, () => this.toggleFilters());
-            }
-
-            const applyFiltersBtn = document.querySelector('[onclick*="applyFilters"]');
-            if (applyFiltersBtn) {
-                applyFiltersBtn.removeAttribute('onclick');
-                addMobileHandler(applyFiltersBtn, () => this.applyFilters());
-            }
-
-            const resetFiltersBtn = document.querySelector('[onclick*="resetFilters"]');
-            if (resetFiltersBtn) {
-                resetFiltersBtn.removeAttribute('onclick');
-                addMobileHandler(resetFiltersBtn, () => this.resetFilters());
+                filterClose.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    this.toggleFilters();
+                }, { signal });
+                filterClose.addEventListener('touchend', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    this.toggleFilters();
+                }, { passive: false, signal });
             }
 
             // Export button
@@ -836,9 +844,9 @@
             const methodologyLink = document.getElementById('methodology-link');
             if (methodologyLink) {
                 methodologyLink.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    this.openModal('methodology-modal');
-                });
+                e.preventDefault();
+                this.openModal('methodology-modal');
+            });
             }
 
             // Email forms
@@ -890,7 +898,7 @@
                     if (card.classList.contains('locked')) {
                         this.showUpgrade();
                     } else {
-                        this.showPlayerDetail(playerId);
+                    this.showPlayerDetail(playerId);
                     }
                 }
 
@@ -1101,13 +1109,10 @@
         renderUndervalued() {
             const container = document.getElementById('undervalued-list');
             if (!container) return;
-
+            
             try {
                 const data = this.getData();
-                let allPlayers = data.free?.undervalued || data.undervalued || [];
-
-                // Apply filters and sorting
-                allPlayers = this.filterAndSortPlayers(allPlayers);
+                const allPlayers = data.free?.undervalued || data.undervalued || [];
 
                 // FREE: Show only first 5
                 const freePlayers = allPlayers.slice(0, 5);
@@ -1135,13 +1140,10 @@
         renderPerformers() {
             const container = document.getElementById('performers-list');
             if (!container) return;
-
+            
             try {
                 const data = this.getData();
-                let allPlayers = data.free?.topPerformers || data.topPerformers || [];
-
-                // Apply filters and sorting
-                allPlayers = this.filterAndSortPlayers(allPlayers);
+                const allPlayers = data.free?.topPerformers || data.topPerformers || [];
 
                 const freePlayers = allPlayers.slice(0, 5);
                 const proPlayers = allPlayers.slice(5);
@@ -1164,13 +1166,10 @@
         renderRising() {
             const container = document.getElementById('rising-list');
             if (!container) return;
-
+            
             try {
                 const data = this.getData();
-                let allPlayers = data.free?.risingStars || data.risingStars || [];
-
-                // Apply filters and sorting
-                allPlayers = this.filterAndSortPlayers(allPlayers);
+                const allPlayers = data.free?.risingStars || data.risingStars || [];
 
                 const freePlayers = allPlayers.slice(0, 5);
                 const proPlayers = allPlayers.slice(5);
@@ -1227,9 +1226,6 @@
                     seen.add(p.name);
                     return true;
                 });
-
-                // Apply filters and sorting
-                allGems = this.filterAndSortPlayers(allGems);
 
                 // Show ALL hidden gems (they're from lower leagues - main value prop)
                 // Add pagination for large lists
@@ -1301,16 +1297,13 @@
                     );
                 }
 
-                // Remove duplicates
+                // Remove duplicates and sort by value
                 const seen = new Set();
                 allBargains = allBargains.filter(p => {
                     if (seen.has(p.name)) return false;
                     seen.add(p.name);
                     return true;
-                });
-
-                // Apply filters and sorting
-                allBargains = this.filterAndSortPlayers(allBargains);
+                }).sort((a, b) => (b.market_value_eur_m || 0) - (a.market_value_eur_m || 0));
 
                 const freePlayers = allBargains.slice(0, 5);
                 const proPlayers = allBargains.slice(5);
@@ -1581,29 +1574,26 @@
         renderWatchlist() {
             const container = document.getElementById('watchlist-list');
             if (!container) return;
-
+            
             try {
-                if (state.watchlist.length === 0) {
-                    container.innerHTML = `
-                        <div class="empty-state">
-                            <span class="empty-state-icon">★</span>
-                            <h3>No saved players yet</h3>
-                            <p>Click the star on any player to add them here.</p>
-                        </div>
-                    `;
-                    return;
-                }
-
-                // Apply filters and sorting to watchlist
-                let filteredWatchlist = this.filterAndSortPlayers([...state.watchlist]);
-
+            if (state.watchlist.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <span class="empty-state-icon">★</span>
+                        <h3>No saved players yet</h3>
+                        <p>Click the star on any player to add them here.</p>
+                    </div>
+                `;
+                return;
+            }
+            
                 // Add pagination for large watchlists
                 const itemsPerPage = state.pagination.itemsPerPage;
                 const currentPage = state.pagination.currentPage;
-                const totalPages = Math.ceil(filteredWatchlist.length / itemsPerPage);
+                const totalPages = Math.ceil(state.watchlist.length / itemsPerPage);
                 const startIdx = (currentPage - 1) * itemsPerPage;
                 const endIdx = startIdx + itemsPerPage;
-                const paginatedWatchlist = filteredWatchlist.slice(startIdx, endIdx);
+                const paginatedWatchlist = state.watchlist.slice(startIdx, endIdx);
 
                 let html = paginatedWatchlist.map((p, i) => UI.renderPlayerCard(p, startIdx + i)).join('');
 
@@ -1632,10 +1622,10 @@
                 ...(data.risingStars || []),
                 ...state.watchlist
             ];
-
+            
             const player = allPlayers.find(p => p.id === playerId);
             if (!player) return;
-
+            
             const modalBody = document.getElementById('player-modal-body');
             modalBody.innerHTML = UI.renderPlayerDetail(player);
             this.openModal('player-modal');
@@ -1649,12 +1639,12 @@
                 ...(data.topPerformers || []),
                 ...(data.risingStars || [])
             ];
-
+            
             const player = allPlayers.find(p => p.id === playerId);
             if (!player) return;
-
+            
             const index = state.watchlist.findIndex(p => p.id === playerId);
-
+            
             if (index > -1) {
                 state.watchlist.splice(index, 1);
                 UI.showNotification(`Removed ${player.name || 'player'} from watchlist`);
@@ -1662,10 +1652,10 @@
                 state.watchlist.push(player);
                 UI.showNotification(`Saved ${player.name || 'player'} to watchlist ★`);
             }
-
+            
             this.saveState();
             this.refreshSaveButtons();
-
+            
             if (state.currentView === 'watchlist') {
                 this.renderWatchlist();
             }
@@ -1684,17 +1674,17 @@
             e.preventDefault();
             const form = e.target;
             const email = form.querySelector('input[type="email"]').value;
-
+            
             // In production: Send to Beehiiv, ConvertKit, etc.
             // For now: Store locally and show confirmation
             console.log('Email submitted:', email);
             Security.storage.setItem('scoutlens_email', email);
-
+            
             UI.showNotification('✅ Subscribed! Check your inbox Monday.');
-
+            
             // Close modal if open
             document.querySelectorAll('.modal.active').forEach(m => m.classList.remove('active'));
-
+            
             // Clear form
             form.reset();
         },
@@ -1702,7 +1692,7 @@
         sharePlayer(playerName) {
             const text = `Check out ${playerName} on ScoutLens - might be undervalued 🔭`;
             const url = window.location.href;
-
+            
             if (navigator.share) {
                 navigator.share({ title: 'ScoutLens', text, url }).catch(() => { });
             } else {
@@ -1999,55 +1989,55 @@
         toggleFilters() {
             const panel = document.getElementById('filter-panel');
             const btn = document.getElementById('filter-toggle');
-            const isMobile = window.innerWidth <= 768;
-
-            // Sync filter UI with current state when opening
-            if (panel && (panel.classList.contains('hidden') || !panel.classList.contains('active'))) {
-                // Panel is closed, about to open - sync values
-                const leagueSelect = document.getElementById('filter-league');
-                const positionSelect = document.getElementById('filter-position');
-                const ageRange = document.getElementById('filter-age');
-                const valueRange = document.getElementById('filter-value');
-                const sortSelect = document.getElementById('sort-by');
-                const ageValue = document.getElementById('age-value');
-                const valueDisplay = document.getElementById('value-display');
-
-                if (leagueSelect) leagueSelect.value = state.filters.league || '';
-                if (positionSelect) positionSelect.value = state.filters.position || '';
-                if (ageRange) {
-                    ageRange.value = state.filters.maxAge || 40;
-                    if (ageValue) ageValue.textContent = state.filters.maxAge || 40;
-                }
-                if (valueRange) {
-                    valueRange.value = state.filters.maxValue || 200;
-                    if (valueDisplay) valueDisplay.textContent = `€${state.filters.maxValue || 200}M`;
-                }
-                if (sortSelect) sortSelect.value = state.filters.sortBy || 'undervaluation';
+            
+            if (!panel) {
+                console.warn('Filter panel not found');
+                return;
             }
+            
+            const isMobile = window.innerWidth <= 768;
 
             if (isMobile) {
                 // Use bottom sheet on mobile
-                panel?.classList.toggle('filter-bottom-sheet');
-                panel?.classList.toggle('active');
+                panel.classList.toggle('filter-bottom-sheet');
+                panel.classList.toggle('active');
+                // Also toggle hidden for mobile
+                panel.classList.toggle('hidden');
             } else {
-                // Use sidebar on desktop
-                panel?.classList.toggle('hidden');
+                // Use sidebar on desktop - just toggle hidden class
+                panel.classList.toggle('hidden');
             }
 
-            btn?.classList.toggle('active');
+            if (btn) {
+                btn.classList.toggle('active');
+            }
+            
+            console.log('Filter panel toggled. Hidden:', panel.classList.contains('hidden'));
         },
 
         applyFilters() {
+            const leagueEl = document.getElementById('filter-league');
+            const positionEl = document.getElementById('filter-position');
+            const ageEl = document.getElementById('filter-age');
+            const valueEl = document.getElementById('filter-value');
+            const sortEl = document.getElementById('sort-by');
+            
             state.filters = {
-                league: document.getElementById('filter-league')?.value || '',
-                position: document.getElementById('filter-position')?.value || '',
-                maxAge: parseInt(document.getElementById('filter-age')?.value) || 40,
-                maxValue: parseInt(document.getElementById('filter-value')?.value) || 200,
-                sortBy: document.getElementById('sort-by')?.value || 'undervaluation'
+                league: leagueEl?.value || '',
+                position: positionEl?.value || '',
+                maxAge: parseInt(ageEl?.value) || 40,
+                maxValue: parseInt(valueEl?.value) || 200,
+                sortBy: sortEl?.value || 'undervaluation'
             };
 
+            console.log('Filters applied:', state.filters);
+            
+            // Close filter panel
             this.toggleFilters();
+            
+            // Re-render current view with new filters
             this.renderView(state.currentView);
+            
             UI.showNotification('✅ Filters applied');
         },
 
