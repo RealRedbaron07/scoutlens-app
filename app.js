@@ -126,8 +126,11 @@
         },
 
         getColor(position) {
-            const pos = position ? position[0].toUpperCase() : 'M';
-            return this.colors[pos] || this.colors['M'];
+            if (!position) return this.colors['M'];
+            const pos = position.toUpperCase();
+            if (this.colors[pos]) return this.colors[pos];
+            const firstChar = pos[0];
+            return this.colors[firstChar] || this.colors['M'];
         },
 
         render(name, position, size = 48) {
