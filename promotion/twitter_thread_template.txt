@@ -1,0 +1,43 @@
+🧵 THREAD: 5 Most Undervalued Players Right Now
+
+Using market value estimates + xG data, here are the players clubs should be targeting:
+
+1/ [PLAYER_NAME] - [CLUB]
+   Market Value: €[VALUE]M
+   Undervaluation: [X]%
+   Why: [REASON]
+   
+   [SCREENSHOT]
+
+2/ [PLAYER_NAME] - [CLUB]
+   Market Value: €[VALUE]M
+   Undervaluation: [X]%
+   Why: [REASON]
+   
+   [SCREENSHOT]
+
+3/ [PLAYER_NAME] - [CLUB]
+   Market Value: €[VALUE]M
+   Undervaluation: [X]%
+   Why: [REASON]
+   
+   [SCREENSHOT]
+
+4/ [PLAYER_NAME] - [CLUB]
+   Market Value: €[VALUE]M
+   Undervaluation: [X]%
+   Why: [REASON]
+   
+   [SCREENSHOT]
+
+5/ [PLAYER_NAME] - [CLUB]
+   Market Value: €[VALUE]M
+   Undervaluation: [X]%
+   Why: [REASON]
+   
+   [SCREENSHOT]
+
+All data from @ScoutLensHQ
+Try it free: [YOUR_APP_URL]
+
+#FootballAnalytics #Scouting

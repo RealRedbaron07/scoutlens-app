@@ -15,3 +15,36 @@ Thumbs.db
 *.log
 npm-debug.log*
 .vercel
+
+# Environment variables & secrets
+.env
+.env.local
+.env.*.local
+*.env
+!.env.example
+secrets.json
+config.json
+personal_config.json
+
+# API Keys & Personal Info
+*_keys.txt
+*_secrets.txt
+*_credentials.txt
+personal_info.txt
+
+# Backup files
+*.bak
+*.backup
+*~
+
+# Sensitive data
+credentials/
+secrets/
+*.key
+*.pem
+*.p12
+*.pfx
+
+# User-specific files
+user_data.json
+local_config.json

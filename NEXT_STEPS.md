@@ -19,7 +19,7 @@
 
 ### 1. Fix PayPal (5 min)
 - Go to: https://www.paypal.com/myaccount/settings/paypalme
-- Change username from `MustafaAlpARI` to `ScoutLensPro` (or similar)
+- PayPal username configured in app.js (line 1521)
 - Done! Your payment links will now show the generic name
 
 ### 2. Test Everything (10 min)

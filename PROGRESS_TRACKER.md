@@ -7,7 +7,8 @@
 ## ✅ WEEK 1: Foundation
 
 ### Setup (Day 1)
-- [ ] Google Analytics added (Measurement ID: _______________)
+- [x] Vercel Analytics active (automatic - check Vercel dashboard)
+- [ ] Google Analytics added (Optional - only if you need detailed insights)
 - [ ] Twitter account created (@_______________)
 - [ ] Twitter profile setup (bio, header, pinned tweet)
 - [ ] Reddit account ready

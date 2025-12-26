@@ -1,0 +1,51 @@
+💡 Quick Insight: [PLAYER_NAME] is undervalued by [X]% according to xG data.
+
+Market Value: €[VALUE]M
+xG suggests: €[HIGHER_VALUE]M
+
+Data from @ScoutLensHQ
+[YOUR_APP_URL]
+
+---
+
+📊 The data says [CLUB] should sign [PLAYER_NAME].
+
+Why:
+✅ Undervalued by [X]%
+✅ High xGI per 90 ([X])
+✅ Contract expires [DATE]
+
+Full analysis: [YOUR_APP_URL]
+
+---
+
+🔍 Hidden Gem Alert: [PLAYER_NAME]
+
+Playing in [LEAGUE], this player is:
+- Undervalued by [X]%
+- xGI per 90: [X]
+- Market Value: €[VALUE]M
+
+Find more: [YOUR_APP_URL]
+
+---
+
+⚽ Transfer Rumor: [PLAYER_NAME] linked with [CLUB]
+
+Our data shows:
+- Undervaluation: [X]%
+- Market Value: €[VALUE]M
+- xG Performance: [X]
+
+Is this a good deal? [YOUR_APP_URL]
+
+---
+
+📈 Rising Star: [PLAYER_NAME]
+
+This season:
+- Goals: [X]
+- xGI per 90: [X]
+- Undervaluation: [X]%
+
+Why clubs should be watching: [YOUR_APP_URL]

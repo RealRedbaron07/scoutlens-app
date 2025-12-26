@@ -152,9 +152,9 @@ class UnderstatScraper:
             return []
         
         try:
-            # Decode the escaped JSON
-            json_str = json_str.encode().decode('unicode_escape')
-            players = json.loads(json_str)
+        # Decode the escaped JSON
+        json_str = json_str.encode().decode('unicode_escape')
+        players = json.loads(json_str)
         except (json.JSONDecodeError, UnicodeDecodeError) as e:
             print(f"  ⚠️ JSON decode error for {league_key}: {e}")
             return []

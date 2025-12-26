@@ -1,0 +1,52 @@
+**Title:** Hidden Gems for Your FPL Team - Data-Driven Analysis
+
+**Body:**
+
+Hey r/FantasyPL,
+
+I built a tool that analyzes undervalued players using xG data, and I thought you might find it useful for your FPL team.
+
+**What I found:**
+
+Here are 5 players who are undervalued based on their xG performance:
+
+1. **[PLAYER_NAME]** - [CLUB]
+   - Market Value: €[VALUE]M
+   - xGI per 90: [X]
+   - Undervaluation: [X]%
+   - FPL Price: £[PRICE]M
+   - Why: [REASON]
+
+2. **[PLAYER_NAME]** - [CLUB]
+   - Market Value: €[VALUE]M
+   - xGI per 90: [X]
+   - Undervaluation: [X]%
+   - FPL Price: £[PRICE]M
+   - Why: [REASON]
+
+3. **[PLAYER_NAME]** - [CLUB]
+   - Market Value: €[VALUE]M
+   - xGI per 90: [X]
+   - Undervaluation: [X]%
+   - FPL Price: £[PRICE]M
+   - Why: [REASON]
+
+4. **[PLAYER_NAME]** - [CLUB]
+   - Market Value: €[VALUE]M
+   - xGI per 90: [X]
+   - Undervaluation: [X]%
+   - FPL Price: £[PRICE]M
+   - Why: [REASON]
+
+5. **[PLAYER_NAME]** - [CLUB]
+   - Market Value: €[VALUE]M
+   - xGI per 90: [X]
+   - Undervaluation: [X]%
+   - FPL Price: £[PRICE]M
+   - Why: [REASON]
+
+**Try the tool:** [YOUR_APP_URL]
+
+All data is free and updated daily. No signup required.
+
+What do you think? Any players I'm missing?

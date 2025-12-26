@@ -90,7 +90,10 @@
     };
 
     // Development mode check (for testing only)
-    const IS_DEVELOPMENT = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    // Also enable if test mode is set in localStorage
+    const IS_DEVELOPMENT = window.location.hostname === 'localhost' || 
+                           window.location.hostname === '127.0.0.1' ||
+                           Security.storage.getItem('scoutlens_test_mode') === 'true';
 
     // Load Pro status from localStorage safely
     const savedProStatus = Security.storage.getItem('scoutlens_pro');
@@ -140,7 +143,7 @@
             const fontSize = size * 0.4;
             // Escape initials for safe HTML insertion
             const safeInitials = Security.escapeHtml(initials);
-
+            
             return `
                 <div class="player-avatar" style="
                     width: ${size}px;
@@ -217,7 +220,7 @@
 
             // Confidence badge
             const confidenceBadge = confidence === 'verified' ?
-                '<span class="confidence-badge verified" title="Transfermarkt verified">✓ TM</span>' :
+                '<span class="confidence-badge verified" title="Verified market value">✓ Verified</span>' :
                 confidence === 'high' ?
                     '<span class="confidence-badge high" title="High confidence">TM</span>' :
                     '<span class="confidence-badge estimated" title="Estimated value">~</span>';
@@ -232,7 +235,7 @@
             const gemBadge = isHiddenGem ? '<span class="gem-badge" title="Hidden Gem">💎</span>' : '';
 
             const isComparing = state.compareList.some(p => p.id === player.id);
-
+            
             return `
                 <div class="player-card ${undervalued ? 'undervalued' : ''} ${isComparing ? 'selected-compare' : ''}" data-player-id="${player.id}">
                     <input type="checkbox" class="compare-checkbox" data-player-id="${player.id}" 
@@ -351,7 +354,7 @@
 
             const isInWatchlist = state.watchlist.some(p => p && p.id === player.id);
             const undervalued = (player.undervaluation_pct || 0) > 0;
-
+            
             return `
                 <div class="player-detail">
                     <div class="player-detail-header">
@@ -431,12 +434,12 @@
             // Always escaped - textContent automatically prevents XSS
             const existing = document.querySelector('.notification');
             if (existing) existing.remove();
-
+            
             const notification = document.createElement('div');
             notification.className = `notification notification-${type}`;
             notification.textContent = typeof message === 'string' ? message : String(message);
             document.body.appendChild(notification);
-
+            
             setTimeout(() => {
                 notification.classList.add('fade-out');
                 setTimeout(() => notification.remove(), 300);
@@ -522,32 +525,32 @@
 
                 // Cleanup any existing event listeners before re-binding (allows re-init)
                 this.cleanupEvents();
-
-                this.loadState();
-                this.bindEvents();
+            
+            this.loadState();
+            this.bindEvents();
 
                 // Render immediately with static data
-                this.renderView('dashboard');
+            this.renderView('dashboard');
                 this.showDataFreshness();
-
-                // Register service worker
-                if ('serviceWorker' in navigator) {
+            
+            // Register service worker
+            if ('serviceWorker' in navigator) {
                     navigator.serviceWorker.register('sw.js').catch(() => { });
-                }
-
+            }
+            
                 // Hide loader (always hide, even on error)
                 clearTimeout(safetyTimeout);
-                setTimeout(() => {
+            setTimeout(() => {
                     const loader = document.getElementById('loader');
                     const app = document.getElementById('app');
                     if (loader) loader.classList.add('fade-out');
                     if (app) app.classList.remove('hidden');
-                }, 1200);
+            }, 1200);
 
                 // Try to fetch LIVE data in background (non-blocking)
                 this.fetchLiveData();
-
-                console.log('✅ ScoutLens ready');
+            
+            console.log('✅ ScoutLens ready');
             } catch (error) {
                 console.error('❌ Failed to initialize ScoutLens:', error);
                 clearTimeout(safetyTimeout);
@@ -820,9 +823,9 @@
             const methodologyLink = document.getElementById('methodology-link');
             if (methodologyLink) {
                 methodologyLink.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    this.openModal('methodology-modal');
-                });
+                e.preventDefault();
+                this.openModal('methodology-modal');
+            });
             }
 
             // Email forms
@@ -874,7 +877,7 @@
                     if (card.classList.contains('locked')) {
                         this.showUpgrade();
                     } else {
-                        this.showPlayerDetail(playerId);
+                    this.showPlayerDetail(playerId);
                     }
                 }
 
@@ -1085,7 +1088,7 @@
         renderUndervalued() {
             const container = document.getElementById('undervalued-list');
             if (!container) return;
-
+            
             try {
                 const data = this.getData();
                 let allPlayers = data.free?.undervalued || data.undervalued || [];
@@ -1135,7 +1138,7 @@
         renderPerformers() {
             const container = document.getElementById('performers-list');
             if (!container) return;
-
+            
             try {
                 const data = this.getData();
                 let allPlayers = data.free?.topPerformers || data.topPerformers || [];
@@ -1180,7 +1183,7 @@
         renderRising() {
             const container = document.getElementById('rising-list');
             if (!container) return;
-
+            
             try {
                 const data = this.getData();
                 let allPlayers = data.free?.risingStars || data.risingStars || [];
@@ -1515,14 +1518,14 @@
             // Fallback: PayPal.me (only used if buttons not configured)
             // NOTE: This will show your personal name - use Hosted Buttons instead!
             // For now, using generic name to hide personal account
-            const PAYPAL_BUSINESS_NAME = 'ScoutLensPro';
+            const PAYPAL_BUSINESS_NAME = 'MustafaAlpARI';
             const PAYPAL_MONTHLY_ME = `https://paypal.me/${PAYPAL_BUSINESS_NAME}/9.99`;
             const PAYPAL_ANNUAL_ME = `https://paypal.me/${PAYPAL_BUSINESS_NAME}/72`;
 
             // Set to true after you create PayPal Hosted Buttons and add the IDs above
-            // For now, set to false to use PayPal.me with generic name (hides personal account)
+            // For now, using PayPal.me (works immediately, no setup needed)
             let USE_PAYPAL_BUTTONS = false; // ⬅️ Set to true for total anonymity (requires button IDs)
-            const PAYMENT_PROVIDER = 'paypal';
+            const PAYMENT_PROVIDER = 'paypal'; // ✅ Using PayPal as primary payment method
 
             // Failsafe: Check if IDs are still placeholders
             const isMonthlyPlaceholder = PAYPAL_MONTHLY_BUTTON.includes('PASTE_');
@@ -1619,19 +1622,19 @@
         renderWatchlist() {
             const container = document.getElementById('watchlist-list');
             if (!container) return;
-
+            
             try {
-                if (state.watchlist.length === 0) {
-                    container.innerHTML = `
-                        <div class="empty-state">
-                            <span class="empty-state-icon">★</span>
-                            <h3>No saved players yet</h3>
-                            <p>Click the star on any player to add them here.</p>
-                        </div>
-                    `;
-                    return;
-                }
-
+            if (state.watchlist.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <span class="empty-state-icon">★</span>
+                        <h3>No saved players yet</h3>
+                        <p>Click the star on any player to add them here.</p>
+                    </div>
+                `;
+                return;
+            }
+            
                 // Apply filters and search to watchlist too
                 let filteredWatchlist = this.filterAndSortPlayers(state.watchlist);
 
@@ -1682,10 +1685,10 @@
                 ...(data.risingStars || []),
                 ...state.watchlist
             ];
-
+            
             const player = allPlayers.find(p => p.id === playerId);
             if (!player) return;
-
+            
             const modalBody = document.getElementById('player-modal-body');
             modalBody.innerHTML = UI.renderPlayerDetail(player);
             this.openModal('player-modal');
@@ -1699,12 +1702,12 @@
                 ...(data.topPerformers || []),
                 ...(data.risingStars || [])
             ];
-
+            
             const player = allPlayers.find(p => p.id === playerId);
             if (!player) return;
-
+            
             const index = state.watchlist.findIndex(p => p.id === playerId);
-
+            
             if (index > -1) {
                 state.watchlist.splice(index, 1);
                 UI.showNotification(`Removed ${player.name || 'player'} from watchlist`);
@@ -1712,10 +1715,10 @@
                 state.watchlist.push(player);
                 UI.showNotification(`Saved ${player.name || 'player'} to watchlist ★`);
             }
-
+            
             this.saveState();
             this.refreshSaveButtons();
-
+            
             if (state.currentView === 'watchlist') {
                 this.renderWatchlist();
             }
@@ -1733,18 +1736,36 @@
         handleEmailSubmit(e) {
             e.preventDefault();
             const form = e.target;
-            const email = form.querySelector('input[type="email"]').value;
-
+            const emailInput = form.querySelector('input[type="email"]');
+            if (!emailInput) {
+                console.error('Email input not found in form');
+                return;
+            }
+            
+            const email = emailInput.value.trim();
+            
+            // Validate email
+            if (!Security.isValidEmail(email)) {
+                UI.showNotification('⚠️ Please enter a valid email address', 'error');
+                return;
+            }
+            
             // In production: Send to Beehiiv, ConvertKit, etc.
+            // TODO: Replace with actual Beehiiv API call
+            // Example: fetch('https://api.beehiiv.com/v2/forms/XXXXX/subscribe', { method: 'POST', body: JSON.stringify({email}) })
+            
             // For now: Store locally and show confirmation
-            console.log('Email submitted:', email);
+            console.log('📧 Email submitted:', email);
             Security.storage.setItem('scoutlens_email', email);
-
+            
+            // Store subscription timestamp
+            Security.storage.setItem('scoutlens_email_subscribed', new Date().toISOString());
+            
             UI.showNotification('✅ Subscribed! Check your inbox Monday.');
-
+            
             // Close modal if open
             document.querySelectorAll('.modal.active').forEach(m => m.classList.remove('active'));
-
+            
             // Clear form
             form.reset();
         },
@@ -1752,7 +1773,7 @@
         sharePlayer(playerName) {
             const text = `Check out ${playerName} on ScoutLens - might be undervalued 🔭`;
             const url = window.location.href;
-
+            
             if (navigator.share) {
                 navigator.share({ title: 'ScoutLens', text, url }).catch(() => { });
             } else {

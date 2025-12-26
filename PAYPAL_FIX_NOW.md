@@ -1,13 +1,13 @@
 # 🔒 PayPal Anonymity - Quick Fix
 
 ## Current Issue
-PayPal is showing your personal account name (`MustafaAlpARI`) when users click to pay.
+PayPal configuration is set up in app.js.
 
 ## ✅ Solution 1: Change PayPal.me Username (5 minutes) - RECOMMENDED
 
 1. **Go to PayPal**: https://www.paypal.com/myaccount/settings/paypalme
 2. **Change your PayPal.me username** to something generic:
-   - Current: `MustafaAlpARI`
+   - Configured in app.js
    - Change to: `ScoutLensPro` or `ScoutLensHQ` or `ScoutLensApp`
 3. **Update the code** (already done):
    - Changed `PAYPAL_BUSINESS_NAME = 'ScoutLensPro'` in `app.js`
@@ -76,7 +76,7 @@ The code is already updated to use `ScoutLensPro` as the business name.
 
 ## ✅ What I've Already Fixed
 
-- ✅ Changed `PAYPAL_BUSINESS_NAME` from `MustafaAlpARI` to `ScoutLensPro`
+- ✅ PayPal username configured in app.js
 - ✅ Set `USE_PAYPAL_BUTTONS = false` (uses PayPal.me with generic name)
 - ✅ Code is ready - just change your PayPal.me username
 

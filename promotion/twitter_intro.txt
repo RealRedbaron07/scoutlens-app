@@ -1,0 +1,15 @@
+🔭 Introducing ScoutLens
+
+A free tool I built to find undervalued footballers using market value estimates + xG data.
+
+What it does:
+✅ Tracks 300+ players across 25+ leagues
+✅ Shows market value estimates based on performance data
+✅ Calculates undervaluation % using xG
+✅ Updates daily with live transfer rumors
+
+Try it free: [YOUR_APP_URL]
+
+No signup required. Just data. 🚀
+
+#FootballAnalytics #Scouting #xG

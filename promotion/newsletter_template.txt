@@ -1,0 +1,36 @@
+Subject: ScoutLens Weekly - Top 5 Undervalued Players This Week
+
+Hey [NAME],
+
+Welcome to ScoutLens Weekly! Here are the 5 most undervalued players this week:
+
+1. **[PLAYER_NAME]** - [CLUB]
+   Market Value: €[VALUE]M | Undervaluation: [X]%
+   Why: [REASON]
+
+2. **[PLAYER_NAME]** - [CLUB]
+   Market Value: €[VALUE]M | Undervaluation: [X]%
+   Why: [REASON]
+
+3. **[PLAYER_NAME]** - [CLUB]
+   Market Value: €[VALUE]M | Undervaluation: [X]%
+   Why: [REASON]
+
+4. **[PLAYER_NAME]** - [CLUB]
+   Market Value: €[VALUE]M | Undervaluation: [X]%
+   Why: [REASON]
+
+5. **[PLAYER_NAME]** - [CLUB]
+   Market Value: €[VALUE]M | Undervaluation: [X]%
+   Why: [REASON]
+
+**Transfer Rumors This Week:**
+- [RUMOR_1]
+- [RUMOR_2]
+- [RUMOR_3]
+
+**Try ScoutLens:** [YOUR_APP_URL]
+
+Thanks for reading!
+[YOUR_NAME]
+ScoutLens

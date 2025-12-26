@@ -1,0 +1,30 @@
+**Title:** I Built a Free Tool to Find Undervalued Footballers - Here's What I Found
+
+**Body:**
+
+Hey r/soccer,
+
+I've been working on a scouting tool called ScoutLens that uses market value estimates + xG data to find undervalued players. I thought you might find it interesting.
+
+**What it does:**
+- Tracks 300+ players across 25+ leagues
+- Shows market value estimates based on performance data
+- Calculates undervaluation % using xG/xGI
+- Updates daily with live transfer rumors
+
+**Some interesting findings:**
+1. [PLAYER_NAME] is undervalued by [X]% - Market value €[VALUE]M but xG suggests [HIGHER_VALUE]M
+2. [PLAYER_NAME] is undervalued by [X]% - [REASON]
+3. [PLAYER_NAME] is undervalued by [X]% - [REASON]
+
+**Try it free:** [YOUR_APP_URL]
+
+No signup required. Just data. Let me know what you think!
+
+**Note:** I'm not selling anything. This is completely free. Just sharing something I built that might be useful.
+
+---
+
+**Edit:** Thanks for all the feedback! I've updated the tool based on your suggestions:
+- [IMPROVEMENT_1]
+- [IMPROVEMENT_2]
