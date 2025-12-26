@@ -1104,7 +1104,10 @@
 
             try {
                 const data = this.getData();
-                const allPlayers = data.free?.undervalued || data.undervalued || [];
+                let allPlayers = data.free?.undervalued || data.undervalued || [];
+
+                // Apply filters and sorting
+                allPlayers = this.filterAndSortPlayers(allPlayers);
 
                 // FREE: Show only first 5
                 const freePlayers = allPlayers.slice(0, 5);
@@ -1135,7 +1138,10 @@
 
             try {
                 const data = this.getData();
-                const allPlayers = data.free?.topPerformers || data.topPerformers || [];
+                let allPlayers = data.free?.topPerformers || data.topPerformers || [];
+
+                // Apply filters and sorting
+                allPlayers = this.filterAndSortPlayers(allPlayers);
 
                 const freePlayers = allPlayers.slice(0, 5);
                 const proPlayers = allPlayers.slice(5);
@@ -1161,7 +1167,10 @@
 
             try {
                 const data = this.getData();
-                const allPlayers = data.free?.risingStars || data.risingStars || [];
+                let allPlayers = data.free?.risingStars || data.risingStars || [];
+
+                // Apply filters and sorting
+                allPlayers = this.filterAndSortPlayers(allPlayers);
 
                 const freePlayers = allPlayers.slice(0, 5);
                 const proPlayers = allPlayers.slice(5);
@@ -1218,6 +1227,9 @@
                     seen.add(p.name);
                     return true;
                 });
+
+                // Apply filters and sorting
+                allGems = this.filterAndSortPlayers(allGems);
 
                 // Show ALL hidden gems (they're from lower leagues - main value prop)
                 // Add pagination for large lists
@@ -1289,13 +1301,16 @@
                     );
                 }
 
-                // Remove duplicates and sort by value
+                // Remove duplicates
                 const seen = new Set();
                 allBargains = allBargains.filter(p => {
                     if (seen.has(p.name)) return false;
                     seen.add(p.name);
                     return true;
-                }).sort((a, b) => (b.market_value_eur_m || 0) - (a.market_value_eur_m || 0));
+                });
+
+                // Apply filters and sorting
+                allBargains = this.filterAndSortPlayers(allBargains);
 
                 const freePlayers = allBargains.slice(0, 5);
                 const proPlayers = allBargains.slice(5);
@@ -1579,13 +1594,16 @@
                     return;
                 }
 
+                // Apply filters and sorting to watchlist
+                let filteredWatchlist = this.filterAndSortPlayers([...state.watchlist]);
+
                 // Add pagination for large watchlists
                 const itemsPerPage = state.pagination.itemsPerPage;
                 const currentPage = state.pagination.currentPage;
-                const totalPages = Math.ceil(state.watchlist.length / itemsPerPage);
+                const totalPages = Math.ceil(filteredWatchlist.length / itemsPerPage);
                 const startIdx = (currentPage - 1) * itemsPerPage;
                 const endIdx = startIdx + itemsPerPage;
-                const paginatedWatchlist = state.watchlist.slice(startIdx, endIdx);
+                const paginatedWatchlist = filteredWatchlist.slice(startIdx, endIdx);
 
                 let html = paginatedWatchlist.map((p, i) => UI.renderPlayerCard(p, startIdx + i)).join('');
 
@@ -1982,6 +2000,30 @@
             const panel = document.getElementById('filter-panel');
             const btn = document.getElementById('filter-toggle');
             const isMobile = window.innerWidth <= 768;
+
+            // Sync filter UI with current state when opening
+            if (panel && (panel.classList.contains('hidden') || !panel.classList.contains('active'))) {
+                // Panel is closed, about to open - sync values
+                const leagueSelect = document.getElementById('filter-league');
+                const positionSelect = document.getElementById('filter-position');
+                const ageRange = document.getElementById('filter-age');
+                const valueRange = document.getElementById('filter-value');
+                const sortSelect = document.getElementById('sort-by');
+                const ageValue = document.getElementById('age-value');
+                const valueDisplay = document.getElementById('value-display');
+
+                if (leagueSelect) leagueSelect.value = state.filters.league || '';
+                if (positionSelect) positionSelect.value = state.filters.position || '';
+                if (ageRange) {
+                    ageRange.value = state.filters.maxAge || 40;
+                    if (ageValue) ageValue.textContent = state.filters.maxAge || 40;
+                }
+                if (valueRange) {
+                    valueRange.value = state.filters.maxValue || 200;
+                    if (valueDisplay) valueDisplay.textContent = `€${state.filters.maxValue || 200}M`;
+                }
+                if (sortSelect) sortSelect.value = state.filters.sortBy || 'undervaluation';
+            }
 
             if (isMobile) {
                 // Use bottom sheet on mobile
