@@ -1939,8 +1939,8 @@
             }
 
             // Filter range displays
-            const ageRange = document.getElementById('age-filter');
-            const valueRange = document.getElementById('value-filter');
+            const ageRange = document.getElementById('filter-age');
+            const valueRange = document.getElementById('filter-value');
             const sortSelect = document.getElementById('sort-by');
 
             if (ageRange) {
@@ -2136,9 +2136,9 @@
 
         applyFilters() {
             const leagueEl = document.getElementById('filter-league');
-            const positionEl = document.getElementById('position-filter');
-            const ageEl = document.getElementById('age-filter');
-            const valueEl = document.getElementById('value-filter');
+            const positionEl = document.getElementById('filter-position');
+            const ageEl = document.getElementById('filter-age');
+            const valueEl = document.getElementById('filter-value');
             const sortEl = document.getElementById('sort-by');
 
             state.filters = {
@@ -2172,9 +2172,9 @@
 
             // Reset UI
             const leagueEl = document.getElementById('filter-league');
-            const positionEl = document.getElementById('position-filter');
-            const ageEl = document.getElementById('age-filter');
-            const valueEl = document.getElementById('value-filter');
+            const positionEl = document.getElementById('filter-position');
+            const ageEl = document.getElementById('filter-age');
+            const valueEl = document.getElementById('filter-value');
             const sortEl = document.getElementById('sort-by');
             const searchEl = document.getElementById('player-search');
 
