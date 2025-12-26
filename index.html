@@ -13,14 +13,14 @@
     <meta name="robots" content="index, follow">
     <meta name="theme-color" content="#0a0d10">
     <link rel="canonical" href="https://scoutlens-app.vercel.app/">
-    
+
     <!-- PWA -->
     <link rel="manifest" href="manifest.json">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="ScoutLens">
-    
+
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://scoutlens-app.vercel.app/">
@@ -62,7 +62,7 @@
         }
     }
     </script>
-    
+
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -72,7 +72,7 @@
     <link rel="stylesheet" href="styles.css?v=2">
     <link rel="icon"
         href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔭</text></svg>">
-    
+
     <!-- Google Analytics - Replace G-XXXXXXXXXX with your Measurement ID -->
     <!-- <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
     <script>
@@ -329,7 +329,7 @@
                 <option value="F">Forward</option>
                 <option value="M">Midfielder</option>
                 <option value="D">Defender</option>
-                <option value="G">Goalkeeper</option>
+                <option value="GK">Goalkeeper</option>
             </select>
         </div>
 
@@ -409,7 +409,8 @@
                     <span class="search-icon">🔍</span>
                     <input type="text" id="player-search" placeholder="Search players..." class="search-input">
                 </div>
-                <button class="filter-toggle-btn" id="filter-toggle" title="Filters" onclick="if(window.App) App.toggleFilters(); return false;">
+                <button class="filter-toggle-btn" id="filter-toggle" title="Filters"
+                    onclick="if(window.App) App.toggleFilters(); return false;">
                     <span>⚙️</span>
                 </button>
             </div>
@@ -425,7 +426,7 @@
             <div class="hero-content">
                 <h1 class="hero-title">Find Undervalued<br>Football Players</h1>
                 <p class="hero-subtitle">
-                    We analyze xG, xA, age, and league context to find players whose 
+                    We analyze xG, xA, age, and league context to find players whose
                     market value doesn't match their performance. Updated weekly.
                 </p>
                 <div class="hero-stats">
@@ -606,12 +607,12 @@
                 <button class="modal-close" id="methodology-modal-close">×</button>
                 <div class="methodology-body">
                     <h2>📊 How We Calculate Undervaluation</h2>
-                    
+
                     <h3>The Formula</h3>
                     <pre class="code-block">Fair Value = Base Value × Performance Ratio × Age Multiplier × League Multiplier
 
 Undervaluation % = (Fair Value - Market Value) / Market Value × 100</pre>
-                    
+
                     <h3>Performance Ratio</h3>
                     <p>We use <strong>xG + xA per 90 minutes</strong> (expected goals + expected assists) compared to
                         position averages:</p>
@@ -620,7 +621,7 @@ Undervaluation % = (Fair Value - Market Value) / Market Value × 100</pre>
                         <li>Midfielders: 0.35 xGI/90 average</li>
                         <li>Defenders: 0.15 xGI/90 average</li>
                     </ul>
-                    
+
                     <h3>Age Curve</h3>
                     <p>Player value peaks at 24-26. We apply multipliers:</p>
                     <ul>
@@ -630,7 +631,7 @@ Undervaluation % = (Fair Value - Market Value) / Market Value × 100</pre>
                         <li>29-32: 0.7x (decline)</li>
                         <li>33+: 0.4x (veteran)</li>
                     </ul>
-                    
+
                     <h3>League Multipliers</h3>
                     <ul>
                         <li>Premier League: 2.0x</li>
@@ -639,11 +640,11 @@ Undervaluation % = (Fair Value - Market Value) / Market Value × 100</pre>
                         <li>Serie A: 1.2x</li>
                         <li>Ligue 1: 1.1x</li>
                     </ul>
-                    
+
                     <h3>Data Sources</h3>
                     <p><strong>xG/xA:</strong> Understat (updated after each matchday)</p>
                     <p><strong>Market Values:</strong> Transfermarkt</p>
-                    
+
                     <h3>Limitations</h3>
                     <ul>
                         <li>No injury history factored in</li>

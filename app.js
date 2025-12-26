@@ -137,7 +137,7 @@
             const fontSize = size * 0.4;
             // Escape initials for safe HTML insertion
             const safeInitials = Security.escapeHtml(initials);
-            
+
             return `
                 <div class="player-avatar" style="
                     width: ${size}px;
@@ -229,7 +229,7 @@
             const gemBadge = isHiddenGem ? '<span class="gem-badge" title="Hidden Gem">💎</span>' : '';
 
             const isComparing = state.compareList.some(p => p.id === player.id);
-            
+
             return `
                 <div class="player-card ${undervalued ? 'undervalued' : ''} ${isComparing ? 'selected-compare' : ''}" data-player-id="${player.id}">
                     <input type="checkbox" class="compare-checkbox" data-player-id="${player.id}" 
@@ -348,7 +348,7 @@
 
             const isInWatchlist = state.watchlist.some(p => p && p.id === player.id);
             const undervalued = (player.undervaluation_pct || 0) > 0;
-            
+
             return `
                 <div class="player-detail">
                     <div class="player-detail-header">
@@ -428,12 +428,12 @@
             // Always escaped - textContent automatically prevents XSS
             const existing = document.querySelector('.notification');
             if (existing) existing.remove();
-            
+
             const notification = document.createElement('div');
             notification.className = `notification notification-${type}`;
             notification.textContent = typeof message === 'string' ? message : String(message);
             document.body.appendChild(notification);
-            
+
             setTimeout(() => {
                 notification.classList.add('fade-out');
                 setTimeout(() => notification.remove(), 300);
@@ -519,32 +519,32 @@
 
                 // Cleanup any existing event listeners before re-binding (allows re-init)
                 this.cleanupEvents();
-            
-            this.loadState();
-            this.bindEvents();
+
+                this.loadState();
+                this.bindEvents();
 
                 // Render immediately with static data
-            this.renderView('dashboard');
+                this.renderView('dashboard');
                 this.showDataFreshness();
-            
-            // Register service worker
-            if ('serviceWorker' in navigator) {
+
+                // Register service worker
+                if ('serviceWorker' in navigator) {
                     navigator.serviceWorker.register('sw.js').catch(() => { });
-            }
-            
+                }
+
                 // Hide loader (always hide, even on error)
                 clearTimeout(safetyTimeout);
-            setTimeout(() => {
+                setTimeout(() => {
                     const loader = document.getElementById('loader');
                     const app = document.getElementById('app');
                     if (loader) loader.classList.add('fade-out');
                     if (app) app.classList.remove('hidden');
-            }, 1200);
+                }, 1200);
 
                 // Try to fetch LIVE data in background (non-blocking)
                 this.fetchLiveData();
-            
-            console.log('✅ ScoutLens ready');
+
+                console.log('✅ ScoutLens ready');
             } catch (error) {
                 console.error('❌ Failed to initialize ScoutLens:', error);
                 clearTimeout(safetyTimeout);
@@ -817,9 +817,9 @@
             const methodologyLink = document.getElementById('methodology-link');
             if (methodologyLink) {
                 methodologyLink.addEventListener('click', (e) => {
-                e.preventDefault();
-                this.openModal('methodology-modal');
-            });
+                    e.preventDefault();
+                    this.openModal('methodology-modal');
+                });
             }
 
             // Email forms
@@ -871,7 +871,7 @@
                     if (card.classList.contains('locked')) {
                         this.showUpgrade();
                     } else {
-                    this.showPlayerDetail(playerId);
+                        this.showPlayerDetail(playerId);
                     }
                 }
 
@@ -1082,25 +1082,44 @@
         renderUndervalued() {
             const container = document.getElementById('undervalued-list');
             if (!container) return;
-            
+
             try {
                 const data = this.getData();
-                const allPlayers = data.free?.undervalued || data.undervalued || [];
+                let allPlayers = data.free?.undervalued || data.undervalued || [];
 
-                // FREE: Show only first 5
-                const freePlayers = allPlayers.slice(0, 5);
-                // PRO: Everything else is locked
-                const proPlayers = allPlayers.slice(5);
+                // Apply filters and search
+                allPlayers = this.filterAndSortPlayers(allPlayers);
 
-                let html = freePlayers.map((p, i) => UI.renderPlayerCard(p, i)).join('');
+                let html = '';
 
-                // ALWAYS show upgrade card after free players
-                html += UI.renderUpgradeCard();
+                if (state.isPro) {
+                    html = allPlayers.map((p, i) => UI.renderPlayerCard(p, i)).join('');
+                } else {
+                    // FREE: Show only first 5
+                    const freePlayers = allPlayers.slice(0, 5);
+                    const proPlayers = allPlayers.slice(5);
 
-                if (proPlayers.length > 0) {
-                    html += `<div class="pro-section-header">🔒 ${proPlayers.length} more undervalued players with Pro</div>`;
-                    // Show locked previews
-                    html += proPlayers.slice(0, 5).map((p, i) => UI.renderLockedCard(p, freePlayers.length + i)).join('');
+                    html = freePlayers.map((p, i) => UI.renderPlayerCard(p, i)).join('');
+
+                    // ALWAYS show upgrade card after free players
+                    html += UI.renderUpgradeCard();
+
+                    if (proPlayers.length > 0) {
+                        html += `<div class="pro-section-header">🔒 ${proPlayers.length} more undervalued players with Pro</div>`;
+                        // Show locked previews
+                        html += proPlayers.slice(0, 5).map((p, i) => UI.renderLockedCard(p, freePlayers.length + i)).join('');
+                    }
+                }
+
+                if (allPlayers.length === 0) {
+                    html = `
+                        <div class="empty-state">
+                            <span class="empty-state-icon">🔍</span>
+                            <h3>No players found</h3>
+                            <p>Try adjusting your filters or search terms.</p>
+                            <button class="btn btn-ghost" data-action="reset-filters" style="margin-top:1rem;">Reset Filters</button>
+                        </div>
+                    `;
                 }
 
                 container.innerHTML = html;
@@ -1113,20 +1132,39 @@
         renderPerformers() {
             const container = document.getElementById('performers-list');
             if (!container) return;
-            
+
             try {
                 const data = this.getData();
-                const allPlayers = data.free?.topPerformers || data.topPerformers || [];
+                let allPlayers = data.free?.topPerformers || data.topPerformers || [];
 
-                const freePlayers = allPlayers.slice(0, 5);
-                const proPlayers = allPlayers.slice(5);
+                // Apply filters and search
+                allPlayers = this.filterAndSortPlayers(allPlayers);
 
-                let html = freePlayers.map((p, i) => UI.renderPlayerCard(p, i)).join('');
+                let html = '';
 
-                if (proPlayers.length > 0) {
-                    html += `<div class="pro-section-header">🔒 ${proPlayers.length} more top performers with Pro</div>`;
-                    html += proPlayers.slice(0, 3).map((p, i) => UI.renderLockedCard(p, freePlayers.length + i)).join('');
-                    html += UI.renderUpgradeCard();
+                if (state.isPro) {
+                    html = allPlayers.map((p, i) => UI.renderPlayerCard(p, i)).join('');
+                } else {
+                    const freePlayers = allPlayers.slice(0, 5);
+                    const proPlayers = allPlayers.slice(5);
+
+                    html = freePlayers.map((p, i) => UI.renderPlayerCard(p, i)).join('');
+
+                    if (proPlayers.length > 0) {
+                        html += `<div class="pro-section-header">🔒 ${proPlayers.length} more top performers with Pro</div>`;
+                        html += proPlayers.slice(0, 3).map((p, i) => UI.renderLockedCard(p, freePlayers.length + i)).join('');
+                        html += UI.renderUpgradeCard();
+                    }
+                }
+
+                if (allPlayers.length === 0) {
+                    html = `
+                        <div class="empty-state">
+                            <span class="empty-state-icon">🔍</span>
+                            <h3>No performers found</h3>
+                            <button class="btn btn-ghost" data-action="reset-filters" style="margin-top:1rem;">Reset Filters</button>
+                        </div>
+                    `;
                 }
 
                 container.innerHTML = html;
@@ -1139,20 +1177,39 @@
         renderRising() {
             const container = document.getElementById('rising-list');
             if (!container) return;
-            
+
             try {
                 const data = this.getData();
-                const allPlayers = data.free?.risingStars || data.risingStars || [];
+                let allPlayers = data.free?.risingStars || data.risingStars || [];
 
-                const freePlayers = allPlayers.slice(0, 5);
-                const proPlayers = allPlayers.slice(5);
+                // Apply filters and search
+                allPlayers = this.filterAndSortPlayers(allPlayers);
 
-                let html = freePlayers.map((p, i) => UI.renderPlayerCard(p, i)).join('');
+                let html = '';
 
-                if (proPlayers.length > 0) {
-                    html += `<div class="pro-section-header">🔒 ${proPlayers.length} more rising stars with Pro</div>`;
-                    html += proPlayers.slice(0, 3).map((p, i) => UI.renderLockedCard(p, freePlayers.length + i)).join('');
-                    html += UI.renderUpgradeCard();
+                if (state.isPro) {
+                    html = allPlayers.map((p, i) => UI.renderPlayerCard(p, i)).join('');
+                } else {
+                    const freePlayers = allPlayers.slice(0, 5);
+                    const proPlayers = allPlayers.slice(5);
+
+                    html = freePlayers.map((p, i) => UI.renderPlayerCard(p, i)).join('');
+
+                    if (proPlayers.length > 0) {
+                        html += `<div class="pro-section-header">🔒 ${proPlayers.length} more rising stars with Pro</div>`;
+                        html += proPlayers.slice(0, 3).map((p, i) => UI.renderLockedCard(p, freePlayers.length + i)).join('');
+                        html += UI.renderUpgradeCard();
+                    }
+                }
+
+                if (allPlayers.length === 0) {
+                    html = `
+                        <div class="empty-state">
+                            <span class="empty-state-icon">🔍</span>
+                            <h3>No rising stars found</h3>
+                            <button class="btn btn-ghost" data-action="reset-filters" style="margin-top:1rem;">Reset Filters</button>
+                        </div>
+                    `;
                 }
 
                 container.innerHTML = html;
@@ -1200,6 +1257,9 @@
                     return true;
                 });
 
+                // Apply filters and search
+                allGems = this.filterAndSortPlayers(allGems);
+
                 // Show ALL hidden gems (they're from lower leagues - main value prop)
                 // Add pagination for large lists
                 const itemsPerPage = state.pagination.itemsPerPage;
@@ -1214,9 +1274,10 @@
                 if (allGems.length === 0) {
                     html = `
                         <div class="empty-state">
-                            <span class="empty-state-icon">💎</span>
-                            <h3>Hidden Gems Coming Soon</h3>
-                            <p>We're adding Championship, Eredivisie, Portuguese & Brazilian league data.</p>
+                            <span class="empty-state-icon">🔍</span>
+                            <h3>No hidden gems found</h3>
+                            <p>Try adjusting your filters or search terms.</p>
+                            <button class="btn btn-ghost" data-action="reset-filters" style="margin-top:1rem;">Reset Filters</button>
                         </div>
                     `;
                 } else {
@@ -1234,7 +1295,9 @@
                 }
 
                 // ALWAYS show upgrade card - even if showing all gems (for other Pro features)
-                html += UI.renderUpgradeCard();
+                if (!state.isPro) {
+                    html += UI.renderUpgradeCard();
+                }
 
                 container.innerHTML = html;
             } catch (e) {
@@ -1258,7 +1321,6 @@
                 } else if (data.expiringContracts) {
                     allBargains = data.expiringContracts;
                 } else {
-                    // Filter from all lists for players with contract_expiry
                     const allPlayers = [
                         ...(data.undervalued || []),
                         ...(data.topPerformers || []),
@@ -1270,39 +1332,46 @@
                     );
                 }
 
-                // Remove duplicates and sort by value
                 const seen = new Set();
                 allBargains = allBargains.filter(p => {
                     if (seen.has(p.name)) return false;
                     seen.add(p.name);
                     return true;
-                }).sort((a, b) => (b.market_value_eur_m || 0) - (a.market_value_eur_m || 0));
+                });
 
-                const freePlayers = allBargains.slice(0, 5);
-                const proPlayers = allBargains.slice(5);
+                // Apply filters and search
+                allBargains = this.filterAndSortPlayers(allBargains);
 
                 let html = '';
 
-                if (freePlayers.length === 0) {
+                if (state.isPro) {
+                    html = allBargains.map((p, i) => UI.renderPlayerCard(p, i)).join('');
+                } else {
+                    const freePlayers = allBargains.slice(0, 5);
+                    const proPlayers = allBargains.slice(5);
+
+                    if (freePlayers.length > 0) {
+                        html = `<div class="bargains-info" style="background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.2);border-radius:8px;padding:1rem;margin-bottom:1rem;">
+                            <strong style="color:#f87171;">⏰ Expiring 2025</strong> = Free agent soon! Clubs can negotiate pre-contracts now.
+                        </div>`;
+                        html += freePlayers.map((p, i) => UI.renderPlayerCard(p, i)).join('');
+
+                        if (proPlayers.length > 0) {
+                            html += `<div class="pro-section-header">🔒 ${proPlayers.length} more bargains with Pro</div>`;
+                            html += proPlayers.slice(0, 3).map((p, i) => UI.renderLockedCard(p, freePlayers.length + i)).join('');
+                        }
+                        html += UI.renderUpgradeCard();
+                    }
+                }
+
+                if (allBargains.length === 0) {
                     html = `
                         <div class="empty-state">
-                            <span class="empty-state-icon">⏰</span>
-                            <h3>Contract Data Coming Soon</h3>
-                            <p>We're adding contract expiry dates to identify free transfer bargains.</p>
+                            <span class="empty-state-icon">🔍</span>
+                            <h3>No bargains found</h3>
+                            <button class="btn btn-ghost" data-action="reset-filters" style="margin-top:1rem;">Reset Filters</button>
                         </div>
                     `;
-                } else {
-                    html = `<div class="bargains-info" style="background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.2);border-radius:8px;padding:1rem;margin-bottom:1rem;">
-                        <strong style="color:#f87171;">⏰ Expiring 2025</strong> = Free agent soon! Clubs can negotiate pre-contracts now.
-                    </div>`;
-                    html += freePlayers.map((p, i) => UI.renderPlayerCard(p, i)).join('');
-
-                    if (proPlayers.length > 0) {
-                        html += `<div class="pro-section-header">🔒 ${proPlayers.length} more bargains with Pro</div>`;
-                        html += proPlayers.slice(0, 3).map((p, i) => UI.renderLockedCard(p, freePlayers.length + i)).join('');
-                    }
-
-                    html += UI.renderUpgradeCard();
                 }
 
                 container.innerHTML = html;
@@ -1325,7 +1394,7 @@
                     if (response.ok) {
                         const data = await response.json();
                         rumors = data.rumors || [];
-                        
+
                         // Filter expired rumors
                         const today = new Date();
                         rumors = rumors.filter(r => {
@@ -1547,36 +1616,51 @@
         renderWatchlist() {
             const container = document.getElementById('watchlist-list');
             if (!container) return;
-            
+
             try {
-            if (state.watchlist.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <span class="empty-state-icon">★</span>
-                        <h3>No saved players yet</h3>
-                        <p>Click the star on any player to add them here.</p>
-                    </div>
-                `;
-                return;
-            }
-            
+                if (state.watchlist.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <span class="empty-state-icon">★</span>
+                            <h3>No saved players yet</h3>
+                            <p>Click the star on any player to add them here.</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                // Apply filters and search to watchlist too
+                let filteredWatchlist = this.filterAndSortPlayers(state.watchlist);
+
                 // Add pagination for large watchlists
                 const itemsPerPage = state.pagination.itemsPerPage;
                 const currentPage = state.pagination.currentPage;
-                const totalPages = Math.ceil(state.watchlist.length / itemsPerPage);
+                const totalPages = Math.ceil(filteredWatchlist.length / itemsPerPage);
                 const startIdx = (currentPage - 1) * itemsPerPage;
                 const endIdx = startIdx + itemsPerPage;
-                const paginatedWatchlist = state.watchlist.slice(startIdx, endIdx);
+                const paginatedWatchlist = filteredWatchlist.slice(startIdx, endIdx);
 
-                let html = paginatedWatchlist.map((p, i) => UI.renderPlayerCard(p, startIdx + i)).join('');
+                let html = '';
 
-                // Add pagination controls if more than one page
-                if (totalPages > 1) {
-                    html += `<div class="pagination-controls" style="display:flex;justify-content:center;align-items:center;gap:1rem;margin:2rem 0;padding:1rem;">
-                        <button class="btn btn-ghost" data-action="page-prev" ${currentPage === 1 ? 'disabled' : ''} style="min-width:44px;min-height:44px;">←</button>
-                        <span style="color:var(--text-secondary);">Page ${currentPage} of ${totalPages}</span>
-                        <button class="btn btn-ghost" data-action="page-next" ${currentPage === totalPages ? 'disabled' : ''} style="min-width:44px;min-height:44px;">→</button>
-                    </div>`;
+                if (filteredWatchlist.length === 0) {
+                    html = `
+                        <div class="empty-state">
+                            <span class="empty-state-icon">🔍</span>
+                            <h3>No matches in watchlist</h3>
+                            <button class="btn btn-ghost" data-action="reset-filters" style="margin-top:1rem;">Reset Filters</button>
+                        </div>
+                    `;
+                } else {
+                    html = paginatedWatchlist.map((p, i) => UI.renderPlayerCard(p, startIdx + i)).join('');
+
+                    // Add pagination controls if more than one page
+                    if (totalPages > 1) {
+                        html += `<div class="pagination-controls" style="display:flex;justify-content:center;align-items:center;gap:1rem;margin:2rem 0;padding:1rem;">
+                            <button class="btn btn-ghost" data-action="page-prev" ${currentPage === 1 ? 'disabled' : ''} style="min-width:44px;min-height:44px;">←</button>
+                            <span style="color:var(--text-secondary);">Page ${currentPage} of ${totalPages}</span>
+                            <button class="btn btn-ghost" data-action="page-next" ${currentPage === totalPages ? 'disabled' : ''} style="min-width:44px;min-height:44px;">→</button>
+                        </div>`;
+                    }
                 }
 
                 container.innerHTML = html;
@@ -1595,10 +1679,10 @@
                 ...(data.risingStars || []),
                 ...state.watchlist
             ];
-            
+
             const player = allPlayers.find(p => p.id === playerId);
             if (!player) return;
-            
+
             const modalBody = document.getElementById('player-modal-body');
             modalBody.innerHTML = UI.renderPlayerDetail(player);
             this.openModal('player-modal');
@@ -1612,12 +1696,12 @@
                 ...(data.topPerformers || []),
                 ...(data.risingStars || [])
             ];
-            
+
             const player = allPlayers.find(p => p.id === playerId);
             if (!player) return;
-            
+
             const index = state.watchlist.findIndex(p => p.id === playerId);
-            
+
             if (index > -1) {
                 state.watchlist.splice(index, 1);
                 UI.showNotification(`Removed ${player.name || 'player'} from watchlist`);
@@ -1625,10 +1709,10 @@
                 state.watchlist.push(player);
                 UI.showNotification(`Saved ${player.name || 'player'} to watchlist ★`);
             }
-            
+
             this.saveState();
             this.refreshSaveButtons();
-            
+
             if (state.currentView === 'watchlist') {
                 this.renderWatchlist();
             }
@@ -1647,17 +1731,17 @@
             e.preventDefault();
             const form = e.target;
             const email = form.querySelector('input[type="email"]').value;
-            
+
             // In production: Send to Beehiiv, ConvertKit, etc.
             // For now: Store locally and show confirmation
             console.log('Email submitted:', email);
             Security.storage.setItem('scoutlens_email', email);
-            
+
             UI.showNotification('✅ Subscribed! Check your inbox Monday.');
-            
+
             // Close modal if open
             document.querySelectorAll('.modal.active').forEach(m => m.classList.remove('active'));
-            
+
             // Clear form
             form.reset();
         },
@@ -1665,7 +1749,7 @@
         sharePlayer(playerName) {
             const text = `Check out ${playerName} on ScoutLens - might be undervalued 🔭`;
             const url = window.location.href;
-            
+
             if (navigator.share) {
                 navigator.share({ title: 'ScoutLens', text, url }).catch(() => { });
             } else {
@@ -1961,18 +2045,18 @@
 
         initFilterButtons(signal) {
             console.log('🔧 Initializing filter buttons...');
-            
+
             // Filter toggle button
             const filterToggle = document.getElementById('filter-toggle');
             if (filterToggle) {
                 console.log('✅ Filter toggle button found');
                 // Remove onclick attribute (we'll use event listener)
                 filterToggle.removeAttribute('onclick');
-                
+
                 // Remove any existing listeners by cloning
                 const newToggle = filterToggle.cloneNode(true);
                 filterToggle.parentNode.replaceChild(newToggle, filterToggle);
-                
+
                 // Add event listeners
                 newToggle.addEventListener('click', (e) => {
                     e.preventDefault();
@@ -1980,7 +2064,7 @@
                     console.log('🔧 Filter toggle CLICKED');
                     this.toggleFilters();
                 }, { signal });
-                
+
                 newToggle.addEventListener('touchend', (e) => {
                     e.preventDefault();
                     e.stopPropagation();
@@ -1998,14 +2082,14 @@
                 filterClose.removeAttribute('onclick');
                 const newClose = filterClose.cloneNode(true);
                 filterClose.parentNode.replaceChild(newClose, filterClose);
-                
+
                 newClose.addEventListener('click', (e) => {
                     e.preventDefault();
                     e.stopPropagation();
                     this.toggleFilters();
                 }, { signal });
             }
-            
+
             // Verify filter panel
             const filterPanel = document.getElementById('filter-panel');
             if (filterPanel) {
@@ -2019,12 +2103,12 @@
             console.log('🔧 toggleFilters() called');
             const panel = document.getElementById('filter-panel');
             const btn = document.getElementById('filter-toggle');
-            
+
             if (!panel) {
                 console.error('❌ Filter panel not found in toggleFilters()');
                 return;
             }
-            
+
             console.log('📋 Panel current classes:', panel.className);
             const isMobile = window.innerWidth <= 768;
             console.log('📱 Is mobile:', isMobile, 'Width:', window.innerWidth);
@@ -2042,10 +2126,10 @@
             if (btn) {
                 btn.classList.toggle('active');
             }
-            
+
             const isHidden = panel.classList.contains('hidden');
             console.log('✅ Filter panel toggled. Hidden:', isHidden, 'New classes:', panel.className);
-            
+
             // Force a reflow to ensure CSS transition works
             void panel.offsetHeight;
         },
@@ -2056,7 +2140,7 @@
             const ageEl = document.getElementById('filter-age');
             const valueEl = document.getElementById('filter-value');
             const sortEl = document.getElementById('sort-by');
-            
+
             state.filters = {
                 league: leagueEl?.value || '',
                 position: positionEl?.value || '',
@@ -2066,13 +2150,13 @@
             };
 
             console.log('Filters applied:', state.filters);
-            
+
             // Close filter panel
             this.toggleFilters();
-            
+
             // Re-render current view with new filters
             this.renderView(state.currentView);
-            
+
             UI.showNotification('✅ Filters applied');
         },
 
@@ -2109,7 +2193,8 @@
                 filtered = filtered.filter(p =>
                     p.name?.toLowerCase().includes(state.searchQuery) ||
                     p.team?.toLowerCase().includes(state.searchQuery) ||
-                    p.league?.toLowerCase().includes(state.searchQuery)
+                    p.league?.toLowerCase().includes(state.searchQuery) ||
+                    p.position?.toLowerCase().includes(state.searchQuery)
                 );
             }
 
