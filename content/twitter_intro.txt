@@ -1,0 +1,13 @@
+🔭 Introducing ScoutLens
+
+I built a tool to find undervalued football players using real Transfermarkt values + xG data.
+
+How it works:
+✅ Real market values (not estimates)
+✅ xG/xA analytics
+✅ 25+ leagues covered
+✅ Free to use
+
+Try it free: scoutlens-app.vercel.app
+
+#FootballAnalytics #TransferMarket

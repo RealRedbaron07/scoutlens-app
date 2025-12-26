@@ -1,0 +1,26 @@
+TITLE:
+I built a scouting tool for FM - finds undervalued players using real data
+
+---
+
+BODY:
+Hey r/footballmanagergames,
+
+I built ScoutLens - a scouting tool that uses real Transfermarkt values + xG data to find undervalued players.
+
+**Why it's useful for FM:**
+- Find hidden gems before they're expensive
+- Compare players by xG/xA per 90
+- See which players are undervalued vs market
+- Track contract expiries (free transfers)
+- Export data to CSV for your own analysis
+
+**Example:**
+- Esteban Lepaul is valued at €15M but xG says he's worth €44.3M
+- Perfect for your lower league save?
+
+**Try it free:** https://scoutlens-app.vercel.app
+
+Works on mobile. No signup required.
+
+What FM-specific features would be most useful?

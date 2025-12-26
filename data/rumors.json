@@ -1,102 +1,125 @@
 {
-  "last_updated": "2024-12-24",
+  "last_updated": "2025-12-26",
   "rumors": [
     {
       "id": "rumor_001",
       "player": "Mohamed Salah",
       "from": "Liverpool",
-      "to": "Saudi Pro League / PSG",
-      "fee": "Free (contract expires 2025)",
+      "to": "Saudi Pro League / Al-Ittihad",
+      "fee": "Free (contract expires June 2025)",
       "status": "hot",
       "source": "Fabrizio Romano",
-      "date": "2024-12-20",
+      "date": "2025-12-24",
       "verified": true,
-      "expires": "2025-01-20"
+      "expires": "2026-01-24"
     },
     {
       "id": "rumor_002",
-      "player": "Trent Alexander-Arnold",
-      "from": "Liverpool",
-      "to": "Real Madrid",
-      "fee": "Free (contract expires 2025)",
+      "player": "Joshua Kimmich",
+      "from": "Bayern Munich",
+      "to": "Barcelona / Manchester City",
+      "fee": "Free (contract expires June 2025)",
       "status": "hot",
-      "source": "Multiple Sources",
-      "date": "2024-12-19",
+      "source": "Sky Germany",
+      "date": "2025-12-23",
       "verified": true,
-      "expires": "2025-01-19"
+      "expires": "2026-01-23"
     },
     {
       "id": "rumor_003",
-      "player": "Joshua Kimmich",
-      "from": "Bayern Munich",
-      "to": "Barcelona / Man City",
-      "fee": "Free (contract expires 2025)",
-      "status": "hot",
-      "source": "Sky Germany",
-      "date": "2024-12-18",
-      "verified": true,
-      "expires": "2025-01-18"
-    },
-    {
-      "id": "rumor_004",
       "player": "Alphonso Davies",
       "from": "Bayern Munich",
       "to": "Real Madrid",
-      "fee": "Free (contract expires 2025)",
-      "status": "warm",
+      "fee": "Free (contract expires June 2025)",
+      "status": "hot",
       "source": "Marca",
-      "date": "2024-12-17",
+      "date": "2025-12-22",
       "verified": true,
-      "expires": "2025-01-17"
+      "expires": "2026-01-22"
     },
     {
-      "id": "rumor_005",
+      "id": "rumor_004",
       "player": "Viktor Gyökeres",
       "from": "Sporting CP",
-      "to": "Arsenal / Man United / Chelsea",
+      "to": "Arsenal / Manchester United / Chelsea",
       "fee": "€100M release clause",
       "status": "hot",
       "source": "Record Portugal",
-      "date": "2024-12-16",
+      "date": "2025-12-21",
       "verified": true,
-      "expires": "2025-01-16"
+      "expires": "2026-01-21"
     },
     {
-      "id": "rumor_006",
+      "id": "rumor_005",
       "player": "Florian Wirtz",
       "from": "Bayer Leverkusen",
-      "to": "Real Madrid / Bayern",
+      "to": "Real Madrid / Bayern Munich",
       "fee": "€150M+",
       "status": "warm",
       "source": "Kicker",
-      "date": "2024-12-15",
+      "date": "2025-12-20",
       "verified": true,
-      "expires": "2025-01-15"
+      "expires": "2026-01-20"
     },
     {
-      "id": "rumor_007",
+      "id": "rumor_006",
       "player": "Omar Marmoush",
       "from": "Eintracht Frankfurt",
       "to": "Liverpool / Arsenal",
       "fee": "€40-50M",
       "status": "warm",
       "source": "Bild",
-      "date": "2024-12-14",
+      "date": "2025-12-19",
       "verified": true,
-      "expires": "2025-01-14"
+      "expires": "2026-01-19"
     },
     {
-      "id": "rumor_008",
+      "id": "rumor_007",
       "player": "Nico Williams",
       "from": "Athletic Bilbao",
       "to": "Barcelona / Chelsea",
       "fee": "€58M release clause",
       "status": "warm",
       "source": "Sport",
-      "date": "2024-12-13",
+      "date": "2025-12-18",
       "verified": true,
-      "expires": "2025-01-13"
+      "expires": "2026-01-18"
+    },
+    {
+      "id": "rumor_008",
+      "player": "Virgil van Dijk",
+      "from": "Liverpool",
+      "to": "Saudi Pro League / MLS",
+      "fee": "Free (contract expires June 2025)",
+      "status": "warm",
+      "source": "The Athletic",
+      "date": "2025-12-17",
+      "verified": true,
+      "expires": "2026-01-17"
+    },
+    {
+      "id": "rumor_009",
+      "player": "Jonathan David",
+      "from": "Lille",
+      "to": "AC Milan / Napoli",
+      "fee": "€30-40M",
+      "status": "warm",
+      "source": "Gianluca Di Marzio",
+      "date": "2025-12-16",
+      "verified": true,
+      "expires": "2026-01-16"
+    },
+    {
+      "id": "rumor_010",
+      "player": "Leroy Sané",
+      "from": "Bayern Munich",
+      "to": "Barcelona / Atletico Madrid",
+      "fee": "Free (contract expires June 2025)",
+      "status": "warm",
+      "source": "Sport Bild",
+      "date": "2025-12-15",
+      "verified": true,
+      "expires": "2026-01-15"
     }
   ]
 }
-

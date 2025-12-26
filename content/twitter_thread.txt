@@ -1,0 +1,94 @@
+🔭 THREAD: 5 Most Undervalued Players Right Now
+
+These players are outperforming their market price based on xG data.
+
+Let's break it down 🧵👇
+
+---
+
+1/ 🇫🇷 Esteban Lepaul (Stade Rennais FC 1901)
+
+Market value: €15M
+Our fair value: €44.3M
+Undervalued by: +195%
+
+• 9 goals, 3 assists
+• xGI/90: 0.80 (elite)
+• Age: 25 (prime years)
+• Ligue 1 proven
+
+Someone's getting a bargain.
+
+---
+
+2/ 🇬🇭 Antoine Semenyo (AFC Bournemouth)
+
+Market value: €28M
+Our fair value: €80.5M
+Undervalued by: +188%
+
+• 8 goals, 3 assists
+• xGI/90: 0.72 (elite)
+• Age: 25 (prime years)
+• Premier League proven
+
+Someone's getting a bargain.
+
+---
+
+3/ ⚽ Aune Heggebø (West Bromwich Albion FC)
+
+Market value: €6M
+Our fair value: €17.2M
+Undervalued by: +187%
+
+• 8 goals, 3 assists
+• xGI/90: 0.53 
+• Age: 24 (prime years)
+• Championship proven
+
+Someone's getting a bargain.
+
+---
+
+4/ 🇫🇷 Sofiane Diop (OGC Nice)
+
+Market value: €10M
+Our fair value: €27.8M
+Undervalued by: +178%
+
+• 6 goals, 2 assists
+• xGI/90: 0.51 
+• Age: 25 (prime years)
+• Ligue 1 proven
+
+Someone's getting a bargain.
+
+---
+
+5/ 🇬🇧 Jaidon Anthony (Burnley FC)
+
+Market value: €10M
+Our fair value: €27.6M
+Undervalued by: +176%
+
+• 4 goals, 1 assists
+• xGI/90: 0.31 
+• Age: 26 (prime years)
+• Premier League proven
+
+Someone's getting a bargain.
+
+---
+
+📊 How we calculate this:
+
+Fair Value = Performance × Age × League
+
+• xG + xA per 90
+• Age curve (24-26 = peak)
+• League multiplier
+
+Try it yourself: scoutlens-app.vercel.app
+
+Follow for weekly updates 🔭

@@ -1,0 +1,25 @@
+{
+  "intro": "🔭 Introducing ScoutLens\n\nI built a tool to find undervalued football players using real Transfermarkt values + xG data.\n\nHow it works:\n✅ Real market values (not estimates)\n✅ xG/xA analytics\n✅ 25+ leagues covered\n✅ Free to use\n\nTry it free: scoutlens-app.vercel.app\n\n#FootballAnalytics #TransferMarket",
+  "thread": [
+    "🔭 THREAD: 5 Most Undervalued Players Right Now\n\nThese players are outperforming their market price based on xG data.\n\nLet's break it down 🧵👇",
+    "1/ 🇫🇷 Esteban Lepaul (Stade Rennais FC 1901)\n\nMarket value: €15M\nOur fair value: €44.3M\nUndervalued by: +195%\n\n• 9 goals, 3 assists\n• xGI/90: 0.80 (elite)\n• Age: 25 (prime years)\n• Ligue 1 proven\n\nSomeone's getting a bargain.",
+    "2/ 🇬🇭 Antoine Semenyo (AFC Bournemouth)\n\nMarket value: €28M\nOur fair value: €80.5M\nUndervalued by: +188%\n\n• 8 goals, 3 assists\n• xGI/90: 0.72 (elite)\n• Age: 25 (prime years)\n• Premier League proven\n\nSomeone's getting a bargain.",
+    "3/ ⚽ Aune Heggebø (West Bromwich Albion FC)\n\nMarket value: €6M\nOur fair value: €17.2M\nUndervalued by: +187%\n\n• 8 goals, 3 assists\n• xGI/90: 0.53 \n• Age: 24 (prime years)\n• Championship proven\n\nSomeone's getting a bargain.",
+    "4/ 🇫🇷 Sofiane Diop (OGC Nice)\n\nMarket value: €10M\nOur fair value: €27.8M\nUndervalued by: +178%\n\n• 6 goals, 2 assists\n• xGI/90: 0.51 \n• Age: 25 (prime years)\n• Ligue 1 proven\n\nSomeone's getting a bargain.",
+    "5/ 🇬🇧 Jaidon Anthony (Burnley FC)\n\nMarket value: €10M\nOur fair value: €27.6M\nUndervalued by: +176%\n\n• 4 goals, 1 assists\n• xGI/90: 0.31 \n• Age: 26 (prime years)\n• Premier League proven\n\nSomeone's getting a bargain.",
+    "📊 How we calculate this:\n\nFair Value = Performance × Age × League\n\n• xG + xA per 90\n• Age curve (24-26 = peak)\n• League multiplier\n\nTry it yourself: scoutlens-app.vercel.app\n\nFollow for weekly updates 🔭"
+  ],
+  "quickPosts": [
+    "🔭 Found another hidden gem:\n\nEsteban Lepaul - F\nMarket Value: €15M\nxG/90: 0.80\nAge: 25\n\nWhy he's undervalued:\n✅ Prime age not factored into value\n✅ Elite xGI/90 for this price\n\nFull analysis: scoutlens-app.vercel.app\n\n#FootballAnalytics #TransferMarket",
+    "🔭 Found another hidden gem:\n\nAntoine Semenyo - F\nMarket Value: €28M\nxG/90: 0.72\nAge: 25\n\nWhy he's undervalued:\n✅ Prime age not factored into value\n✅ Elite xGI/90 for this price\n\nFull analysis: scoutlens-app.vercel.app\n\n#FootballAnalytics #TransferMarket",
+    "🔭 Found another hidden gem:\n\nAune Heggebø - F\nMarket Value: €6M\nxG/90: 0.53\nAge: 24\n\nWhy he's undervalued:\n✅ Playing in lower league but elite xG\n✅ Consistent output this season\n\nFull analysis: scoutlens-app.vercel.app\n\n#FootballAnalytics #TransferMarket",
+    "🔭 Found another hidden gem:\n\nSofiane Diop - F\nMarket Value: €10M\nxG/90: 0.51\nAge: 25\n\nWhy he's undervalued:\n✅ Prime age not factored into value\n✅ Consistent output this season\n\nFull analysis: scoutlens-app.vercel.app\n\n#FootballAnalytics #TransferMarket",
+    "🔭 Found another hidden gem:\n\nJaidon Anthony - F\nMarket Value: €10M\nxG/90: 0.31\nAge: 26\n\nWhy he's undervalued:\n✅ Prime age not factored into value\n✅ Consistent output this season\n\nFull analysis: scoutlens-app.vercel.app\n\n#FootballAnalytics #TransferMarket",
+    "🔭 Found another hidden gem:\n\nYassir Zabiri - F\nMarket Value: €4M\nxG/90: 0.36\nAge: 20\n\nWhy he's undervalued:\n✅ Market value doesn't reflect performance\n✅ Consistent output this season\n\nFull analysis: scoutlens-app.vercel.app\n\n#FootballAnalytics #TransferMarket",
+    "🔭 Found another hidden gem:\n\nEmanuel Emegha - F\nMarket Value: €28M\nxG/90: 0.91\nAge: 22\n\nWhy he's undervalued:\n✅ Market value doesn't reflect performance\n✅ Elite xGI/90 for this price\n\nFull analysis: scoutlens-app.vercel.app\n\n#FootballAnalytics #TransferMarket",
+    "🔭 Found another hidden gem:\n\nPavel Šulc - F\nMarket Value: €12M\nxG/90: 0.50\nAge: 24\n\nWhy he's undervalued:\n✅ Prime age not factored into value\n✅ Consistent output this season\n\nFull analysis: scoutlens-app.vercel.app\n\n#FootballAnalytics #TransferMarket",
+    "🔭 Found another hidden gem:\n\nDanny Welbeck - F\nMarket Value: €4M\nxG/90: 0.47\nAge: 35\n\nWhy he's undervalued:\n✅ Market value doesn't reflect performance\n✅ Consistent output this season\n\nFull analysis: scoutlens-app.vercel.app\n\n#FootballAnalytics #TransferMarket",
+    "🔭 Found another hidden gem:\n\nAdam Armstrong - F\nMarket Value: €9M\nxG/90: 0.72\nAge: 28\n\nWhy he's undervalued:\n✅ Playing in lower league but elite xG\n✅ Elite xGI/90 for this price\n\nFull analysis: scoutlens-app.vercel.app\n\n#FootballAnalytics #TransferMarket"
+  ],
+  "generatedAt": "2025-12-26T05:48:54.220Z"
+}

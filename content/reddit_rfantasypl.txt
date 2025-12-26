@@ -1,0 +1,25 @@
+TITLE:
+I built a tool to find undervalued FPL players using xG data
+
+---
+
+BODY:
+Hey r/fantasypl,
+
+I built ScoutLens - a tool that finds undervalued players using Transfermarkt values + xG/xA analytics.
+
+**Why it's useful for FPL:**
+- Find hidden gems before price rises
+- Compare players by xG/xA per 90
+- See which players are undervalued vs market
+- Track contract expiries (bargain signings)
+
+**Example:**
+- Esteban Lepaul is valued at €15M but xG says he's worth €44.3M
+- Perfect for your wildcard?
+
+**Try it free:** https://scoutlens-app.vercel.app
+
+Works on mobile. No signup required.
+
+What FPL-specific features would be most useful?

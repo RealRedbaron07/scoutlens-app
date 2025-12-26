@@ -1,0 +1,15 @@
+{
+  "rsoccer": {
+    "title": "I built a tool to find undervalued football players using Transfermarkt + xG data",
+    "body": "Hey r/soccer,\n\nI've been working on ScoutLens - a tool that combines real Transfermarkt market values with xG/xA analytics to identify undervalued players.\n\n**How it works:**\n- Uses actual Transfermarkt values (not estimates)\n- Combines with xG/xA per 90 stats\n- Applies age curve and league multipliers\n- Highlights players where market value < fair value\n\n**Features:**\n- Search 300+ players across 25+ leagues\n- Filter by league, position, age, value\n- Compare players side-by-side\n- Track transfer rumors\n- Export data (Pro feature)\n\n**Example findings:**\n- Esteban Lepaul (Stade Rennais FC 1901): Market €15M, Fair €44.3M (+195%)\n- Antoine Semenyo (AFC Bournemouth): Market €28M, Fair €80.5M (+188%)\n- Aune Heggebø (West Bromwich Albion FC): Market €6M, Fair €17.2M (+187%)\n\n**Try it free:** https://scoutlens-app.vercel.app\n\nNo signup required. Works on mobile and desktop.\n\nI'd love feedback on:\n- What features are missing?\n- Which leagues should I add?\n- What data would be most useful?\n\nThanks!"
+  },
+  "rfantasypl": {
+    "title": "I built a tool to find undervalued FPL players using xG data",
+    "body": "Hey r/fantasypl,\n\nI built ScoutLens - a tool that finds undervalued players using Transfermarkt values + xG/xA analytics.\n\n**Why it's useful for FPL:**\n- Find hidden gems before price rises\n- Compare players by xG/xA per 90\n- See which players are undervalued vs market\n- Track contract expiries (bargain signings)\n\n**Example:**\n- Esteban Lepaul is valued at €15M but xG says he's worth €44.3M\n- Perfect for your wildcard?\n\n**Try it free:** https://scoutlens-app.vercel.app\n\nWorks on mobile. No signup required.\n\nWhat FPL-specific features would be most useful?"
+  },
+  "rfootballmanagergames": {
+    "title": "I built a scouting tool for FM - finds undervalued players using real data",
+    "body": "Hey r/footballmanagergames,\n\nI built ScoutLens - a scouting tool that uses real Transfermarkt values + xG data to find undervalued players.\n\n**Why it's useful for FM:**\n- Find hidden gems before they're expensive\n- Compare players by xG/xA per 90\n- See which players are undervalued vs market\n- Track contract expiries (free transfers)\n- Export data to CSV for your own analysis\n\n**Example:**\n- Esteban Lepaul is valued at €15M but xG says he's worth €44.3M\n- Perfect for your lower league save?\n\n**Try it free:** https://scoutlens-app.vercel.app\n\nWorks on mobile. No signup required.\n\nWhat FM-specific features would be most useful?"
+  },
+  "generatedAt": "2025-12-26T05:48:54.229Z"
+}

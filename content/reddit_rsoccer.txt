@@ -1,0 +1,38 @@
+TITLE:
+I built a tool to find undervalued football players using Transfermarkt + xG data
+
+---
+
+BODY:
+Hey r/soccer,
+
+I've been working on ScoutLens - a tool that combines real Transfermarkt market values with xG/xA analytics to identify undervalued players.
+
+**How it works:**
+- Uses actual Transfermarkt values (not estimates)
+- Combines with xG/xA per 90 stats
+- Applies age curve and league multipliers
+- Highlights players where market value < fair value
+
+**Features:**
+- Search 300+ players across 25+ leagues
+- Filter by league, position, age, value
+- Compare players side-by-side
+- Track transfer rumors
+- Export data (Pro feature)
+
+**Example findings:**
+- Esteban Lepaul (Stade Rennais FC 1901): Market €15M, Fair €44.3M (+195%)
+- Antoine Semenyo (AFC Bournemouth): Market €28M, Fair €80.5M (+188%)
+- Aune Heggebø (West Bromwich Albion FC): Market €6M, Fair €17.2M (+187%)
+
+**Try it free:** https://scoutlens-app.vercel.app
+
+No signup required. Works on mobile and desktop.
+
+I'd love feedback on:
+- What features are missing?
+- Which leagues should I add?
+- What data would be most useful?
+
+Thanks!

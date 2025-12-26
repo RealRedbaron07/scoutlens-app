@@ -961,6 +961,15 @@
                         case 'refresh':
                             window.location.reload();
                             break;
+                        case 'apply-filters':
+                            this.applyFilters();
+                            break;
+                        case 'reset-filters':
+                            this.resetFilters();
+                            break;
+                        case 'toggle-filters':
+                            this.toggleFilters();
+                            break;
                         case 'page-next':
                             let totalItems = 0;
                             if (state.currentView === 'gems') {
@@ -1327,47 +1336,45 @@
             if (!container) return;
 
             try {
-                // Load rumors from JSON file with auto-expiration
+                // Fetch rumors from live API (automatic updates)
                 let rumors = [];
                 try {
-                    const response = await fetch('/data/rumors.json');
-                    const data = await response.json();
-
-                    // Filter expired rumors
-                    const today = new Date();
-                    rumors = data.rumors.filter(r => {
-                        if (!r.expires) return true; // Keep if no expiry
-                        const expiry = new Date(r.expires);
-                        return expiry > today;
-                    }).sort((a, b) => {
-                        // Sort by date (newest first)
-                        return new Date(b.date) - new Date(a.date);
-                    });
+                    // Try API endpoint first (live data)
+                    const response = await fetch('/api/rumors');
+                    if (response.ok) {
+                        const data = await response.json();
+                        rumors = data.rumors || [];
+                        
+                        // Filter expired rumors
+                        const today = new Date();
+                        rumors = rumors.filter(r => {
+                            if (!r.expires) return true; // Keep if no expiry
+                            const expiry = new Date(r.expires);
+                            return expiry > today;
+                        }).sort((a, b) => {
+                            // Sort by date (newest first)
+                            return new Date(b.date) - new Date(a.date);
+                        });
+                    } else {
+                        throw new Error('API returned error');
+                    }
                 } catch (error) {
-                    console.warn('Could not load rumors.json, using fallback');
-                    // Fallback to hardcoded rumors if JSON fails
-                    rumors = [
-                        {
-                            player: 'Mohamed Salah',
-                            from: 'Liverpool',
-                            to: 'Saudi Pro League / PSG',
-                            fee: 'Free (contract expires 2025)',
-                            status: 'hot',
-                            source: 'Fabrizio Romano',
-                            date: '2024-12-20',
-                            verified: true
-                        },
-                        {
-                            player: 'Trent Alexander-Arnold',
-                            from: 'Liverpool',
-                            to: 'Real Madrid',
-                            fee: 'Free (contract expires 2025)',
-                            status: 'hot',
-                            source: 'Multiple Sources',
-                            date: '2024-12-19',
-                            verified: true
-                        }
-                    ];
+                    console.warn('Could not fetch live rumors, trying fallback:', error);
+                    // Fallback: Try static JSON file
+                    try {
+                        const response = await fetch('/data/rumors.json');
+                        const data = await response.json();
+                        const today = new Date();
+                        rumors = (data.rumors || []).filter(r => {
+                            if (!r.expires) return true;
+                            const expiry = new Date(r.expires);
+                            return expiry > today;
+                        }).sort((a, b) => new Date(b.date) - new Date(a.date));
+                    } catch (fallbackError) {
+                        console.warn('Could not load rumors.json, using minimal fallback');
+                        // Minimal fallback
+                        rumors = [];
+                    }
                 }
 
                 let html = `
@@ -1454,12 +1461,14 @@
 
             // Fallback: PayPal.me (only used if buttons not configured)
             // NOTE: This will show your personal name - use Hosted Buttons instead!
-            const PAYPAL_BUSINESS_NAME = 'MustafaAlpARI';
+            // For now, using generic name to hide personal account
+            const PAYPAL_BUSINESS_NAME = 'ScoutLensPro';
             const PAYPAL_MONTHLY_ME = `https://paypal.me/${PAYPAL_BUSINESS_NAME}/9.99`;
             const PAYPAL_ANNUAL_ME = `https://paypal.me/${PAYPAL_BUSINESS_NAME}/72`;
 
             // Set to true after you create PayPal Hosted Buttons and add the IDs above
-            let USE_PAYPAL_BUTTONS = true; // ⬅️ Set to true for total anonymity
+            // For now, set to false to use PayPal.me with generic name (hides personal account)
+            let USE_PAYPAL_BUTTONS = false; // ⬅️ Set to true for total anonymity (requires button IDs)
             const PAYMENT_PROVIDER = 'paypal';
 
             // Failsafe: Check if IDs are still placeholders
@@ -1867,17 +1876,28 @@
             // Filter range displays
             const ageRange = document.getElementById('filter-age');
             const valueRange = document.getElementById('filter-value');
+            const sortSelect = document.getElementById('sort-by');
 
             if (ageRange) {
                 ageRange.addEventListener('input', (e) => {
-                    document.getElementById('age-value').textContent = e.target.value;
-                });
+                    const ageValue = document.getElementById('age-value');
+                    if (ageValue) ageValue.textContent = e.target.value;
+                }, { signal });
             }
 
             if (valueRange) {
                 valueRange.addEventListener('input', (e) => {
-                    document.getElementById('value-display').textContent = `€${e.target.value}M`;
-                });
+                    const valueDisplay = document.getElementById('value-display');
+                    if (valueDisplay) valueDisplay.textContent = `€${e.target.value}M`;
+                }, { signal });
+            }
+
+            // Sort dropdown - apply immediately on change
+            if (sortSelect) {
+                sortSelect.addEventListener('change', (e) => {
+                    state.filters.sortBy = e.target.value;
+                    this.renderView(state.currentView);
+                }, { signal });
             }
         },
 
