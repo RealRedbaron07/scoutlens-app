@@ -1750,16 +1750,16 @@
                 return;
             }
             
-            // In production: Send to Beehiiv, ConvertKit, etc.
-            // TODO: Replace with actual Beehiiv API call
-            // Example: fetch('https://api.beehiiv.com/v2/forms/XXXXX/subscribe', { method: 'POST', body: JSON.stringify({email}) })
+            // Store email in array format (for future export/upgrade)
+            this.addEmailToCollection(email);
             
-            // For now: Store locally and show confirmation
-            console.log('📧 Email submitted:', email);
-            Security.storage.setItem('scoutlens_email', email);
+            // Send mailto notification (Option B)
+            this.sendMailtoNotification(email);
             
-            // Store subscription timestamp
-            Security.storage.setItem('scoutlens_email_subscribed', new Date().toISOString());
+            // Try to send to API endpoint (gracefully fails if not available)
+            this.sendEmailToAPI(email).catch(() => {
+                // Silently fail - mailto is the primary method
+            });
             
             UI.showNotification('✅ Subscribed! Check your inbox Monday.');
             
@@ -1768,6 +1768,137 @@
             
             // Clear form
             form.reset();
+        },
+
+        addEmailToCollection(email) {
+            // Get existing emails array
+            let emails = [];
+            try {
+                const stored = Security.storage.getItem('scoutlens_email_collection');
+                if (stored) {
+                    emails = JSON.parse(stored);
+                }
+            } catch (e) {
+                console.warn('Could not read email collection:', e);
+            }
+            
+            // Check if email already exists
+            if (emails.some(e => e.email.toLowerCase() === email.toLowerCase())) {
+                console.log('📧 Email already in collection:', email);
+                return;
+            }
+            
+            // Add new email with timestamp
+            emails.push({
+                email: email,
+                subscribedAt: new Date().toISOString(),
+                source: 'newsletter_form'
+            });
+            
+            // Store updated array
+            Security.storage.setItem('scoutlens_email_collection', JSON.stringify(emails));
+            Security.storage.setItem('scoutlens_email', email); // Keep single email for compatibility
+            Security.storage.setItem('scoutlens_email_subscribed', new Date().toISOString());
+            
+            console.log('📧 Email added to collection:', email);
+            console.log(`📊 Total emails collected: ${emails.length}`);
+        },
+
+        sendMailtoNotification(email) {
+            // Option B: Send mailto notification to owner
+            // Get owner email from config or use default
+            // You can set this in browser console: localStorage.setItem('scoutlens_owner_email', 'your@email.com')
+            const ownerEmail = Security.storage.getItem('scoutlens_owner_email') || 'mustafaalpari@gmail.com';
+            
+            if (ownerEmail === 'your-email@example.com' || !ownerEmail.includes('@')) {
+                console.log('📧 Email stored locally. Set owner email: localStorage.setItem("scoutlens_owner_email", "your@email.com")');
+                return; // Don't send mailto if email not configured
+            }
+            
+            const subject = encodeURIComponent('New ScoutLens Newsletter Subscriber');
+            const body = encodeURIComponent(`New subscriber: ${email}\n\nSubscribed at: ${new Date().toLocaleString()}\n\nTotal subscribers: ${this.getEmailCollectionCount()}`);
+            
+            // Open mailto link (will open user's email client)
+            const mailtoLink = `mailto:${ownerEmail}?subject=${subject}&body=${body}`;
+            
+            // Try to open mailto (may not work in all browsers, that's okay)
+            try {
+                window.location.href = mailtoLink;
+            } catch (e) {
+                console.log('Mailto not available, email stored locally:', email);
+            }
+        },
+
+        async sendEmailToAPI(email) {
+            // Try to send to API endpoint (for future Beehiiv/ConvertKit integration)
+            // This gracefully fails if the endpoint doesn't exist yet
+            try {
+                const response = await fetch('/api/subscribe', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email: email })
+                });
+                
+                if (response.ok) {
+                    console.log('✅ Email sent to API:', email);
+                }
+            } catch (e) {
+                // Silently fail - this is optional
+                console.log('API endpoint not available yet (this is okay)');
+            }
+        },
+
+        getEmailCollectionCount() {
+            try {
+                const stored = Security.storage.getItem('scoutlens_email_collection');
+                if (stored) {
+                    return JSON.parse(stored).length;
+                }
+            } catch (e) {
+                // Ignore
+            }
+            return 0;
+        },
+
+        exportEmailCollection() {
+            // Export all collected emails as CSV
+            try {
+                const stored = Security.storage.getItem('scoutlens_email_collection');
+                if (!stored) {
+                    UI.showNotification('⚠️ No emails collected yet', 'error');
+                    return;
+                }
+                
+                const emails = JSON.parse(stored);
+                if (emails.length === 0) {
+                    UI.showNotification('⚠️ No emails collected yet', 'error');
+                    return;
+                }
+                
+                // Create CSV content
+                let csv = 'Email,Subscribed At,Source\n';
+                emails.forEach(e => {
+                    csv += `"${e.email}","${e.subscribedAt}","${e.source}"\n`;
+                });
+                
+                // Download CSV
+                const blob = new Blob([csv], { type: 'text/csv' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `scoutlens-subscribers-${new Date().toISOString().split('T')[0]}.csv`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+                
+                UI.showNotification(`✅ Exported ${emails.length} emails to CSV`);
+            } catch (e) {
+                console.error('Error exporting emails:', e);
+                UI.showNotification('⚠️ Error exporting emails', 'error');
+            }
         },
 
         sharePlayer(playerName) {
@@ -2410,17 +2541,17 @@
                 return;
             }
 
-            // Store email (in production, send to your email service)
-            Security.storage.setItem('scoutlens_email', Security.escapeHtml(email));
+            // Use the main email handler (which stores in collection and sends mailto)
+            this.addEmailToCollection(email);
+            this.sendMailtoNotification(email);
+            this.sendEmailToAPI(email).catch(() => {});
+
             state.emailSubmitted = true;
 
             // Hide the form
             document.querySelector('.email-capture')?.remove();
 
             UI.showNotification('✅ Subscribed! Check your inbox Monday.');
-
-            // Log for later integration
-            console.log('Email captured:', email);
         },
 
         // ============================================
@@ -2553,4 +2684,14 @@
 
     // Expose App to window for global access
     window.App = App;
+    
+    // Expose email export function to console for easy access
+    window.exportSubscribers = () => App.exportEmailCollection();
+    window.getSubscriberCount = () => App.getEmailCollectionCount();
+    
+    // Console helper
+    console.log('%c📧 Email Collection Helpers:', 'color: #00d4aa; font-weight: bold;');
+    console.log('  - exportSubscribers() - Export all emails as CSV');
+    console.log('  - getSubscriberCount() - Get total subscriber count');
+    console.log('  - Set owner email: localStorage.setItem("scoutlens_owner_email", "your@email.com")');
 })();
