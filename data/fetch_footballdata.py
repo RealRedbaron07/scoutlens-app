@@ -281,7 +281,7 @@ def generate_js(all_players: list, output_path: str):
 
 const PLAYER_DATA = {{
     lastUpdated: "{datetime.now().isoformat()}",
-    dataSource: "football-data.org + Transfermarkt values",
+    dataSource: "Football-Data.org",
     season: "2024-25",
     updateFrequency: "daily",
     totalPlayers: {len(all_players)},

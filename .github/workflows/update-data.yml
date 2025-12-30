@@ -9,7 +9,9 @@ on:
 jobs:
   update-data:
     runs-on: ubuntu-latest
-    
+    permissions:
+      contents: write  # Required to push changes
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -19,12 +21,22 @@ jobs:
         with:
           python-version: '3.11'
           
-      - name: Fetch combined data (TM values + FD stats)
-        env:
-          FOOTBALL_DATA_KEY: ${{ secrets.FOOTBALL_DATA_KEY }}
+      - name: Install dependencies
         run: |
+          pip install requests
+          
+      - name: Fetch player data (Football-Data.org)
+        run: |
+          # If the API key isn't configured as a GitHub secret yet,
+          # skip the update gracefully so the workflow does NOT fail.
+          if [ -z "${{ secrets.FOOTBALL_DATA_KEY }}" ]; then
+            echo "⚠️ FOOTBALL_DATA_KEY is not set. Skipping data update (no failure)."
+            exit 0
+          fi
+
+          export FOOTBALL_DATA_KEY="${{ secrets.FOOTBALL_DATA_KEY }}"
           cd data
-          python3 fetch_combined.py --api-key $FOOTBALL_DATA_KEY
+          python3 fetch_footballdata.py --api-key $FOOTBALL_DATA_KEY
           
       - name: Check for changes
         id: changes
@@ -37,7 +49,7 @@ jobs:
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
           git add data/player_data.js
-          git commit -m "🔄 Auto-update: Fresh Transfermarkt values $(date +'%Y-%m-%d')"
+          git commit -m "🔄 Auto-update: Fresh player data $(date +'%Y-%m-%d')"
           git push
           
       - name: Trigger Vercel deployment
