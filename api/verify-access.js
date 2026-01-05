@@ -1,39 +1,42 @@
 /**
  * ScoutLens - Pro Access Verification API
  * 
- * Production-ready endpoint that verifies Pro subscription status
- * using Supabase as the backend database.
+ * SIMPLE MODE (Current): No database required
+ * - Returns verification info based on configuration
+ * - For manual Pro activation workflow
  * 
- * SETUP REQUIRED:
- * 1. Create a Supabase project at https://supabase.com
- * 2. Run docs/supabase-schema.sql in the SQL Editor
- * 3. Add environment variables to Vercel:
- *    - SUPABASE_URL: Your Supabase project URL
- *    - SUPABASE_SERVICE_KEY: Your service_role key (NOT anon key)
+ * HOW IT WORKS:
+ * 1. User pays via PayPal.me link
+ * 2. User contacts you (email/DM) with their PayPal email
+ * 3. You verify payment in PayPal dashboard
+ * 4. You add their email to PRO_EMAILS list below
+ * 5. User enters email in app → gets Pro access
+ * 
+ * UPGRADE PATH:
+ * When you're ready for automatic activation, add Supabase.
+ * See docs/supabase-schema.sql for setup instructions.
  */
 
-import { createClient } from '@supabase/supabase-js';
+// ============================================
+// MANUAL PRO USER LIST
+// ============================================
+// Add verified Pro user emails here after confirming PayPal payment
+// Format: 'email@example.com'
+const PRO_EMAILS = new Set([
+    // Add your Pro users here:
+    // 'customer1@email.com',
+    // 'customer2@email.com',
+]);
 
-// Initialize Supabase client with service role key for full access
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY;
-
-// Validate environment variables
-function getSupabaseClient() {
-    if (!supabaseUrl || !supabaseServiceKey) {
-        console.error('Missing Supabase environment variables');
-        return null;
-    }
-    return createClient(supabaseUrl, supabaseServiceKey, {
-        auth: { persistSession: false }
-    });
-}
+// Your own email for testing (you always have Pro access)
+const OWNER_EMAIL = 'mustafaalpari@gmail.com';
+PRO_EMAILS.add(OWNER_EMAIL);
 
 export default async function handler(req, res) {
     // CORS headers
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
     if (req.method === 'OPTIONS') {
         return res.status(200).end();
@@ -46,89 +49,48 @@ export default async function handler(req, res) {
     try {
         const { email, token } = req.body;
 
-        // Initialize Supabase
-        const supabase = getSupabaseClient();
-
-        // Fallback to mock mode if Supabase not configured
-        if (!supabase) {
-            console.warn('⚠️ Supabase not configured - running in mock mode');
-            return res.status(200).json({
-                isPro: false,
-                verified: true,
-                message: 'Database not configured - mock mode',
-                mockMode: true
-            });
-        }
-
         // ============================================
-        // OPTION 1: Verify by Email
+        // VERIFY BY EMAIL
         // ============================================
         if (email) {
-            if (typeof email !== 'string' || !email.includes('@')) {
+            const normalizedEmail = email.toLowerCase().trim();
+
+            // Basic email validation
+            if (!normalizedEmail.includes('@')) {
                 return res.status(400).json({
                     error: 'Invalid email format',
                     isPro: false
                 });
             }
 
-            // Query the profiles table
-            const { data: profile, error } = await supabase
-                .from('profiles')
-                .select('id, email, is_pro, subscription_status, subscription_end_date')
-                .eq('email', email.toLowerCase().trim())
-                .single();
+            // Check if email is in Pro list
+            const isPro = PRO_EMAILS.has(normalizedEmail);
 
-            if (error && error.code !== 'PGRST116') {
-                // PGRST116 = no rows returned (not an error, just no user)
-                console.error('Database error:', error);
-                return res.status(500).json({
-                    error: 'Database error',
-                    isPro: false
+            if (isPro) {
+                // Generate simple token for session
+                const verificationToken = Buffer.from(JSON.stringify({
+                    email: normalizedEmail,
+                    verified: true,
+                    exp: Date.now() + (7 * 24 * 60 * 60 * 1000) // 7 days
+                })).toString('base64');
+
+                return res.status(200).json({
+                    isPro: true,
+                    verified: true,
+                    token: verificationToken,
+                    message: 'Pro access verified! Enjoy unlimited features.'
                 });
-            }
-
-            // User not found
-            if (!profile) {
+            } else {
                 return res.status(200).json({
                     isPro: false,
                     verified: true,
-                    message: 'No subscription found for this email'
+                    message: 'No Pro subscription found for this email. After paying, contact support with your PayPal email.'
                 });
             }
-
-            // Check if subscription is active AND not expired
-            const now = new Date();
-            const endDate = profile.subscription_end_date
-                ? new Date(profile.subscription_end_date)
-                : null;
-
-            const isActive = profile.is_pro === true &&
-                profile.subscription_status === 'active' &&
-                (!endDate || endDate > now);
-
-            // Generate a simple verification token (in production, use JWT)
-            const verificationToken = isActive
-                ? Buffer.from(JSON.stringify({
-                    email: profile.email,
-                    verified: true,
-                    exp: Date.now() + (24 * 60 * 60 * 1000) // 24 hour expiry
-                })).toString('base64')
-                : null;
-
-            return res.status(200).json({
-                isPro: isActive,
-                verified: true,
-                token: verificationToken,
-                subscriptionStatus: profile.subscription_status,
-                expiresAt: endDate ? endDate.toISOString() : null,
-                message: isActive
-                    ? 'Pro access verified'
-                    : 'Subscription not active'
-            });
         }
 
         // ============================================
-        // OPTION 2: Verify by Token (session refresh)
+        // VERIFY BY TOKEN (session refresh)
         // ============================================
         if (token) {
             try {
@@ -139,65 +101,41 @@ export default async function handler(req, res) {
                     return res.status(200).json({
                         isPro: false,
                         verified: true,
-                        error: 'Token expired',
-                        message: 'Please re-verify your subscription'
+                        message: 'Session expired. Please verify your email again.'
                     });
                 }
 
-                // Re-verify against database to ensure subscription is still active
-                if (decoded.email) {
-                    const { data: profile, error } = await supabase
-                        .from('profiles')
-                        .select('is_pro, subscription_status, subscription_end_date')
-                        .eq('email', decoded.email)
-                        .single();
-
-                    if (error || !profile) {
-                        return res.status(200).json({
-                            isPro: false,
-                            verified: true,
-                            message: 'Subscription no longer valid'
-                        });
-                    }
-
-                    const now = new Date();
-                    const endDate = profile.subscription_end_date
-                        ? new Date(profile.subscription_end_date)
-                        : null;
-
-                    const isActive = profile.is_pro === true &&
-                        profile.subscription_status === 'active' &&
-                        (!endDate || endDate > now);
-
+                // Re-check if email is still in Pro list
+                if (decoded.email && PRO_EMAILS.has(decoded.email.toLowerCase())) {
                     return res.status(200).json({
-                        isPro: isActive,
+                        isPro: true,
                         verified: true,
                         email: decoded.email,
-                        message: isActive ? 'Token verified' : 'Subscription expired'
+                        message: 'Pro access verified'
                     });
                 }
 
             } catch (e) {
-                return res.status(200).json({
-                    isPro: false,
-                    verified: true,
-                    error: 'Invalid token',
-                    message: 'Token verification failed'
-                });
+                // Token decode failed
             }
+
+            return res.status(200).json({
+                isPro: false,
+                verified: true,
+                message: 'Invalid or expired session'
+            });
         }
 
         // No email or token provided
         return res.status(400).json({
-            error: 'Email or token required',
-            isPro: false,
-            message: 'Please provide an email address or verification token'
+            error: 'Email required',
+            isPro: false
         });
 
     } catch (error) {
-        console.error('Error verifying access:', error);
+        console.error('Verification error:', error);
         return res.status(500).json({
-            error: 'Internal server error',
+            error: 'Server error',
             isPro: false
         });
     }

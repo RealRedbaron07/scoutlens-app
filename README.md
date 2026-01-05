@@ -33,44 +33,34 @@ Once installed, it works like a native app with its own icon!
 
 ---
 
-## 💰 MONETIZATION SETUP (PayPal)
+## 💰 MONETIZATION (PayPal - Already Working!)
 
-Your app is configured to use **PayPal** for payments. Here's how it works:
+Your app uses **PayPal.me** links for payments. They're already configured and working:
+- Monthly ($9.99): `https://paypal.me/MustafaAlpARI/9.99`
+- Annual ($72): `https://paypal.me/MustafaAlpARI/72`
 
-### Current Setup (PayPal.me)
-Your app uses PayPal.me links which work immediately:
-- Monthly: `https://paypal.me/MustafaAlpARI/9.99`
-- Annual: `https://paypal.me/MustafaAlpARI/72`
+### How Pro Activation Works
 
-### Upgrade to Hosted Buttons (For Anonymity)
-If you want to hide your personal name from customers:
-
-1. Go to [paypal.com](https://paypal.com) → **Tools** → **PayPal Buttons**
-2. Create a **Subscribe** button for monthly ($9.99/month)
-3. Create a **Subscribe** button for annual ($72/year)
-4. Copy the `hosted_button_id` from each button
-5. In `app.js`, update these lines:
+1. **Customer pays** via PayPal link in the app
+2. **Customer contacts you** with their PayPal email (via DM, email, etc.)
+3. **You verify payment** in your PayPal dashboard
+4. **You add their email** to `api/verify-access.js`:
 
 ```javascript
-const PAYPAL_MONTHLY_BUTTON = 'https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=YOUR_MONTHLY_ID';
-const PAYPAL_ANNUAL_BUTTON = 'https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=YOUR_ANNUAL_ID';
-let USE_PAYPAL_BUTTONS = true; // ← Change to true
+const PRO_EMAILS = new Set([
+    'customer1@email.com',  // Add verified customers here
+    'customer2@email.com',
+]);
 ```
 
-### Setting Up Automatic Pro Activation
-To automatically activate Pro when someone pays:
+5. **Customer enters email** in app → gets Pro access!
 
-1. **Create Supabase database** (see `docs/supabase-schema.sql`)
-2. **Configure PayPal Webhooks**:
-   - Go to [developer.paypal.com/dashboard/webhooks](https://developer.paypal.com/dashboard/webhooks)
-   - Add webhook URL: `https://YOUR-DOMAIN.vercel.app/api/webhook-payment`
-   - Subscribe to events: `BILLING.SUBSCRIPTION.ACTIVATED`, `PAYMENT.SALE.COMPLETED`
-3. **Add environment variables** in Vercel:
-   - `SUPABASE_URL`
-   - `SUPABASE_SERVICE_KEY`
-   - `PAYPAL_WEBHOOK_ID`
+### Optional: Hide Your Name (Hosted Buttons)
 
-See `docs/PAYPAL_SETUP.md` for detailed instructions.
+If you want anonymity, create PayPal Hosted Buttons:
+1. Go to [paypal.com](https://paypal.com) → **Tools** → **PayPal Buttons**
+2. Create Subscribe buttons and copy the IDs
+3. Update `app.js` with your button IDs
 
 ---
 
@@ -223,28 +213,17 @@ Tests cover:
 
 ---
 
+
 ## 🔐 Security
 
 This app implements several security measures:
 
-- **Server-side Pro verification** - Pro status is verified via Supabase, not localStorage
+- **Server-side Pro verification** - Pro emails are verified on the server, not client localStorage
 - **XSS protection** - All user input is escaped with `Security.escapeHtml()`
-- **Webhook signature verification** - Payment webhooks verify PayPal signatures
-- **Environment variables** - Secrets are stored in environment variables, not code
+- **HTTPS enforced** - Security headers require HTTPS in production
+- **CSP headers** - Content Security Policy prevents script injection
 
 See `docs/SECURITY.md` for more details.
-
----
-
-## 🔧 Environment Variables
-
-Copy `.env.example` to `.env` and configure:
-
-```bash
-SUPABASE_URL=https://your-project.supabase.co
-SUPABASE_SERVICE_KEY=your-service-role-key
-PAYPAL_WEBHOOK_ID=your-paypal-webhook-id
-```
 
 ---
 
