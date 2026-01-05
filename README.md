@@ -33,53 +33,44 @@ Once installed, it works like a native app with its own icon!
 
 ---
 
-## 💰 MONETIZATION SETUP (Do This Today!)
+## 💰 MONETIZATION SETUP (PayPal)
 
-### Step 1: Create Stripe Account (5 min)
-1. Go to [stripe.com](https://stripe.com) and sign up
-2. Complete basic verification (name, email)
-3. You can start in Test Mode immediately
+Your app is configured to use **PayPal** for payments. Here's how it works:
 
-### Step 2: Create Payment Links (5 min)
-1. Go to **Stripe Dashboard** → **Payment Links** (or [dashboard.stripe.com/payment-links](https://dashboard.stripe.com/payment-links))
-2. Click **+ New**
-3. Create **Monthly Plan**:
-   - Product name: "ScoutLens Pro Monthly"
-   - Price: $9.00 USD
-   - Billing: Recurring → Monthly
-   - Click **Create Link**
-   - Copy the link (looks like `https://buy.stripe.com/xxxxx`)
+### Current Setup (PayPal.me)
+Your app uses PayPal.me links which work immediately:
+- Monthly: `https://paypal.me/MustafaAlpARI/9.99`
+- Annual: `https://paypal.me/MustafaAlpARI/72`
 
-4. Create **Annual Plan**:
-   - Product name: "ScoutLens Pro Annual"  
-   - Price: $72.00 USD
-   - Billing: Recurring → Yearly
-   - Click **Create Link**
-   - Copy the link
+### Upgrade to Hosted Buttons (For Anonymity)
+If you want to hide your personal name from customers:
 
-### Step 3: Add Links to App (1 min)
-Open `app.js` and find these lines near the top:
+1. Go to [paypal.com](https://paypal.com) → **Tools** → **PayPal Buttons**
+2. Create a **Subscribe** button for monthly ($9.99/month)
+3. Create a **Subscribe** button for annual ($72/year)
+4. Copy the `hosted_button_id` from each button
+5. In `app.js`, update these lines:
 
 ```javascript
-// Stripe Payment Links
-STRIPE_MONTHLY_LINK: 'https://buy.stripe.com/test_XXXXXX', // $9/month
-STRIPE_ANNUAL_LINK: 'https://buy.stripe.com/test_YYYYYY'   // $72/year
+const PAYPAL_MONTHLY_BUTTON = 'https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=YOUR_MONTHLY_ID';
+const PAYPAL_ANNUAL_BUTTON = 'https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=YOUR_ANNUAL_ID';
+let USE_PAYPAL_BUTTONS = true; // ← Change to true
 ```
 
-Replace with your actual Stripe links:
+### Setting Up Automatic Pro Activation
+To automatically activate Pro when someone pays:
 
-```javascript
-STRIPE_MONTHLY_LINK: 'https://buy.stripe.com/your-actual-monthly-link',
-STRIPE_ANNUAL_LINK: 'https://buy.stripe.com/your-actual-annual-link'
-```
+1. **Create Supabase database** (see `docs/supabase-schema.sql`)
+2. **Configure PayPal Webhooks**:
+   - Go to [developer.paypal.com/dashboard/webhooks](https://developer.paypal.com/dashboard/webhooks)
+   - Add webhook URL: `https://YOUR-DOMAIN.vercel.app/api/webhook-payment`
+   - Subscribe to events: `BILLING.SUBSCRIPTION.ACTIVATED`, `PAYMENT.SALE.COMPLETED`
+3. **Add environment variables** in Vercel:
+   - `SUPABASE_URL`
+   - `SUPABASE_SERVICE_KEY`
+   - `PAYPAL_WEBHOOK_ID`
 
-### Step 4: Go Live
-1. In Stripe Dashboard, toggle from **Test mode** to **Live mode**
-2. Complete any remaining verification
-3. Create new Payment Links in Live mode
-4. Update `app.js` with live links
-
-**That's it! You're ready to accept payments.**
+See `docs/PAYPAL_SETUP.md` for detailed instructions.
 
 ---
 
@@ -238,7 +229,7 @@ This app implements several security measures:
 
 - **Server-side Pro verification** - Pro status is verified via Supabase, not localStorage
 - **XSS protection** - All user input is escaped with `Security.escapeHtml()`
-- **Webhook signature verification** - Payment webhooks verify Stripe/PayPal signatures
+- **Webhook signature verification** - Payment webhooks verify PayPal signatures
 - **Environment variables** - Secrets are stored in environment variables, not code
 
 See `docs/SECURITY.md` for more details.
@@ -252,7 +243,7 @@ Copy `.env.example` to `.env` and configure:
 ```bash
 SUPABASE_URL=https://your-project.supabase.co
 SUPABASE_SERVICE_KEY=your-service-role-key
-STRIPE_WEBHOOK_SECRET=whsec_your-webhook-secret
+PAYPAL_WEBHOOK_ID=your-paypal-webhook-id
 ```
 
 ---

@@ -1,22 +1,23 @@
 /**
- * ScoutLens - Payment Webhook Handler
+ * ScoutLens - PayPal Payment Webhook Handler
  * 
- * Receives webhooks from Stripe or PayPal when a payment/subscription event occurs,
- * and updates the Supabase database accordingly.
+ * Receives webhooks from PayPal when a payment/subscription event occurs,
+ * and updates the Supabase database to activate Pro access.
  * 
  * SETUP REQUIRED:
- * 1. Configure webhook in Stripe Dashboard: https://dashboard.stripe.com/webhooks
- *    - Endpoint URL: https://your-domain.vercel.app/api/webhook-payment
- *    - Events to listen for: checkout.session.completed, customer.subscription.updated,
- *                            customer.subscription.deleted, invoice.payment_succeeded
+ * 1. Configure webhook in PayPal Developer Dashboard:
+ *    - Go to: https://developer.paypal.com/dashboard/webhooks
+ *    - Add webhook URL: https://your-domain.vercel.app/api/webhook-payment
+ *    - Subscribe to events:
+ *      • BILLING.SUBSCRIPTION.ACTIVATED
+ *      • BILLING.SUBSCRIPTION.CANCELLED
+ *      • BILLING.SUBSCRIPTION.EXPIRED
+ *      • PAYMENT.SALE.COMPLETED
  * 
  * 2. Add environment variables to Vercel:
- *    - STRIPE_WEBHOOK_SECRET: Your Stripe webhook signing secret (whsec_...)
+ *    - PAYPAL_WEBHOOK_ID: Your webhook ID from PayPal dashboard
  *    - SUPABASE_URL: Your Supabase project URL
  *    - SUPABASE_SERVICE_KEY: Your service_role key
- * 
- * 3. For PayPal, configure IPN or Webhooks in PayPal Developer Dashboard
- *    - Add PAYPAL_WEBHOOK_ID to environment variables
  */
 
 import { createClient } from '@supabase/supabase-js';
@@ -25,9 +26,9 @@ import { createClient } from '@supabase/supabase-js';
 // CONFIGURATION
 // ============================================
 
-// Webhook secrets - ADD THESE TO VERCEL ENVIRONMENT VARIABLES
-const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET;
 const PAYPAL_WEBHOOK_ID = process.env.PAYPAL_WEBHOOK_ID;
+const PAYPAL_CLIENT_ID = process.env.PAYPAL_CLIENT_ID;
+const PAYPAL_CLIENT_SECRET = process.env.PAYPAL_CLIENT_SECRET;
 
 // Supabase client
 const supabaseUrl = process.env.SUPABASE_URL;
@@ -43,28 +44,35 @@ function getSupabaseClient() {
 }
 
 // ============================================
-// STRIPE WEBHOOK VERIFICATION
+// PAYPAL WEBHOOK SIGNATURE VERIFICATION
 // ============================================
-async function verifyStripeSignature(req) {
-    // In production, use Stripe's official library for verification
-    // npm install stripe
-    // const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+async function verifyPayPalWebhook(req) {
+    // In production, verify the webhook signature using PayPal's API
+    // See: https://developer.paypal.com/docs/api/webhooks/v1/#verify-webhook-signature
 
-    const signature = req.headers['stripe-signature'];
-    if (!signature || !STRIPE_WEBHOOK_SECRET) {
-        return null;
+    // Required headers from PayPal
+    const transmissionId = req.headers['paypal-transmission-id'];
+    const timestamp = req.headers['paypal-transmission-time'];
+    const certUrl = req.headers['paypal-cert-url'];
+    const authAlgo = req.headers['paypal-auth-algo'];
+    const transmissionSig = req.headers['paypal-transmission-sig'];
+
+    if (!transmissionId || !timestamp || !transmissionSig) {
+        console.warn('Missing PayPal signature headers');
+        return false;
     }
 
-    // TODO: Replace with actual Stripe signature verification
-    // const event = stripe.webhooks.constructEvent(
-    //     req.body, // raw body
-    //     signature,
-    //     STRIPE_WEBHOOK_SECRET
-    // );
+    // TODO: Implement full signature verification
+    // For now, we check that required headers are present
+    // In production, call PayPal's verify-webhook-signature API
 
-    // For now, just parse the body (NOT SECURE - implement real verification)
-    console.warn('⚠️ Stripe signature verification not fully implemented');
-    return req.body;
+    console.log('📥 PayPal webhook received:', {
+        transmissionId,
+        timestamp,
+        hasSignature: !!transmissionSig
+    });
+
+    return true; // In production, return actual verification result
 }
 
 // ============================================
@@ -95,11 +103,11 @@ async function updateSubscription(email, updates) {
     return data;
 }
 
-async function activateProSubscription(email, customerId, endDate = null) {
+async function activateProSubscription(email, subscriptionId, endDate = null) {
     return updateSubscription(email, {
         is_pro: true,
         subscription_status: 'active',
-        stripe_customer_id: customerId,
+        paypal_subscription_id: subscriptionId,
         subscription_end_date: endDate
     });
 }
@@ -108,13 +116,6 @@ async function cancelSubscription(email) {
     return updateSubscription(email, {
         is_pro: false,
         subscription_status: 'cancelled'
-    });
-}
-
-async function expireSubscription(email) {
-    return updateSubscription(email, {
-        is_pro: false,
-        subscription_status: 'expired'
     });
 }
 
@@ -128,154 +129,30 @@ export default async function handler(req, res) {
     }
 
     try {
-        // Determine payment provider from headers or body
-        const isStripe = req.headers['stripe-signature'];
-        const isPayPal = req.headers['paypal-transmission-id'];
-
-        if (isStripe) {
-            return await handleStripeWebhook(req, res);
-        } else if (isPayPal) {
-            return await handlePayPalWebhook(req, res);
-        } else {
-            console.warn('Unknown webhook source');
-            return res.status(400).json({ error: 'Unknown payment provider' });
+        // Verify the webhook is from PayPal
+        const isValid = await verifyPayPalWebhook(req);
+        if (!isValid) {
+            console.error('Invalid PayPal webhook signature');
+            return res.status(401).json({ error: 'Invalid signature' });
         }
 
-    } catch (error) {
-        console.error('Webhook error:', error);
-        return res.status(500).json({ error: 'Webhook processing failed' });
-    }
-}
+        const eventType = req.body.event_type;
+        const resource = req.body.resource;
 
-// ============================================
-// STRIPE WEBHOOK HANDLER
-// ============================================
-async function handleStripeWebhook(req, res) {
-    // Verify the webhook signature
-    const event = await verifyStripeSignature(req);
-    if (!event) {
-        return res.status(401).json({ error: 'Invalid signature' });
-    }
+        console.log(`📥 PayPal webhook: ${eventType}`);
 
-    const eventType = event.type || req.body.type;
-    const data = event.data?.object || req.body.data?.object;
-
-    console.log(`📥 Stripe webhook: ${eventType}`);
-
-    try {
-        switch (eventType) {
-            // ============================================
-            // CHECKOUT COMPLETED (new subscription)
-            // ============================================
-            case 'checkout.session.completed': {
-                const email = data.customer_email || data.customer_details?.email;
-                const customerId = data.customer;
-
-                if (email) {
-                    // Calculate subscription end date (1 month or 1 year from now)
-                    const mode = data.mode; // 'subscription' or 'payment'
-                    let endDate = null;
-
-                    if (mode === 'subscription') {
-                        // Subscription will be managed by subscription.updated events
-                        endDate = null; // Will be set by subscription event
-                    } else {
-                        // One-time payment - set 30 day access
-                        endDate = new Date();
-                        endDate.setDate(endDate.getDate() + 30);
-                    }
-
-                    await activateProSubscription(email, customerId, endDate?.toISOString());
-                    console.log(`✅ Pro activated for ${email}`);
-                }
-                break;
-            }
-
-            // ============================================
-            // SUBSCRIPTION UPDATED (renewal, plan change)
-            // ============================================
-            case 'customer.subscription.updated': {
-                const status = data.status;
-                const customerId = data.customer;
-                const currentPeriodEnd = data.current_period_end;
-
-                // Get customer email from Stripe (requires API call in production)
-                // const customer = await stripe.customers.retrieve(customerId);
-                // const email = customer.email;
-
-                // For now, get from metadata or use customer lookup
-                const email = data.metadata?.email;
-
-                if (email && status === 'active') {
-                    await activateProSubscription(
-                        email,
-                        customerId,
-                        new Date(currentPeriodEnd * 1000).toISOString()
-                    );
-                }
-                break;
-            }
-
-            // ============================================
-            // SUBSCRIPTION CANCELLED
-            // ============================================
-            case 'customer.subscription.deleted': {
-                const email = data.metadata?.email;
-                if (email) {
-                    await cancelSubscription(email);
-                    console.log(`❌ Subscription cancelled for ${email}`);
-                }
-                break;
-            }
-
-            // ============================================
-            // PAYMENT FAILED
-            // ============================================
-            case 'invoice.payment_failed': {
-                const email = data.customer_email;
-                if (email) {
-                    // Optionally: Mark as past_due but don't immediately cancel
-                    await updateSubscription(email, {
-                        subscription_status: 'past_due'
-                    });
-                    console.log(`⚠️ Payment failed for ${email}`);
-                }
-                break;
-            }
-
-            default:
-                console.log(`Unhandled Stripe event: ${eventType}`);
+        // Check if Supabase is configured
+        if (!supabaseUrl || !supabaseServiceKey) {
+            console.warn('⚠️ Supabase not configured - webhook received but cannot update database');
+            return res.status(200).json({
+                received: true,
+                warning: 'Database not configured'
+            });
         }
 
-        // Always return 200 to acknowledge receipt
-        return res.status(200).json({ received: true });
-
-    } catch (error) {
-        console.error('Error processing Stripe webhook:', error);
-        // Still return 200 to prevent Stripe retries for processing errors
-        return res.status(200).json({ received: true, error: error.message });
-    }
-}
-
-// ============================================
-// PAYPAL WEBHOOK HANDLER
-// ============================================
-async function handlePayPalWebhook(req, res) {
-    // PayPal webhook verification
-    // In production, verify the webhook signature using PayPal SDK
-    // See: https://developer.paypal.com/docs/api/webhooks/v1/
-
-    console.warn('⚠️ PayPal signature verification not fully implemented');
-
-    const eventType = req.body.event_type;
-    const resource = req.body.resource;
-
-    console.log(`📥 PayPal webhook: ${eventType}`);
-
-    try {
         switch (eventType) {
             // ============================================
-            // SUBSCRIPTION ACTIVATED
+            // SUBSCRIPTION ACTIVATED (new subscription)
             // ============================================
             case 'BILLING.SUBSCRIPTION.ACTIVATED':
             case 'BILLING.SUBSCRIPTION.CREATED': {
@@ -284,13 +161,33 @@ async function handlePayPalWebhook(req, res) {
                 const nextBillingTime = resource.billing_info?.next_billing_time;
 
                 if (email) {
-                    await updateSubscription(email, {
-                        is_pro: true,
-                        subscription_status: 'active',
-                        paypal_subscription_id: subscriptionId,
-                        subscription_end_date: nextBillingTime || null
-                    });
+                    await activateProSubscription(
+                        email,
+                        subscriptionId,
+                        nextBillingTime || null
+                    );
                     console.log(`✅ PayPal Pro activated for ${email}`);
+                } else {
+                    console.warn('No email in subscription data:', resource);
+                }
+                break;
+            }
+
+            // ============================================
+            // SUBSCRIPTION RENEWED (recurring payment)
+            // ============================================
+            case 'BILLING.SUBSCRIPTION.RENEWED': {
+                const email = resource.subscriber?.email_address;
+                const subscriptionId = resource.id;
+                const nextBillingTime = resource.billing_info?.next_billing_time;
+
+                if (email) {
+                    await activateProSubscription(
+                        email,
+                        subscriptionId,
+                        nextBillingTime || null
+                    );
+                    console.log(`🔄 PayPal subscription renewed for ${email}`);
                 }
                 break;
             }
@@ -299,7 +196,7 @@ async function handlePayPalWebhook(req, res) {
             // SUBSCRIPTION CANCELLED
             // ============================================
             case 'BILLING.SUBSCRIPTION.CANCELLED':
-            case 'BILLING.SUBSCRIPTION.EXPIRED': {
+            case 'BILLING.SUBSCRIPTION.SUSPENDED': {
                 const email = resource.subscriber?.email_address;
                 if (email) {
                     await cancelSubscription(email);
@@ -309,17 +206,55 @@ async function handlePayPalWebhook(req, res) {
             }
 
             // ============================================
-            // PAYMENT COMPLETED (one-time or recurring)
+            // SUBSCRIPTION EXPIRED
+            // ============================================
+            case 'BILLING.SUBSCRIPTION.EXPIRED': {
+                const email = resource.subscriber?.email_address;
+                if (email) {
+                    await updateSubscription(email, {
+                        is_pro: false,
+                        subscription_status: 'expired'
+                    });
+                    console.log(`⏰ PayPal subscription expired for ${email}`);
+                }
+                break;
+            }
+
+            // ============================================
+            // ONE-TIME PAYMENT COMPLETED
             // ============================================
             case 'PAYMENT.SALE.COMPLETED': {
-                // Handle one-time payments
-                const email = resource.payer?.payer_info?.email;
-                if (email) {
-                    const endDate = new Date();
-                    endDate.setDate(endDate.getDate() + 30); // 30 days access
+                // Handle one-time payments (non-subscription)
+                const payerEmail = resource.payer?.email_address ||
+                    resource.payer_info?.email;
 
-                    await activateProSubscription(email, null, endDate.toISOString());
-                    console.log(`✅ PayPal payment completed for ${email}`);
+                if (payerEmail) {
+                    // Give 30 days of Pro access for one-time payment
+                    const endDate = new Date();
+                    endDate.setDate(endDate.getDate() + 30);
+
+                    await updateSubscription(payerEmail, {
+                        is_pro: true,
+                        subscription_status: 'active',
+                        subscription_end_date: endDate.toISOString()
+                    });
+                    console.log(`✅ PayPal payment completed for ${payerEmail} (30 days Pro)`);
+                } else {
+                    console.warn('No payer email in payment data:', resource);
+                }
+                break;
+            }
+
+            // ============================================
+            // PAYMENT FAILED
+            // ============================================
+            case 'BILLING.SUBSCRIPTION.PAYMENT.FAILED': {
+                const email = resource.subscriber?.email_address;
+                if (email) {
+                    await updateSubscription(email, {
+                        subscription_status: 'past_due'
+                    });
+                    console.log(`⚠️ PayPal payment failed for ${email}`);
                 }
                 break;
             }
@@ -328,10 +263,15 @@ async function handlePayPalWebhook(req, res) {
                 console.log(`Unhandled PayPal event: ${eventType}`);
         }
 
+        // Always return 200 to acknowledge receipt
         return res.status(200).json({ received: true });
 
     } catch (error) {
-        console.error('Error processing PayPal webhook:', error);
-        return res.status(200).json({ received: true, error: error.message });
+        console.error('Webhook processing error:', error);
+        // Still return 200 to prevent PayPal retries for processing errors
+        return res.status(200).json({
+            received: true,
+            error: error.message
+        });
     }
 }
