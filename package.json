@@ -3,7 +3,14 @@
   "version": "1.0.0",
   "type": "module",
   "private": true,
+  "scripts": {
+    "start": "python3 -m http.server 8000",
+    "test": "node --test tests/*.test.js",
+    "test:watch": "node --test --watch tests/*.test.js"
+  },
   "dependencies": {
+    "@supabase/supabase-js": "^2.89.0",
     "@vercel/analytics": "^1.6.1"
-  }
+  },
+  "devDependencies": {}
 }

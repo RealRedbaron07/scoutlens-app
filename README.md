@@ -188,16 +188,72 @@ Edit CSS variables in `styles.css`:
 ## ❓ FAQ
 
 **Q: Do I need a backend?**
-A: No! Stripe Payment Links handle payments without any server code.
+A: For basic payments, no. Stripe Payment Links work without a server. For automatic Pro activation, use Supabase + webhooks (see `docs/supabase-schema.sql`).
 
-**Q: How do I know who paid?**
-A: Stripe Dashboard shows all customers. For automatic Pro activation, you'd need a backend (future enhancement).
+**Q: How do Pro users get access?**
+A: Configure webhooks in Stripe to call `/api/webhook-payment`. This automatically updates the Supabase database when someone subscribes.
 
 **Q: Can I change the price?**
 A: Yes, create new Payment Links in Stripe with different prices.
 
 **Q: Is this legal?**
 A: Yes! This uses real-world football data, not game data. No licensing issues.
+
+---
+
+## 📁 Documentation
+
+Additional documentation has been moved to the `docs/` folder:
+
+| Document | Description |
+|----------|-------------|
+| [supabase-schema.sql](docs/supabase-schema.sql) | Database schema for Pro subscriptions |
+| [QUICK_START_GUIDE.md](docs/QUICK_START_GUIDE.md) | Detailed setup instructions |
+| [SECURITY.md](docs/SECURITY.md) | Security best practices |
+| [PAYPAL_SETUP.md](docs/PAYPAL_SETUP.md) | PayPal integration guide |
+| [LEGAL_RISK_ASSESSMENT.md](docs/LEGAL_RISK_ASSESSMENT.md) | Legal considerations |
+| [LAUNCH_CHECKLIST.md](docs/LAUNCH_CHECKLIST.md) | Pre-launch checklist |
+
+---
+
+## 🧪 Testing
+
+Run the security test suite:
+
+```bash
+npm test
+```
+
+Tests cover:
+- ✅ Pro access verification logic
+- ✅ Token validation & expiry
+- ✅ XSS prevention
+- ✅ Input validation
+
+---
+
+## 🔐 Security
+
+This app implements several security measures:
+
+- **Server-side Pro verification** - Pro status is verified via Supabase, not localStorage
+- **XSS protection** - All user input is escaped with `Security.escapeHtml()`
+- **Webhook signature verification** - Payment webhooks verify Stripe/PayPal signatures
+- **Environment variables** - Secrets are stored in environment variables, not code
+
+See `docs/SECURITY.md` for more details.
+
+---
+
+## 🔧 Environment Variables
+
+Copy `.env.example` to `.env` and configure:
+
+```bash
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_SERVICE_KEY=your-service-role-key
+STRIPE_WEBHOOK_SECRET=whsec_your-webhook-secret
+```
 
 ---
 
