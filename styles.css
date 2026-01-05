@@ -9,7 +9,7 @@
     --bg-secondary: #0f1318;
     --bg-card: #151a21;
     --bg-elevated: #1c232d;
-    
+
     /* Accents */
     --accent-primary: #00d4aa;
     --accent-primary-dim: rgba(0, 212, 170, 0.12);
@@ -17,16 +17,16 @@
     --accent-gold-dim: rgba(251, 191, 36, 0.12);
     --accent-red: #f87171;
     --accent-green: #34d399;
-    
+
     /* Text */
     --text-primary: #f1f5f9;
     --text-secondary: #94a3b8;
     --text-muted: #64748b;
-    
+
     /* Borders */
     --border-subtle: rgba(148, 163, 184, 0.08);
     --border-default: rgba(148, 163, 184, 0.15);
-    
+
     /* Spacing */
     --space-xs: 0.25rem;
     --space-sm: 0.5rem;
@@ -34,17 +34,17 @@
     --space-lg: 1.5rem;
     --space-xl: 2rem;
     --space-2xl: 3rem;
-    
+
     /* Radius */
     --radius-sm: 6px;
     --radius-md: 10px;
     --radius-lg: 16px;
     --radius-xl: 24px;
-    
+
     /* Typography */
     --font-sans: 'Outfit', -apple-system, sans-serif;
     --font-mono: 'JetBrains Mono', monospace;
-    
+
     /* Transitions */
     --transition-fast: 150ms ease;
     --transition-base: 250ms ease;
@@ -78,7 +78,7 @@ body::before {
     content: '';
     position: fixed;
     inset: 0;
-    background: 
+    background:
         radial-gradient(ellipse at 20% 0%, rgba(0, 212, 170, 0.04) 0%, transparent 50%),
         repeating-linear-gradient(0deg, transparent, transparent 80px, rgba(148, 163, 184, 0.02) 80px, rgba(148, 163, 184, 0.02) 81px);
     pointer-events: none;
@@ -435,9 +435,9 @@ body::before {
 @media (min-width: 769px) {
     .player-card {
         backdrop-filter: blur(10px);
-}
+    }
 
-.player-card:hover {
+    .player-card:hover {
         transform: translateY(-4px);
         box-shadow: 0 8px 24px rgba(0, 212, 170, 0.15);
         border-color: var(--accent-primary);
@@ -913,59 +913,7 @@ body::before {
     margin-top: var(--space-xl);
 }
 
-/* Newsletter Modal */
-.newsletter-modal-content {
-    width: 400px;
-    padding: var(--space-2xl);
-    text-align: center;
-}
-
-.newsletter-header {
-    margin-bottom: var(--space-xl);
-}
-
-.newsletter-icon {
-    font-size: 3rem;
-    display: block;
-    margin-bottom: var(--space-md);
-}
-
-.newsletter-header h2 {
-    font-size: 1.5rem;
-    font-weight: 700;
-    margin-bottom: var(--space-sm);
-}
-
-.newsletter-header p {
-    color: var(--text-secondary);
-}
-
-.newsletter-form {
-    margin-bottom: var(--space-md);
-}
-
-.newsletter-input {
-    width: 100%;
-    padding: var(--space-md);
-    margin-bottom: var(--space-md);
-    background: var(--bg-card);
-    border: 1px solid var(--border-default);
-    border-radius: var(--radius-md);
-    color: var(--text-primary);
-    font-family: inherit;
-    font-size: 1rem;
-    text-align: center;
-}
-
-.newsletter-input:focus {
-    outline: none;
-    border-color: var(--accent-primary);
-}
-
-.newsletter-note {
-    font-size: 0.8rem;
-    color: var(--text-muted);
-}
+/* Newsletter Modal - REMOVED (feature deprecated) */
 
 /* Methodology Modal */
 .methodology-modal-content {
@@ -1162,7 +1110,7 @@ body::before {
         width: 100%;
         margin-bottom: var(--space-xs);
     }
-    
+
     .nav-links {
         width: 100%;
         overflow-x: auto;
@@ -1174,7 +1122,7 @@ body::before {
         padding-right: 1rem;
         /* Prevent cut-off */
     }
-    
+
     .nav-link {
         padding: 0.75rem 1rem;
         /* Larger touch target */
@@ -1194,7 +1142,7 @@ body::before {
         font-size: 1rem;
         margin-right: 4px;
     }
-    
+
     .nav-actions {
         display: flex;
         gap: var(--space-xs);
@@ -1208,7 +1156,7 @@ body::before {
         margin: 0;
         min-width: 0;
     }
-    
+
     .search-input {
         width: 100%;
         min-width: 150px;
@@ -1259,7 +1207,7 @@ body::before {
         height: 36px;
         font-size: 0.8rem;
     }
-    
+
     .player-card-stats {
         grid-template-columns: repeat(2, 1fr);
         margin-left: 44px;
@@ -1274,23 +1222,23 @@ body::before {
         min-height: 48px;
         padding: 0.75rem;
     }
-    
+
     /* CTA and forms */
     .cta-card {
         flex-direction: column;
         text-align: center;
     }
-    
+
     .cta-form {
         flex-direction: column;
         width: 100%;
     }
-    
+
     .cta-input {
         min-width: 0;
         width: 100%;
     }
-    
+
     /* Footer */
     .footer-content {
         flex-direction: column;
@@ -1781,53 +1729,7 @@ body::before {
     background: rgba(239, 68, 68, 0.25);
 }
 
-/* Email Capture Modal */
-.email-capture {
-    background: linear-gradient(135deg, var(--bg-card), var(--bg-elevated));
-    border: 1px solid var(--border-default);
-    border-radius: var(--radius-lg);
-    padding: 2rem;
-    text-align: center;
-    margin: 2rem 0;
-}
-
-.email-capture h3 {
-    font-size: 1.3rem;
-    margin-bottom: 0.5rem;
-}
-
-.email-capture p {
-    color: var(--text-secondary);
-    margin-bottom: 1.5rem;
-}
-
-.email-form {
-    display: flex;
-    gap: 0.5rem;
-    max-width: 400px;
-    margin: 0 auto;
-}
-
-.email-form input {
-    flex: 1;
-    padding: 0.8rem 1rem;
-    border: 1px solid var(--border-default);
-    border-radius: var(--radius-sm);
-    background: var(--bg-secondary);
-    color: var(--text-primary);
-    font-size: 1rem;
-}
-
-.email-form button {
-    background: var(--accent-primary);
-    color: #000;
-    border: none;
-    padding: 0.8rem 1.5rem;
-    border-radius: var(--radius-sm);
-    font-weight: 600;
-    cursor: pointer;
-    white-space: nowrap;
-}
+/* Email Capture Modal - REMOVED (feature deprecated) */
 
 /* Rumor Tracker */
 .rumor-card {

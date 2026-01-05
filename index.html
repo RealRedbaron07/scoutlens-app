@@ -139,8 +139,8 @@
                         <span class="hero-stat-label">Leagues Covered</span>
                     </div>
                     <div class="hero-stat">
-                        <span class="hero-stat-value">Daily</span>
-                        <span class="hero-stat-label">Data Updates</span>
+                        <span class="hero-stat-value">Snapshot</span>
+                        <span class="hero-stat-label">Analysis</span>
                     </div>
                 </div>
             </div>
@@ -153,7 +153,8 @@
                 <div class="feature-card">
                     <span class="feature-icon">📊</span>
                     <h3>Market Value Estimates</h3>
-                    <p>Data-driven market value calculations based on performance, age, and league context. Updated regularly.</p>
+                    <p>Data-driven market value calculations based on performance, age, and league context. Updated
+                        regularly.</p>
                 </div>
                 <div class="feature-card">
                     <span class="feature-icon">💎</span>
@@ -251,7 +252,8 @@
 
         <!-- Footer -->
         <footer class="landing-footer">
-            <p>© 2024 ScoutLens. Data from Football-Data.org. Market values are estimates. Not affiliated with any league or club.</p>
+            <p>© 2024 ScoutLens. Data from Football-Data.org. Market values are estimates. Not affiliated with any
+                league or club.</p>
         </footer>
     </div>
 
@@ -415,9 +417,7 @@
                 </button>
             </div>
             <div class="nav-actions">
-                <button class="btn btn-ghost btn-sm" id="newsletter-btn">
-                    📧 Get Weekly List
-                </button>
+                <!-- Pro upgrade button -->
             </div>
         </nav>
 
@@ -426,8 +426,8 @@
             <div class="hero-content">
                 <h1 class="hero-title">Find Undervalued<br>Football Players</h1>
                 <p class="hero-subtitle">
-                    We analyze xG, xA, age, and league context to find players whose
-                    market value doesn't match their performance. Updated weekly.
+                    We analyze xG, xA, age, and league context to estimate fair value for players
+                    whose market value doesn't match their performance.
                 </p>
                 <div class="hero-stats">
                     <div class="hero-stat">
@@ -439,10 +439,12 @@
                         <span class="hero-stat-label">Leagues Covered</span>
                     </div>
                     <div class="hero-stat">
-                        <span class="hero-stat-value">Weekly</span>
-                        <span class="hero-stat-label">Data Updates</span>
+                        <span class="hero-stat-value">Snapshot</span>
+                        <span class="hero-stat-label">Analysis</span>
                     </div>
                 </div>
+                <p class="hero-disclaimer" style="color:#94a3b8;font-size:0.75rem;margin-top:0.75rem;">Data freshness
+                    depends on the last update. Fair values are algorithmic estimates.</p>
             </div>
         </section>
 
@@ -459,16 +461,7 @@
                     <!-- Populated by JS -->
                 </div>
 
-                <div class="cta-card">
-                    <div class="cta-content">
-                        <h3>📧 Get the Full List Every Week</h3>
-                        <p>Top 20 undervalued players + deep dives delivered to your inbox.</p>
-                    </div>
-                    <form class="cta-form" id="email-form-1">
-                        <input type="email" placeholder="your@email.com" required class="cta-input">
-                        <button type="submit" class="btn btn-primary">Subscribe Free</button>
-                    </form>
-                </div>
+                <!-- Pro upgrade prompt moved to inline cards -->
             </section>
 
             <!-- Top Performers View -->
@@ -525,7 +518,7 @@
             <section id="view-rumors" class="view">
                 <div class="section-intro">
                     <h2>📰 Transfer Rumors</h2>
-                    <p>Latest transfer news and rumors from reliable sources. Updated daily.</p>
+                    <p>Latest transfer news and rumors from reliable sources. Freshness depends on the last update.</p>
                 </div>
 
                 <div class="rumors-list" id="rumors-list">
@@ -582,27 +575,7 @@
             </div>
         </div>
 
-        <!-- Newsletter Modal -->
-        <div class="modal" id="newsletter-modal">
-            <div class="modal-backdrop"></div>
-            <div class="modal-content newsletter-modal-content">
-                <button class="modal-close" id="newsletter-modal-close">×</button>
-                <div class="newsletter-modal-body">
-                    <div class="newsletter-header">
-                        <span class="newsletter-icon">📧</span>
-                        <h2>Weekly Undervalued XI</h2>
-                        <p>Every Monday: Top 20 mispriced players + 2 deep dives</p>
-                    </div>
-                    <form class="newsletter-form" id="email-form-2">
-                        <input type="email" placeholder="your@email.com" required class="newsletter-input">
-                        <button type="submit" class="btn btn-primary btn-lg btn-block">
-                            Subscribe Free
-                        </button>
-                    </form>
-                    <p class="newsletter-note">Free forever. Unsubscribe anytime. No spam.</p>
-                </div>
-            </div>
-        </div>
+        <!-- Newsletter Modal removed - mailing list feature deprecated -->
 
         <!-- Methodology Modal -->
         <div class="modal" id="methodology-modal">
@@ -612,10 +585,17 @@
                 <div class="methodology-body">
                     <h2>📊 How We Calculate Undervaluation</h2>
 
-                    <h3>The Formula</h3>
-                    <pre class="code-block">Fair Value = Base Value × Performance Ratio × Age Multiplier × League Multiplier
+                    <div class="methodology-disclaimer"
+                        style="background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.3);border-radius:8px;padding:1rem;margin-bottom:1.5rem;">
+                        <p style="color:#fbbf24;font-weight:600;margin:0;">⚠️ Important: "Fair Value" is an algorithmic
+                            estimate, not an official financial metric or market price. It is based on performance data
+                            and should be used for analysis purposes only.</p>
+                    </div>
 
-Undervaluation % = (Fair Value - Market Value) / Market Value × 100</pre>
+                    <h3>The Formula</h3>
+                    <pre class="code-block">Fair Value Estimate = Base Value × Performance Ratio × Age Multiplier × League Multiplier
+
+Undervaluation % = (Fair Value Estimate - Market Value) / Market Value × 100</pre>
 
                     <h3>Performance Ratio</h3>
                     <p>We use <strong>xG + xA per 90 minutes</strong> (expected goals + expected assists) compared to
@@ -645,16 +625,21 @@ Undervaluation % = (Fair Value - Market Value) / Market Value × 100</pre>
                         <li>Ligue 1: 1.1x</li>
                     </ul>
 
-                    <h3>Data Sources</h3>
-                    <p><strong>xG/xA:</strong> Understat (updated after each matchday)</p>
-                    <p><strong>Market Values:</strong> Calculated estimates based on performance data and league context</p>
+                    <h3>Data Sources & Freshness</h3>
+                    <p><strong>xG/xA:</strong> Sourced from Understat. Data is updated via manual script execution.</p>
+                    <p><strong>Market Values:</strong> Algorithmic estimates based on performance data and league
+                        context.</p>
+                    <p style="color:#f87171;margin-top:0.5rem;"><strong>⏱️ Data Freshness:</strong> Check the timestamp
+                        shown in the app header. Data reflects the last time the update script was run.</p>
 
                     <h3>Limitations</h3>
                     <ul>
+                        <li>Fair Values are estimates, not official valuations</li>
                         <li>No injury history factored in</li>
                         <li>Contract length not included</li>
                         <li>Defensive metrics limited</li>
                         <li>Sample size varies by minutes played</li>
+                        <li>Data freshness depends on manual script updates</li>
                     </ul>
                 </div>
             </div>

@@ -2,6 +2,14 @@
 
 A monetizable PWA for football player scouting and analysis. Install it like an app, charge users for premium features.
 
+## ⚠️ Important: Data & Methodology
+
+**ScoutLens is a snapshot analysis tool**, not a live data feed. Key things to understand:
+
+- **"Fair Value" is an algorithmic estimate** - It's calculated based on xG, xA, age, and league context. It is NOT an official market valuation or financial metric.
+- **Data freshness depends on manual updates** - The data reflects the last time the Python update scripts were run. Check the timestamp displayed in the app.
+- **This is for analysis purposes only** - Values shown should be used as a scouting reference, not for financial decisions.
+
 ## 🚀 Quick Start
 
 ```bash
@@ -97,9 +105,9 @@ STRIPE_ANNUAL_LINK: 'https://buy.stripe.com/your-actual-annual-link'
 
 ---
 
-## 🔌 Real-Time Player Data
+## 📊 Updating Player Data (Snapshot-Based)
 
-The app comes with sample data. To get **live, accurate data**:
+The app uses snapshot data that requires periodic manual updates. Here's how to refresh the data:
 
 ### Option 1: API-Football (Recommended)
 1. Sign up at [api-football.com](https://www.api-football.com/) (free tier: 100 requests/day)

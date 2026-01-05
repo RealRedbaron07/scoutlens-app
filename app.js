@@ -68,7 +68,6 @@
     const state = {
         currentView: 'dashboard',
         watchlist: [],
-        emailSubmitted: false,
         compareList: [],  // Players selected for comparison
         compareMode: false,
         searchQuery: '',
@@ -80,34 +79,56 @@
             sortBy: 'undervaluation'
         },
         priceAlerts: [],  // {playerId, targetPrice}
-        isPro: false,     // Pro user status (client-side only - not trusted)
+        isPro: false,     // Pro user status (requires server verification)
         proEmail: null,   // Email for Pro access
         proToken: null,   // Server-verified Pro token (trusted)
+        proVerified: false, // Has Pro status been verified by server?
         pagination: {
             currentPage: 1,
             itemsPerPage: 20
         }
     };
 
-    // Development mode check (for testing only)
-    // Also enable if test mode is set in localStorage
-    const IS_DEVELOPMENT = window.location.hostname === 'localhost' || 
-                           window.location.hostname === '127.0.0.1' ||
-                           Security.storage.getItem('scoutlens_test_mode') === 'true';
+    // ============================================
+    // DEV MODE & TESTING
+    // ============================================
+    // Enable testing of Pro features without a real subscription.
+    // 
+    // METHOD 1: URL Parameter (recommended for testing)
+    //   Add ?test_pro=true to URL, e.g.: http://localhost:8000/?test_pro=true
+    //
+    // METHOD 2: localStorage flag (for persistent dev mode)
+    //   Run in browser console: localStorage.setItem('scoutlens_dev_pro', 'true')
+    //   To disable: localStorage.removeItem('scoutlens_dev_pro')
+    //
+    // METHOD 3: Localhost detection (automatic)
+    //   Runs in dev mode automatically on localhost
+    //
+    const urlParams = new URLSearchParams(window.location.search);
+    const TEST_PRO_PARAM = urlParams.get('test_pro') === 'true';
 
-    // Load Pro status from localStorage safely
-    const savedProStatus = Security.storage.getItem('scoutlens_pro');
-    if (savedProStatus) {
-        try {
-            const proData = JSON.parse(savedProStatus);
-            state.isPro = !!proData.isPro;
-            state.proEmail = proData.email;
-        } catch (e) {
-            console.warn('Invalid Pro data in storage, resetting');
-            Security.storage.removeItem('scoutlens_pro');
-            state.isPro = false;
-            state.proEmail = null;
-        }
+    const IS_DEVELOPMENT = window.location.hostname === 'localhost' ||
+        window.location.hostname === '127.0.0.1' ||
+        Security.storage.getItem('scoutlens_test_mode') === 'true';
+
+    // Force Pro mode for testing (only works in dev mode OR with URL param)
+    const FORCE_PRO_FOR_TESTING = TEST_PRO_PARAM || (IS_DEVELOPMENT && Security.storage.getItem('scoutlens_dev_pro') === 'true');
+
+    if (FORCE_PRO_FOR_TESTING) {
+        console.log('%c🔓 DEV MODE: Pro access ENABLED for testing', 'color: #fbbf24; font-weight: bold; font-size: 14px;');
+        console.log('%c   To disable: remove ?test_pro=true from URL or run localStorage.removeItem("scoutlens_dev_pro")', 'color: #94a3b8;');
+        // Immediately enable Pro mode for synchronous render checks
+        state.isPro = true;
+        state.proVerified = true;
+    }
+
+    // Load saved Pro token from localStorage (still needs server verification)
+    // SECURITY: We load the token but ALWAYS verify with server before granting access
+    const savedProToken = Security.storage.getItem('scoutlens_pro_token');
+    if (savedProToken && !FORCE_PRO_FOR_TESTING) {
+        state.proToken = savedProToken;
+        // Will be verified on first Pro feature access
+        state.proVerified = false;
     }
 
     // ============================================
@@ -143,7 +164,7 @@
             const fontSize = size * 0.4;
             // Escape initials for safe HTML insertion
             const safeInitials = Security.escapeHtml(initials);
-            
+
             return `
                 <div class="player-avatar" style="
                     width: ${size}px;
@@ -235,7 +256,7 @@
             const gemBadge = isHiddenGem ? '<span class="gem-badge" title="Hidden Gem">💎</span>' : '';
 
             const isComparing = state.compareList.some(p => p.id === player.id);
-            
+
             return `
                 <div class="player-card ${undervalued ? 'undervalued' : ''} ${isComparing ? 'selected-compare' : ''}" data-player-id="${player.id}">
                     <input type="checkbox" class="compare-checkbox" data-player-id="${player.id}" 
@@ -354,7 +375,7 @@
 
             const isInWatchlist = state.watchlist.some(p => p && p.id === player.id);
             const undervalued = (player.undervaluation_pct || 0) > 0;
-            
+
             return `
                 <div class="player-detail">
                     <div class="player-detail-header">
@@ -434,12 +455,12 @@
             // Always escaped - textContent automatically prevents XSS
             const existing = document.querySelector('.notification');
             if (existing) existing.remove();
-            
+
             const notification = document.createElement('div');
             notification.className = `notification notification-${type}`;
             notification.textContent = typeof message === 'string' ? message : String(message);
             document.body.appendChild(notification);
-            
+
             setTimeout(() => {
                 notification.classList.add('fade-out');
                 setTimeout(() => notification.remove(), 300);
@@ -525,32 +546,32 @@
 
                 // Cleanup any existing event listeners before re-binding (allows re-init)
                 this.cleanupEvents();
-            
-            this.loadState();
-            this.bindEvents();
+
+                this.loadState();
+                this.bindEvents();
 
                 // Render immediately with static data
-            this.renderView('dashboard');
+                this.renderView('dashboard');
                 this.showDataFreshness();
-            
-            // Register service worker
-            if ('serviceWorker' in navigator) {
+
+                // Register service worker
+                if ('serviceWorker' in navigator) {
                     navigator.serviceWorker.register('sw.js').catch(() => { });
-            }
-            
+                }
+
                 // Hide loader (always hide, even on error)
                 clearTimeout(safetyTimeout);
-            setTimeout(() => {
+                setTimeout(() => {
                     const loader = document.getElementById('loader');
                     const app = document.getElementById('app');
                     if (loader) loader.classList.add('fade-out');
                     if (app) app.classList.remove('hidden');
-            }, 1200);
+                }, 1200);
 
                 // Try to fetch LIVE data in background (non-blocking)
                 this.fetchLiveData();
-            
-            console.log('✅ ScoutLens ready');
+
+                console.log('✅ ScoutLens ready');
             } catch (error) {
                 console.error('❌ Failed to initialize ScoutLens:', error);
                 clearTimeout(safetyTimeout);
@@ -814,24 +835,18 @@
                 addMobileHandler(exportBtn, () => this.exportToCSV());
             }
 
-            // Newsletter button
-            addMobileHandler(document.getElementById('newsletter-btn'), () => {
-                this.openModal('newsletter-modal');
-            });
+            // Newsletter button removed - mailing list feature deprecated
 
             // Methodology link
             const methodologyLink = document.getElementById('methodology-link');
             if (methodologyLink) {
                 methodologyLink.addEventListener('click', (e) => {
-                e.preventDefault();
-                this.openModal('methodology-modal');
-            });
+                    e.preventDefault();
+                    this.openModal('methodology-modal');
+                });
             }
 
-            // Email forms
-            document.querySelectorAll('#email-form-1, #email-form-2, .newsletter-form').forEach(form => {
-                form.addEventListener('submit', (e) => this.handleEmailSubmit(e));
-            });
+            // Email forms removed - mailing list feature deprecated
 
             // Modal closes - use delegation for dynamically created modals
             document.addEventListener('click', (e) => {
@@ -877,7 +892,7 @@
                     if (card.classList.contains('locked')) {
                         this.showUpgrade();
                     } else {
-                    this.showPlayerDetail(playerId);
+                        this.showPlayerDetail(playerId);
                     }
                 }
 
@@ -994,11 +1009,10 @@
                 if (form) {
                     e.preventDefault();
                     const action = form.dataset.action;
-                    if (action === 'submit-email') {
-                        this.submitEmail(e);
-                    } else if (action === 'verify-pro-email') {
+                    if (action === 'verify-pro-email') {
                         this.verifyProEmail(e);
                     }
+                    // Note: 'submit-email' action removed - mailing list deprecated
                     return;
                 }
 
@@ -1088,7 +1102,7 @@
         renderUndervalued() {
             const container = document.getElementById('undervalued-list');
             if (!container) return;
-            
+
             try {
                 const data = this.getData();
                 let allPlayers = data.free?.undervalued || data.undervalued || [];
@@ -1138,7 +1152,7 @@
         renderPerformers() {
             const container = document.getElementById('performers-list');
             if (!container) return;
-            
+
             try {
                 const data = this.getData();
                 let allPlayers = data.free?.topPerformers || data.topPerformers || [];
@@ -1183,7 +1197,7 @@
         renderRising() {
             const container = document.getElementById('rising-list');
             if (!container) return;
-            
+
             try {
                 const data = this.getData();
                 let allPlayers = data.free?.risingStars || data.risingStars || [];
@@ -1433,16 +1447,7 @@
                     }
                 }
 
-                let html = `
-                    <div class="email-capture" style="margin-bottom: 2rem;">
-                        <h3>🔔 Get Transfer Alerts</h3>
-                        <p>Be first to know when big transfers happen. Daily updates in your inbox.</p>
-                        <form class="email-form" data-action="submit-email">
-                            <input type="email" placeholder="your@email.com" required>
-                            <button type="submit">Subscribe Free</button>
-                        </form>
-                    </div>
-                `;
+                let html = '';
 
                 html += rumors.map(r => `
                     <div class="rumor-card">
@@ -1622,19 +1627,19 @@
         renderWatchlist() {
             const container = document.getElementById('watchlist-list');
             if (!container) return;
-            
+
             try {
-            if (state.watchlist.length === 0) {
-                container.innerHTML = `
+                if (state.watchlist.length === 0) {
+                    container.innerHTML = `
                     <div class="empty-state">
                         <span class="empty-state-icon">★</span>
                         <h3>No saved players yet</h3>
                         <p>Click the star on any player to add them here.</p>
                     </div>
                 `;
-                return;
-            }
-            
+                    return;
+                }
+
                 // Apply filters and search to watchlist too
                 let filteredWatchlist = this.filterAndSortPlayers(state.watchlist);
 
@@ -1685,10 +1690,10 @@
                 ...(data.risingStars || []),
                 ...state.watchlist
             ];
-            
+
             const player = allPlayers.find(p => p.id === playerId);
             if (!player) return;
-            
+
             const modalBody = document.getElementById('player-modal-body');
             modalBody.innerHTML = UI.renderPlayerDetail(player);
             this.openModal('player-modal');
@@ -1702,12 +1707,12 @@
                 ...(data.topPerformers || []),
                 ...(data.risingStars || [])
             ];
-            
+
             const player = allPlayers.find(p => p.id === playerId);
             if (!player) return;
-            
+
             const index = state.watchlist.findIndex(p => p.id === playerId);
-            
+
             if (index > -1) {
                 state.watchlist.splice(index, 1);
                 UI.showNotification(`Removed ${player.name || 'player'} from watchlist`);
@@ -1715,10 +1720,10 @@
                 state.watchlist.push(player);
                 UI.showNotification(`Saved ${player.name || 'player'} to watchlist ★`);
             }
-            
+
             this.saveState();
             this.refreshSaveButtons();
-            
+
             if (state.currentView === 'watchlist') {
                 this.renderWatchlist();
             }
@@ -1733,178 +1738,18 @@
             });
         },
 
-        handleEmailSubmit(e) {
-            e.preventDefault();
-            const form = e.target;
-            const emailInput = form.querySelector('input[type="email"]');
-            if (!emailInput) {
-                console.error('Email input not found in form');
-                return;
-            }
-            
-            const email = emailInput.value.trim();
-            
-            // Validate email
-            if (!Security.isValidEmail(email)) {
-                UI.showNotification('⚠️ Please enter a valid email address', 'error');
-                return;
-            }
-            
-            // Store email in array format (for future export/upgrade)
-            this.addEmailToCollection(email);
-            
-            // Send mailto notification (Option B)
-            this.sendMailtoNotification(email);
-            
-            // Try to send to API endpoint (gracefully fails if not available)
-            this.sendEmailToAPI(email).catch(() => {
-                // Silently fail - mailto is the primary method
-            });
-            
-            UI.showNotification('✅ Subscribed! Check your inbox Monday.');
-            
-            // Close modal if open
-            document.querySelectorAll('.modal.active').forEach(m => m.classList.remove('active'));
-            
-            // Clear form
-            form.reset();
-        },
+        // ============================================
+        // EMAIL CAPTURE - REMOVED
+        // ============================================
+        // Mailing list feature has been removed from the app.
+        // See git history if you need to restore this functionality.
 
-        addEmailToCollection(email) {
-            // Get existing emails array
-            let emails = [];
-            try {
-                const stored = Security.storage.getItem('scoutlens_email_collection');
-                if (stored) {
-                    emails = JSON.parse(stored);
-                }
-            } catch (e) {
-                console.warn('Could not read email collection:', e);
-            }
-            
-            // Check if email already exists
-            if (emails.some(e => e.email.toLowerCase() === email.toLowerCase())) {
-                console.log('📧 Email already in collection:', email);
-                return;
-            }
-            
-            // Add new email with timestamp
-            emails.push({
-                email: email,
-                subscribedAt: new Date().toISOString(),
-                source: 'newsletter_form'
-            });
-            
-            // Store updated array
-            Security.storage.setItem('scoutlens_email_collection', JSON.stringify(emails));
-            Security.storage.setItem('scoutlens_email', email); // Keep single email for compatibility
-            Security.storage.setItem('scoutlens_email_subscribed', new Date().toISOString());
-            
-            console.log('📧 Email added to collection:', email);
-            console.log(`📊 Total emails collected: ${emails.length}`);
-        },
 
-        sendMailtoNotification(email) {
-            // Option B: Send mailto notification to owner
-            // Get owner email from config or use default
-            // You can set this in browser console: localStorage.setItem('scoutlens_owner_email', 'your@email.com')
-            const ownerEmail = Security.storage.getItem('scoutlens_owner_email') || 'mustafaalpari@gmail.com';
-            
-            if (ownerEmail === 'your-email@example.com' || !ownerEmail.includes('@')) {
-                console.log('📧 Email stored locally. Set owner email: localStorage.setItem("scoutlens_owner_email", "your@email.com")');
-                return; // Don't send mailto if email not configured
-            }
-            
-            const subject = encodeURIComponent('New ScoutLens Newsletter Subscriber');
-            const body = encodeURIComponent(`New subscriber: ${email}\n\nSubscribed at: ${new Date().toLocaleString()}\n\nTotal subscribers: ${this.getEmailCollectionCount()}`);
-            
-            // Open mailto link (will open user's email client)
-            const mailtoLink = `mailto:${ownerEmail}?subject=${subject}&body=${body}`;
-            
-            // Try to open mailto (may not work in all browsers, that's okay)
-            try {
-                window.location.href = mailtoLink;
-            } catch (e) {
-                console.log('Mailto not available, email stored locally:', email);
-            }
-        },
-
-        async sendEmailToAPI(email) {
-            // Try to send to API endpoint (for future Beehiiv/ConvertKit integration)
-            // This gracefully fails if the endpoint doesn't exist yet
-            try {
-                const response = await fetch('/api/subscribe', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ email: email })
-                });
-                
-                if (response.ok) {
-                    console.log('✅ Email sent to API:', email);
-                }
-            } catch (e) {
-                // Silently fail - this is optional
-                console.log('API endpoint not available yet (this is okay)');
-            }
-        },
-
-        getEmailCollectionCount() {
-            try {
-                const stored = Security.storage.getItem('scoutlens_email_collection');
-                if (stored) {
-                    return JSON.parse(stored).length;
-                }
-            } catch (e) {
-                // Ignore
-            }
-            return 0;
-        },
-
-        exportEmailCollection() {
-            // Export all collected emails as CSV
-            try {
-                const stored = Security.storage.getItem('scoutlens_email_collection');
-                if (!stored) {
-                    UI.showNotification('⚠️ No emails collected yet', 'error');
-                    return;
-                }
-                
-                const emails = JSON.parse(stored);
-                if (emails.length === 0) {
-                    UI.showNotification('⚠️ No emails collected yet', 'error');
-                    return;
-                }
-                
-                // Create CSV content
-                let csv = 'Email,Subscribed At,Source\n';
-                emails.forEach(e => {
-                    csv += `"${e.email}","${e.subscribedAt}","${e.source}"\n`;
-                });
-                
-                // Download CSV
-                const blob = new Blob([csv], { type: 'text/csv' });
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `scoutlens-subscribers-${new Date().toISOString().split('T')[0]}.csv`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                window.URL.revokeObjectURL(url);
-                
-                UI.showNotification(`✅ Exported ${emails.length} emails to CSV`);
-            } catch (e) {
-                console.error('Error exporting emails:', e);
-                UI.showNotification('⚠️ Error exporting emails', 'error');
-            }
-        },
 
         sharePlayer(playerName) {
             const text = `Check out ${playerName} on ScoutLens - might be undervalued 🔭`;
             const url = window.location.href;
-            
+
             if (navigator.share) {
                 navigator.share({ title: 'ScoutLens', text, url }).catch(() => { });
             } else {
@@ -2516,56 +2361,64 @@
         // EMAIL CAPTURE
         // ============================================
 
+        // EMAIL CAPTURE - REMOVED
+        // Mailing list feature deprecated - this function returns empty
         showEmailCapture() {
-            if (state.emailSubmitted) return '';
-
-            return `
-                <div class="email-capture">
-                    <h3>📬 Weekly Hidden Gems Report</h3>
-                    <p>Get the top 10 undervalued players delivered to your inbox every Monday.</p>
-                    <form class="email-form" onsubmit="App.submitEmail(event)">
-                        <input type="email" placeholder="your@email.com" required>
-                        <button type="submit">Subscribe Free</button>
-                    </form>
-                </div>
-            `;
-        },
-
-        submitEmail(e) {
-            e.preventDefault();
-            const email = e.target.querySelector('input').value.trim();
-
-            // Validate email
-            if (!Security.isValidEmail(email)) {
-                UI.showNotification('⚠️ Please enter a valid email address', 'error');
-                return;
-            }
-
-            // Use the main email handler (which stores in collection and sends mailto)
-            this.addEmailToCollection(email);
-            this.sendMailtoNotification(email);
-            this.sendEmailToAPI(email).catch(() => {});
-
-            state.emailSubmitted = true;
-
-            // Hide the form
-            document.querySelector('.email-capture')?.remove();
-
-            UI.showNotification('✅ Subscribed! Check your inbox Monday.');
+            return '';
         },
 
         // ============================================
         // PRO USER MANAGEMENT
         // ============================================
 
-        checkProAccess() {
-            // SECURITY: Pro access requires server-verified token in production
-            // In development mode, allow client-side flag for testing
-            if (IS_DEVELOPMENT) {
+        async checkProAccess() {
+            // SECURITY: Always verify Pro access with server
+            // localStorage can be easily manipulated by users
+
+            // If already verified in this session, return cached result
+            if (state.proVerified) {
                 return state.isPro;
             }
-            // In production, only trust server-verified token
-            return state.proToken !== null;
+
+            // Dev mode bypass for testing (URL param or localStorage flag)
+            if (FORCE_PRO_FOR_TESTING) {
+                state.isPro = true;
+                state.proVerified = true;
+                return true;
+            }
+
+            // Verify with server if we have a token
+            if (state.proToken) {
+                try {
+                    const response = await fetch('/api/verify-access', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ token: state.proToken })
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        state.isPro = data.isPro === true;
+                        state.proVerified = true;
+                        state.proEmail = data.email || null;
+
+                        // Update stored token if server provided a new one
+                        if (data.token && data.token !== state.proToken) {
+                            state.proToken = data.token;
+                            Security.storage.setItem('scoutlens_pro_token', data.token);
+                        }
+
+                        return state.isPro;
+                    }
+                } catch (e) {
+                    console.warn('Could not verify Pro access:', e.message);
+                }
+            }
+
+            // No token or verification failed
+            state.isPro = false;
+            state.proVerified = true;
+            return false;
         },
 
         activatePro(email) {
@@ -2684,14 +2537,4 @@
 
     // Expose App to window for global access
     window.App = App;
-    
-    // Expose email export function to console for easy access
-    window.exportSubscribers = () => App.exportEmailCollection();
-    window.getSubscriberCount = () => App.getEmailCollectionCount();
-    
-    // Console helper
-    console.log('%c📧 Email Collection Helpers:', 'color: #00d4aa; font-weight: bold;');
-    console.log('  - exportSubscribers() - Export all emails as CSV');
-    console.log('  - getSubscriberCount() - Get total subscriber count');
-    console.log('  - Set owner email: localStorage.setItem("scoutlens_owner_email", "your@email.com")');
 })();
